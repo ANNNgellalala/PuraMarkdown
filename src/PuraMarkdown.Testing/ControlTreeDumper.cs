@@ -40,6 +40,21 @@ public static class ControlTreeDumper
 
     private static void Walk(Control control, int depth, StringBuilder builder)
     {
+        if (EqualityComparer<string?>.Default.Equals(control.Tag as string, "pura-live-region"))
+        {
+            return;
+        }
+
+        if (EqualityComparer<string?>.Default.Equals(control.Tag as string, "pura-root"))
+        {
+            foreach (var child in Children(control))
+            {
+                Walk(child, depth, builder);
+            }
+
+            return;
+        }
+
         builder.Append(' ', depth * 2).Append(control.GetType().Name);
 
         switch (control)
@@ -95,3 +110,4 @@ public static class ControlTreeDumper
         return textBlock.Text ?? string.Empty;
     }
 }
+

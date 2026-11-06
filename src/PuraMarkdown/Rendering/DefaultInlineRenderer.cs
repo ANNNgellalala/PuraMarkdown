@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Markdig.Extensions.TaskLists;
 using Markdig.Syntax.Inlines;
 using PuraMarkdown.Platform;
+using PuraMarkdown.Security;
 using PuraMarkdown.Rendering;
 
 using MdInline = Markdig.Syntax.Inlines.Inline;
@@ -207,6 +208,30 @@ internal static class DefaultInlineRenderer
         target.Add(new InlineUIContainer(hyperlink));
     }
 
+    private static HyperlinkButton CreateHyperlink(string text, string url, RenderContext context)
+    {
+        var hyperlink = new HyperlinkButton
+        {
+            Content = text,
+            Padding = new Thickness(0),
+            FontSize = context.Theme.Typography.BodySize,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        hyperlink.Click += async (_, _) =>
+        {
+            try
+            {
+                await context.Options.LinkHandler.OpenAsync(url);
+            }
+            catch (Exception ex)
+            {
+                context.Warn("PURA-LINK-001", $"打开链接失败：{ex.Message}", nameof(LinkInline));
+            }
+        };
+
+        return hyperlink;
+    }
+
     private static async Task LoadImageAsync(RenderContext context, string url, Image image, TextBlock placeholder)
     {
         try
@@ -275,4 +300,5 @@ internal static class DefaultInlineRenderer
         }
     }
 }
+
 

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Markdig.Syntax;
@@ -17,6 +18,7 @@ internal sealed class PuraChoiceControl : Border
     private readonly string _componentId;
     private readonly HashSet<string> _selected = new(StringComparer.Ordinal);
     private readonly List<RadioButton> _radioButtons = [];
+    private readonly Dictionary<string, ToggleButton> _optionControls = new(StringComparer.Ordinal);
     private readonly TextBlock _errorText;
     private Button? _submitButton;
     private bool _submitted;
@@ -113,6 +115,7 @@ internal sealed class PuraChoiceControl : Border
             IsEnabled = _enabled && !option.Disabled,
         };
         AutomationProperties.SetName(checkBox, option.Label);
+        _optionControls[option.Id] = checkBox;
         checkBox.PropertyChanged += (_, e) =>        {
             if (e.Property.Name != "IsChecked")
             {
@@ -147,6 +150,7 @@ internal sealed class PuraChoiceControl : Border
             IsEnabled = _enabled && !option.Disabled,
         };
         AutomationProperties.SetName(radio, option.Label);
+        _optionControls[option.Id] = radio;
         radio.PropertyChanged += (_, e) =>
         {
             if (e.Property.Name != "IsChecked" || radio.IsChecked != true || !_enabled || _submitted)
@@ -195,6 +199,31 @@ internal sealed class PuraChoiceControl : Border
         return panel;
     }
 
+    /// <summary>ApplyInteractionState。</summary>
+    /// <param name="state">state 参数。</param>
+    public void ApplyInteractionState(PuraInteractionEventArgs state)
+    {
+        _selected.Clear();
+        foreach (var id in state.SelectedIds)
+        {
+            if (_model.Options.Any(option => option.Id == id))
+            {
+                _selected.Add(id);
+            }
+        }
+
+        _submitted = true;
+        foreach (var pair in _optionControls)
+        {
+            pair.Value.IsChecked = _selected.Contains(pair.Key);
+        }
+
+        if (_submitButton is not null)
+        {
+            _submitButton.IsEnabled = false;
+        }
+    }
+
     private void Submit()
     {
         if (!_enabled || _submitted)
@@ -241,4 +270,6 @@ internal sealed class PuraChoiceControl : Border
         });
     }
 }
+
+
 

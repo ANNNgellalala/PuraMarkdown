@@ -27,11 +27,15 @@ public sealed class PuraMarkdownView : ContentControl
     public static readonly StyledProperty<PuraMarkdownOptions?> OptionsProperty =
         AvaloniaProperty.Register<PuraMarkdownView, PuraMarkdownOptions?>(nameof(Options));
 
+    private readonly Grid _root = new() { Tag = "pura-root" };
     private readonly StackPanel _host = new();
+    private readonly TextBlock _liveRegion;
     private readonly List<BlockRecord> _records = [];
     private readonly ScrollViewer _virtualScroll = new();
     private readonly ItemsRepeater _virtualRepeater = new();
     private readonly ObservableCollection<VirtualBlock> _virtualBlocks = [];
+    private readonly HashSet<string> _warnedKeys = [];
+    private readonly Dictionary<string, PuraInteractionEventArgs> _componentStates = new(StringComparer.Ordinal);
     private bool _virtualized;
     private bool _lastRenderWasStreaming;
     private int _tailRecordCount;
@@ -49,7 +53,21 @@ public sealed class PuraMarkdownView : ContentControl
             (block, _) => RenderVirtualBlock(block));
         _virtualScroll.Content = _virtualRepeater;
 
-        Content = _host;
+        _liveRegion = new TextBlock
+        {
+            Text = string.Empty,
+            Opacity = 0,
+            IsHitTestVisible = false,
+            Focusable = false,
+            TextWrapping = TextWrapping.NoWrap,
+            Tag = "pura-live-region",
+        };
+        AutomationProperties.SetLiveSetting(_liveRegion, AutomationLiveSetting.Polite);
+        AutomationProperties.SetName(_liveRegion, "Markdown 状态");
+
+        _root.Children.Add(_host);
+        _root.Children.Add(_liveRegion);
+        Content = _root;
         AutomationProperties.SetLiveSetting(this, AutomationLiveSetting.Polite);
     }
 
@@ -97,7 +115,11 @@ public sealed class PuraMarkdownView : ContentControl
     public void Render() => RenderText(Markdown ?? string.Empty, isStreaming: false);
 
     /// <summary>触发一次无障碍播报（宿主可转发给平台播报器）。</summary>
-    public void Announce(string message) => Announced?.Invoke(this, message);
+    public void Announce(string message)
+    {
+        _liveRegion.Text = message;
+        Announced?.Invoke(this, message);
+    }
 
     /// <summary>
     /// 预热渲染路径：用一个代表性 Markdown 在离屏探针控件中走完整渲染（高亮/图表/组件/布局），
@@ -243,6 +265,11 @@ public sealed class PuraMarkdownView : ContentControl
 
         foreach (var block in prepared.Document)
         {
+            if (prepared.Sanitized.IsBlocked(block))
+            {
+                continue;
+            }
+
             Control view;
             try
             {
@@ -339,6 +366,11 @@ public sealed class PuraMarkdownView : ContentControl
 
         foreach (var block in document)
         {
+            if (sanitized.IsBlocked(block))
+            {
+                continue;
+            }
+
             try
             {
                 var view = context.RenderMarkdown(block);
@@ -403,6 +435,11 @@ public sealed class PuraMarkdownView : ContentControl
 
         foreach (var block in window.Blocks)
         {
+            if (window.Sanitized.IsBlocked(block))
+            {
+                continue;
+            }
+
             Control view;
             try
             {
@@ -572,9 +609,43 @@ public sealed class PuraMarkdownView : ContentControl
             IsStreaming = isStreaming,
             IsTail = isTail,
             PrecomputedHighlights = precomputedHighlights,
-            InteractionSink = args => InteractionOccurred?.Invoke(this, args),
+            ComponentStates = _componentStates,
+            InteractionSink = OnInteraction,
             WarningSink = args => Warning?.Invoke(this, args),
         };
+    }
+
+    private static TextBlock BlockedPlaceholder(PuraMarkdownOptions options)
+        => new()
+        {
+            Text = "[内容因安全策略/预算限制被省略]",
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = options.Theme.Typography.BodySize - 1,
+            Foreground = new SolidColorBrush(options.Theme.Colors.Muted),
+            Margin = new Thickness(0, 0, 0, options.Theme.Spacing.BlockSpacing),
+        };
+
+    private void WarnSanitizer(string warning)
+    {
+        var separator = warning.IndexOf(": ", StringComparison.Ordinal);
+        if (warning.StartsWith("PURA-", StringComparison.Ordinal) && separator > 0)
+        {
+            Warn(warning[..separator], warning[(separator + 2)..]);
+        }
+        else
+        {
+            Warn("PURA-SEC-001", warning);
+        }
+    }
+
+    private void OnInteraction(PuraInteractionEventArgs state)
+    {
+        if (!string.IsNullOrEmpty(state.ComponentId))
+        {
+            _componentStates[state.ComponentId] = state;
+        }
+
+        InteractionOccurred?.Invoke(this, state);
     }
 
     private void RemoveTailRecords()
@@ -610,12 +681,20 @@ public sealed class PuraMarkdownView : ContentControl
         if (enabled)
         {
             _host.Children.Clear();
-            Content = _virtualScroll;
+            _root.Children.Remove(_host);
+            if (!_root.Children.Contains(_virtualScroll))
+            {
+                _root.Children.Insert(0, _virtualScroll);
+            }
         }
         else
         {
             _virtualBlocks.Clear();
-            Content = _host;
+            _root.Children.Remove(_virtualScroll);
+            if (!_root.Children.Contains(_host))
+            {
+                _root.Children.Insert(0, _host);
+            }
         }
     }
 
@@ -679,6 +758,11 @@ public sealed class PuraMarkdownView : ContentControl
 
     private Control RenderVirtualBlock(VirtualBlock block)
     {
+        if (block.Context.Sanitized.IsBlocked(block.Node))
+        {
+            return BlockedPlaceholder(block.Context.Options);
+        }
+
         try
         {
             return block.Context.RenderMarkdown(block.Node);
@@ -729,7 +813,27 @@ public sealed class PuraMarkdownView : ContentControl
     }
 
     private void Warn(string code, string message, string? nodeType = null, string? renderer = null)
-        => Warning?.Invoke(this, new PuraWarningEventArgs(new PuraWarning(code, message, nodeType, renderer)));
+    {
+        var key = $"{code}|{message}|{nodeType}|{renderer}";
+        if (!_warnedKeys.Add(key))
+        {
+            return;
+        }
+
+        Warning?.Invoke(this, new PuraWarningEventArgs(new PuraWarning(code, message, nodeType, renderer)));
+    }
+
+    internal void ReportWarning(string code, string message, string? nodeType = null)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            Warn(code, message, nodeType);
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(() => Warn(code, message, nodeType));
+        }
+    }
 
     private static ulong HashOf(string text, MarkdownObject block)
     {
@@ -766,6 +870,13 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
+
+
+
+
+
+
 
 
 

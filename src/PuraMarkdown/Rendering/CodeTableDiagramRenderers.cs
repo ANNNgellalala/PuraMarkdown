@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Controls.Primitives;
@@ -27,6 +28,14 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
         var codeBlock = (CodeBlock)node;
         var language = GetLanguage(codeBlock);
         var code = MarkdownText.GetLeafText(codeBlock).TrimEnd('\n');
+        var originalCode = code;
+        var maxFence = context.Options.Limits.MaxFenceChars;
+        if (code.Length > maxFence)
+        {
+            context.Warn("PURA-LIM-002", $"代码围栏超过 {maxFence} 字符，已截断显示");
+            code = code[..maxFence] + "\n…[代码已截断]";
+        }
+
         var theme = context.Theme;
 
         var header = new Grid();
@@ -54,7 +63,7 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
         {
             try
             {
-                await context.Options.Clipboard.SetTextAsync(code);
+                await context.Options.Clipboard.SetTextAsync(originalCode);
                 copyButton.Content = "已复制";
             }
             catch
@@ -62,6 +71,7 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
                 copyButton.Content = "复制失败";
             }
         };
+        AutomationProperties.SetName(copyButton, "复制代码");
         Grid.SetColumn(copyButton, 1);
         header.Children.Add(copyButton);
 
@@ -276,18 +286,25 @@ internal sealed class TableRenderer : IPuraRenderer
         {
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var row = rows[r];
-            var columnIndex = 0;
-            foreach (var cellObject in row)
+            var cells = row.OfType<TableCell>().ToList();
+            for (var c = 0; c < columns; c++)
             {
-                if (cellObject is not TableCell cell)
+                var cell = c < cells.Count ? cells[c] : null;
+                var cellPanel = new StackPanel { Spacing = 0 };
+                if (cell is not null)
                 {
-                    continue;
+                    foreach (var child in cell)
+                    {
+                        cellPanel.Children.Add(context.RenderMarkdown(child));
+                    }
                 }
 
-                var cellPanel = new StackPanel { Spacing = 0 };
-                foreach (var child in cell)
+                var alignment = c < table.ColumnDefinitions.Count
+                    ? table.ColumnDefinitions[c].Alignment
+                    : null;
+                if (alignment is not null)
                 {
-                    cellPanel.Children.Add(context.RenderMarkdown(child));
+                    ApplyTextAlignment(cellPanel, alignment.Value);
                 }
 
                 var cellBorder = new Border
@@ -302,14 +319,9 @@ internal sealed class TableRenderer : IPuraRenderer
                     cellBorder.Background = new SolidColorBrush(context.Theme.Colors.CodeBackground);
                 }
 
-                Grid.SetColumn(cellBorder, columnIndex);
+                Grid.SetColumn(cellBorder, c);
                 Grid.SetRow(cellBorder, r);
                 grid.Children.Add(cellBorder);
-                columnIndex++;
-                if (columnIndex >= columns)
-                {
-                    break;
-                }
             }
         }
 
@@ -320,6 +332,36 @@ internal sealed class TableRenderer : IPuraRenderer
             Margin = new Thickness(0, 0, 0, context.Theme.Spacing.BlockSpacing),
             Content = grid,
         };
+    }
+
+    private static void ApplyTextAlignment(Control control, TableColumnAlign alignment)
+    {
+        var textAlignment = alignment switch
+        {
+            TableColumnAlign.Center => TextAlignment.Center,
+            TableColumnAlign.Right => TextAlignment.Right,
+            _ => TextAlignment.Left,
+        };
+
+        switch (control)
+        {
+            case TextBlock textBlock:
+                textBlock.TextAlignment = textAlignment;
+                break;
+            case Panel panel:
+                foreach (var child in panel.Children)
+                {
+                    ApplyTextAlignment(child, alignment);
+                }
+
+                break;
+            case ContentControl content when content.Content is Control childControl:
+                ApplyTextAlignment(childControl, alignment);
+                break;
+            case Border border when border.Child is Control borderChild:
+                ApplyTextAlignment(borderChild, alignment);
+                break;
+        }
     }
 }
 
@@ -388,6 +430,8 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         }
     }
 }
+
+
 
 
 

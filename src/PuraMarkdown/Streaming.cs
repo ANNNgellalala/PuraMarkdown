@@ -37,8 +37,14 @@ public sealed class PuraStreamingOptions
     /// <summary>开启后，渲染器可用块级复用减少重建（默认开启）。</summary>
     public bool EnableBlockReuse { get; init; } = true;
 
-    /// <summary>尾部窗口上限（字符）；超过时在最近空行强制提交。</summary>
+    /// <summary>尾部窗口上限（字符）；超过时仅在稳定边界强制提交。</summary>
     public int TailWindowChars { get; init; } = 16 * 1024;
+
+    /// <summary>
+    /// 尾部硬上限（字符）。未闭合的超大块超过此值后暂停尾部刷新（避免 O(n²) 解析/渲染），
+    /// 保留最后一次可见内容，Complete 时全量校正。默认 1MB。
+    /// </summary>
+    public int MaxTailChars { get; init; } = 1024 * 1024;
 
     /// <summary>
     /// 同步模式：<see cref="PuraStreamingSession.Append"/> 内联完成解析与渲染。
@@ -102,6 +108,8 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private readonly SemaphoreSlim _signal = new(0, 1);
     private readonly ConcurrentDictionary<(string Language, ulong Hash), IReadOnlyList<HighlightSpan>> _highlightCache = new();
     private readonly Dictionary<int, (long At, int Length, IReadOnlyList<HighlightSpan> Spans)> _tailHighlights = new();
+    private readonly StringBuilder _definitions = new();
+    private readonly HashSet<string> _definitionLabels = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _cts = new();
     private PuraStreamingState _state = PuraStreamingState.Created;
     private Task? _worker;
@@ -109,6 +117,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private int _version;
     private bool _closed;
     private Exception? _lastWorkerError;
+    private bool _tailOversizedWarned;
     private int _flushCount;
     private int _commits;
     private int _totalParsedChars;
@@ -190,8 +199,13 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         }
     }
 
-    /// <summary>完成流式：取消后台任务并做一次全量校正渲染。</summary>
-    public async Task CompleteAsync()
+    /// <summary>完成流式：取消后台任务并做一次全量校正渲染（后台解析 + 分帧 UI 挂载）。</summary>
+    public Task CompleteAsync() => FinishAsync(PuraStreamingState.Completed, "消息内容生成完成");
+
+    /// <summary>中断流式：保留已有内容并切换为可用状态。</summary>
+    public Task AbortAsync() => FinishAsync(PuraStreamingState.Aborted, "消息生成已中断");
+
+    private async Task FinishAsync(PuraStreamingState finalState, string announcement)
     {
         string text;
         lock (_gate)
@@ -201,7 +215,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
                 return;
             }
 
-            _state = PuraStreamingState.Completed;
+            _state = finalState;
             _closed = true;
             text = _full.ToString();
         }
@@ -213,45 +227,55 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         if (_options.Synchronous || options is null)
         {
             _view.RenderText(text, isStreaming: false);
-            _view.Announce("消息内容生成完成");
+            _view.Announce(announcement);
             return;
         }
 
         try
         {
-            // 全量解析 + 代码高亮放后台，UI 线程只分帧挂载控件。
-            var prepared = await Task.Run(() => PrepareDocument(text, options)).ConfigureAwait(true);
-            await _view.RenderPreparedAsync(prepared).ConfigureAwait(true);
+            // 全量解析 + 代码高亮放后台，UI 线程只分帧挂载控件；允许宿主从非 UI 线程调用。
+            var prepared = await Task.Run(() => PrepareDocument(text, options)).ConfigureAwait(false);
+            await RenderOnUiAsync(() => _view.RenderPreparedAsync(prepared)).ConfigureAwait(false);
         }
         catch
         {
-            _view.RenderText(text, isStreaming: false);
+            await RenderOnUiAsync(() =>
+            {
+                _view.RenderText(text, isStreaming: false);
+                return Task.CompletedTask;
+            }).ConfigureAwait(false);
         }
 
-        _view.Announce("消息内容生成完成");
+        await RenderOnUiAsync(() =>
+        {
+            _view.Announce(announcement);
+            return Task.CompletedTask;
+        }).ConfigureAwait(false);
     }
 
-    /// <summary>中断流式：保留已有内容并切换为可用状态。</summary>
-    public Task AbortAsync()
+    private static async Task RenderOnUiAsync(Func<Task> action)
     {
-        string text;
-        lock (_gate)
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            if (_state is PuraStreamingState.Completed or PuraStreamingState.Aborted)
-            {
-                return Task.CompletedTask;
-            }
-
-            _state = PuraStreamingState.Aborted;
-            _closed = true;
-            text = _full.ToString();
+            await action().ConfigureAwait(false);
+            return;
         }
 
-        CancelWorker();
-        _view.MarkStreamingClosed(_version + 1);
-        _view.RenderText(text, isStreaming: false);
-        _view.Announce("消息生成已中断");
-        return Task.CompletedTask;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Dispatcher.UIThread.Post(async () =>
+        {
+            try
+            {
+                await action().ConfigureAwait(false);
+                completion.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                completion.TrySetException(ex);
+            }
+        });
+
+        await completion.Task.ConfigureAwait(false);
     }
 
     /// <summary>释放会话资源。</summary>
@@ -337,6 +361,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         catch (Exception ex)
         {
             _lastWorkerError = ex;
+            _view.ReportWarning("PURA-STREAM-001", $"流式后台处理失败：{ex.Message}", nameof(PuraStreamingSession));
         }
     }
 
@@ -396,6 +421,30 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         }
 
         var cut = StreamingBlockScanner.FindStableBoundary(snapshot, 0);
+
+        if (cut == 0 && snapshot.Length > _options.MaxTailChars)
+        {
+            var warn = false;
+            lock (_gate)
+            {
+                if (!_tailOversizedWarned)
+                {
+                    _tailOversizedWarned = true;
+                    warn = true;
+                }
+            }
+
+            if (warn)
+            {
+                _view.ReportWarning(
+                    "PURA-STREAM-002",
+                    $"未闭合块超过 {_options.MaxTailChars} 字符，已暂停尾部刷新，完成后全量渲染",
+                    nameof(PuraStreamingSession));
+            }
+
+            return null;
+        }
+
         if (cut < snapshot.Length && snapshot.Length > _options.TailWindowChars)
         {
             // 尾部超过窗口上限时，只有在"前缀本身可稳定解析"的位置强制提交；
@@ -464,18 +513,48 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         bool isTail,
         PuraMarkdownOptions options)
     {
-        var document = options.Pipeline.Parse(text);
+        // 已提交窗口中的引用式链接定义需要参与后续窗口解析，否则流式期间 [ref] 无法解析。
+        var definitions = _definitions.ToString();
+        var definitionsLength = definitions.Length;
+        var source = definitionsLength == 0 ? text : definitions + text;
+        var document = options.Pipeline.Parse(source);
         var sanitized = options.Pipeline.Environment.Sanitizer.Sanitize(document, options);
-        var highlights = ComputeHighlights(document, options, isTail, offset);
+        var blocks = document.ToArray()
+            .Where(block => block is not Markdig.Syntax.LinkReferenceDefinitionGroup)
+            .ToArray();
+        ExtractDefinitions(document);
+        var highlights = ComputeHighlights(document, options, isTail, offset - definitionsLength);
         return new StreamingWindowUpdate(
             version,
-            text,
-            offset,
+            source,
+            offset - definitionsLength,
             document,
             sanitized,
-            document.ToArray(),
+            blocks,
             highlights,
             isTail);
+    }
+
+    private void ExtractDefinitions(MarkdownDocument document)
+    {
+        foreach (var definition in document.Descendants<LinkReferenceDefinition>())
+        {
+            var label = definition.Label;
+            var url = definition.Url;
+            if (string.IsNullOrWhiteSpace(label) || string.IsNullOrWhiteSpace(url)
+                || !_definitionLabels.Add(label))
+            {
+                continue;
+            }
+
+            _definitions.Append('[').Append(label).Append("]: <").Append(url).Append('>');
+            if (!string.IsNullOrEmpty(definition.Title))
+            {
+                _definitions.Append(" \"").Append(definition.Title).Append('"');
+            }
+
+            _definitions.Append('\n');
+        }
     }
 
     private IReadOnlyDictionary<MarkdownObject, IReadOnlyList<HighlightSpan>> ComputeHighlights(
@@ -587,6 +666,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
+
+
+
 
 
 

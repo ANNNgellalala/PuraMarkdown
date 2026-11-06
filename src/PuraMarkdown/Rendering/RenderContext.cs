@@ -37,6 +37,9 @@ public sealed class RenderContext
 
     /// <summary>后台预计算的代码高亮 span（按节点索引）；流式渲染时避免在 UI 线程重复高亮。</summary>
     public IReadOnlyDictionary<MarkdownObject, IReadOnlyList<HighlightSpan>>? PrecomputedHighlights { get; init; }
+
+    /// <summary>已上报的组件交互状态（按组件 ID），用于虚拟化回收或重渲染后恢复。</summary>
+    public IReadOnlyDictionary<string, PuraInteractionEventArgs>? ComponentStates { get; init; }
     /// <summary>InteractionSink。</summary>
     public Action<PuraInteractionEventArgs>? InteractionSink { get; init; }
     /// <summary>WarningSink。</summary>
@@ -110,3 +113,4 @@ public sealed class PuraWarningEventArgs(PuraWarning warning) : EventArgs
     /// <summary>Warning。</summary>
     public PuraWarning Warning { get; } = warning;
 }
+

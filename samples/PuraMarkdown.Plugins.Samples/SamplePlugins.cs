@@ -124,10 +124,27 @@ public sealed class RatingRenderer : IAgentComponentRenderer
     public Control RenderComponent(PuraAgentComponent component, MarkdownObject node, RenderContext context)
     {
         var model = (RatingComponent)component;
-        var theme = context.Theme;
         var componentId = model.Id ?? $"pura-agent-{node.Line}";
-        var enabled = context.Options.InteractionEnabled && !context.IsStreaming;
+        return new RatingControl(model, context, componentId);
+    }
+}
 
+/// <summary>rating 控件：支持在虚拟化回收/重渲染后恢复已上报的评分状态。</summary>
+public sealed class RatingControl : Border, IPuraInteractionStateReceiver
+{
+    private readonly RatingComponent _model;
+    private readonly RenderContext _context;
+    private readonly string _componentId;
+    private readonly List<Button> _buttons = [];
+
+    public RatingControl(RatingComponent model, RenderContext context, string componentId)
+    {
+        _model = model;
+        _context = context;
+        _componentId = componentId;
+
+        var theme = context.Theme;
+        var enabled = context.Options.InteractionEnabled && !context.IsStreaming;
         var root = new StackPanel { Spacing = 6 };
         root.Children.Add(new TextBlock
         {
@@ -138,7 +155,6 @@ public sealed class RatingRenderer : IAgentComponentRenderer
         });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
-        var buttonsList = new List<Button>();
         for (var i = 1; i <= model.Max; i++)
         {
             var value = i;
@@ -155,7 +171,7 @@ public sealed class RatingRenderer : IAgentComponentRenderer
             AutomationProperties.SetName(button, $"{model.Label} {value}");
             button.Click += (_, _) =>
             {
-                foreach (var other in buttonsList)
+                foreach (var other in _buttons)
                 {
                     other.IsEnabled = false;
                 }
@@ -163,26 +179,35 @@ public sealed class RatingRenderer : IAgentComponentRenderer
                 context.InteractionSink?.Invoke(new PuraInteractionEventArgs
                 {
                     ComponentType = "rating",
-                    ComponentId = componentId,
+                    ComponentId = _componentId,
                     SelectedIds = [value.ToString()],
                 });
             };
-            buttonsList.Add(button);
+            _buttons.Add(button);
             buttons.Children.Add(button);
         }
 
         root.Children.Add(buttons);
+        BorderBrush = new SolidColorBrush(theme.Colors.Border);
+        BorderThickness = new Thickness(1);
+        CornerRadius = new CornerRadius(6);
+        Padding = new Thickness(12);
+        Child = root;
+        AutomationProperties.SetName(this, model.Label);
+    }
 
-        var border = new Border
+    /// <summary>恢复已上报的评分状态。</summary>
+    /// <param name="state">交互事件参数。</param>
+    public void ApplyInteractionState(PuraInteractionEventArgs state)
+    {
+        var selected = state.SelectedIds.FirstOrDefault();
+        foreach (var button in _buttons)
         {
-            BorderBrush = new SolidColorBrush(theme.Colors.Border),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(12),
-            Child = root,
-        };
-        AutomationProperties.SetName(border, model.Label);
-        return border;
+            button.IsEnabled = false;
+            button.FontWeight = string.Equals(button.Content?.ToString(), selected, StringComparison.Ordinal)
+                ? FontWeight.Bold
+                : FontWeight.Normal;
+        }
     }
 }
 

@@ -141,6 +141,14 @@ public sealed class PuraComponentRegistry
         => _renderers.GetValueOrDefault(componentType);
 }
 
+/// <summary>可接收已上报交互状态的组件控件（虚拟化回收/重渲染后恢复选择状态）。</summary>
+public interface IPuraInteractionStateReceiver
+{
+    /// <summary>恢复上一次交互状态（不回传事件）。</summary>
+    /// <param name="state">交互事件参数。</param>
+    void ApplyInteractionState(PuraInteractionEventArgs state);
+}
+
 /// <summary>交互事件参数：库只上报，宿主决定是否回传 Agent。</summary>
 public sealed class PuraInteractionEventArgs : EventArgs
 {
@@ -159,3 +167,4 @@ public sealed class PuraInteractionEventArgs : EventArgs
     /// <summary>事件发生时间。</summary>
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.Now;
 }
+

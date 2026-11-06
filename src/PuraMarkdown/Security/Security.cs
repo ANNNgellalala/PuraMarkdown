@@ -119,6 +119,26 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
     {
         var warnings = new List<string>();
         var result = new SanitizeResult { Warnings = warnings };
+        var limits = options.Limits;
+        var blocks = document.ToArray();
+
+        if (blocks.Length > limits.MaxBlocks)
+        {
+            warnings.Add($"PURA-LIM-005: 块数量超过 {limits.MaxBlocks}，超出部分不渲染");
+            foreach (var block in blocks.Skip(limits.MaxBlocks))
+            {
+                result.Block(block);
+            }
+        }
+
+        foreach (var block in blocks.Take(limits.MaxBlocks))
+        {
+            if (MaxDepth(block) > limits.MaxNestingDepth)
+            {
+                result.Block(block);
+                warnings.Add($"PURA-LIM-006: 嵌套深度超过 {limits.MaxNestingDepth}，已省略该块");
+            }
+        }
 
         foreach (var node in document.Descendants())
         {
@@ -144,4 +164,39 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
 
         return result;
     }
+
+    private static int MaxDepth(MarkdownObject node)
+    {
+        switch (node)
+        {
+            case Markdig.Syntax.ContainerBlock container:
+            {
+                var max = 0;
+                foreach (var child in container)
+                {
+                    max = Math.Max(max, MaxDepth(child));
+                }
+
+                return max + 1;
+            }
+
+            case Markdig.Syntax.LeafBlock leaf when leaf.Inline is not null:
+                return 1 + MaxDepth(leaf.Inline);
+
+            case Markdig.Syntax.Inlines.ContainerInline inline:
+            {
+                var max = 0;
+                for (var child = inline.FirstChild; child is not null; child = child.NextSibling)
+                {
+                    max = Math.Max(max, MaxDepth(child));
+                }
+
+                return max + 1;
+            }
+
+            default:
+                return 1;
+        }
+    }
 }
+
