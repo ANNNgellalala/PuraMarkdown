@@ -398,11 +398,16 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         var cut = StreamingBlockScanner.FindStableBoundary(snapshot, 0);
         if (cut < snapshot.Length && snapshot.Length > _options.TailWindowChars)
         {
-            // 尾部超过窗口上限：在最近空行强制提交；Complete 的全量校正兜底。
+            // 尾部超过窗口上限时，只有在"前缀本身可稳定解析"的位置强制提交；
+            // 否则可能把未闭合围栏/表格/列表从中间切断，造成重复或错乱块。
             var forced = snapshot.LastIndexOf("\n\n", StringComparison.Ordinal);
             if (forced >= 0)
             {
-                cut = forced + 2;
+                var candidate = forced + 2;
+                if (StreamingBlockScanner.FindStableBoundary(snapshot[..candidate], 0) == candidate)
+                {
+                    cut = candidate;
+                }
             }
         }
 
@@ -582,6 +587,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
 
 
 

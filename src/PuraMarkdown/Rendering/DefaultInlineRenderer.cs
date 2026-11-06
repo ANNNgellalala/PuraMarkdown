@@ -64,8 +64,17 @@ internal static class DefaultInlineRenderer
                 });
                 return;
 
-            case LineBreakInline:
-                target.Add(new LineBreak());
+            case LineBreakInline lineBreak:
+                // CommonMark：软换行是空格，硬换行（行尾两空格/反斜杠）才产生 <br/>。
+                if (lineBreak.IsHard)
+                {
+                    target.Add(new LineBreak());
+                }
+                else
+                {
+                    target.Add(new Run(" "));
+                }
+
                 return;
 
             case EmphasisInline emphasis:
@@ -266,3 +275,4 @@ internal static class DefaultInlineRenderer
         }
     }
 }
+
