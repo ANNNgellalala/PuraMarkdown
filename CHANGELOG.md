@@ -7,6 +7,10 @@
 首个 alpha 版本：设计定稿（v0.4）+ M0–M4 实现完成。
 
 ### Fixed
+- 安全预算：`MaxBlocks`/`MaxNestingDepth`/`MaxFenceChars` 生效并给出 warning。
+- 流式：worker 异常通过 Warning 上报；`MaxTailChars` 限制超大未闭合块；引用定义跨流式窗口解析；Complete/Abort 支持后台线程调用。
+- 渲染：自动链接可点击并走 URL 策略；表格列对齐与缺列补齐；软/硬换行修正；A11y live region 与复制按钮名称。
+- 虚拟化：交互组件状态按 ComponentId 持久化，回收/重建后恢复。
 - 软换行按 CommonMark 渲染为空格，仅硬换行产生换行。
 - 流式尾部超限时只在稳定边界强制提交，避免切断未闭合代码围栏/表格。
 - 流式稳定块提交前移除旧尾部块，修复代码块重复显示。
@@ -18,9 +22,11 @@
 - 流式会话：稳定边界 + 尾部窗口增量、后台解析 + UI 合帧、异步与同步两种模式、增量尾部更新、代码高亮后台预计算与流式节流。
 - 插件机制：`IPuraPlugin` 校验与失败回退、ColorCode 高亮插件、Mermaid（Mermaider）插件、示例 rating/图表插件。
 - 性能与虚拟化：1MB/1000 块块级虚拟化（`EnableBlockVirtualization`）、消息级 `ItemsRepeater` 参考实现、Complete 分帧渲染。
-- 测试与工具：`PuraMarkdown.Testing`（控件树 dump/golden/交互探针/流式驱动/插件一致性）、74 个测试、golden 基线。
+- 测试与工具：`PuraMarkdown.Testing`（控件树 dump/golden/交互探针/流式驱动/插件一致性）、85 个测试、golden 基线。
 - 示例与文档：Avalonia Demo、Spike 离屏示例、设计文档、ADR、性能分析/修复记录、虚拟化说明。
 - CI：GitHub Actions（restore/build/test/pack），裁剪与 Native AOT 手动验证通过。
+
+
 
 
 

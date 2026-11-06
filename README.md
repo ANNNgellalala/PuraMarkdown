@@ -2,7 +2,7 @@
 
 > 面向 Agent 对话的 **Avalonia 只读 Markdown 控件**：Markdig 解析、Avalonia 原生渲染、Agent 交互组件、流式增量、插件可替换。
 >
-> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（74 个测试、4 个 NuGet 包、Native AOT/裁剪验证通过、API 文档完整、流式性能修复、CI 就绪）。
+> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（85 个测试、4 个 NuGet 包、Native AOT/裁剪验证通过、API 文档完整、流式性能修复、CI 就绪）。
 > 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · JsonSchema.Net **9.6.0** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**。
 
 ---
@@ -210,6 +210,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
