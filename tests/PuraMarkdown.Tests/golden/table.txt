@@ -1,0 +1,16 @@
+PuraMarkdownView
+  StackPanel
+    ScrollViewer
+      Grid
+        Border
+          StackPanel
+            TextBlock text="Name"
+        Border
+          StackPanel
+            TextBlock text="Value"
+        Border
+          StackPanel
+            TextBlock text="A"
+        Border
+          StackPanel
+            TextBlock text="1"

@@ -1,0 +1,4 @@
+PuraMarkdownView
+  StackPanel
+    TextBlock text="Hi"
+    TextBlock text="Hello world."

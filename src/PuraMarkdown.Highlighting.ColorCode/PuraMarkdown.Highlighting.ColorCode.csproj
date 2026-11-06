@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Highlighting.ColorCode</RootNamespace>
+    <Description>PuraMarkdown 官方可选插件：ColorCode 语法高亮。</Description>
+    <PackageId>PuraMarkdown.Highlighting.ColorCode</PackageId>
+    <Authors>PuraMarkdown contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>avalonia;markdown;highlighting;colorcode</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ColorCode.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown\PuraMarkdown.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+</Project>
+
+
+
+

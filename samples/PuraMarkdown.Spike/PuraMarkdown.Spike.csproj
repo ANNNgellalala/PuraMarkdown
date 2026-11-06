@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>PuraMarkdown.Spike</RootNamespace>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Highlighting.ColorCode\PuraMarkdown.Highlighting.ColorCode.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Diagrams.Mermaid\PuraMarkdown.Diagrams.Mermaid.csproj" />
+    <ProjectReference Include="..\..\samples\PuraMarkdown.Plugins.Samples\PuraMarkdown.Plugins.Samples.csproj" />
+  </ItemGroup>
+</Project>
+
+
+
+
+

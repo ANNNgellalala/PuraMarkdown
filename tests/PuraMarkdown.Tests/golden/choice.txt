@@ -1,0 +1,14 @@
+PuraMarkdownView
+  StackPanel
+    PuraChoiceControl
+      StackPanel
+        TextBlock text="选择环境"
+        StackPanel
+          RadioButton checked=True enabled=True
+            StackPanel
+              TextBlock text="开发"
+          RadioButton checked=False enabled=False
+            StackPanel
+              TextBlock text="生产"
+              TextBlock text="需要审批"
+        TextBlock text=""

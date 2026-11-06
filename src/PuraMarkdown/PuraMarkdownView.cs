@@ -1,0 +1,774 @@
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Markdig.Syntax;
+using PuraMarkdown.Agent;
+using PuraMarkdown.Rendering;
+using PuraMarkdown.Security;
+
+namespace PuraMarkdown;
+
+/// <summary>
+/// Avalonia 只读 Markdown 控件。消费 Markdown 文本，输出 Avalonia 视觉树；
+/// 交互组件通过 <see cref="InteractionOccurred"/> 上报，不管理对话。
+/// </summary>
+public sealed class PuraMarkdownView : ContentControl
+{
+    /// <summary><see cref="Markdown"/> 的样式属性。</summary>
+    public static readonly StyledProperty<string?> MarkdownProperty =
+        AvaloniaProperty.Register<PuraMarkdownView, string?>(nameof(Markdown));
+
+    /// <summary><see cref="Options"/> 的样式属性。</summary>
+    public static readonly StyledProperty<PuraMarkdownOptions?> OptionsProperty =
+        AvaloniaProperty.Register<PuraMarkdownView, PuraMarkdownOptions?>(nameof(Options));
+
+    private readonly StackPanel _host = new();
+    private readonly List<BlockRecord> _records = [];
+    private readonly ScrollViewer _virtualScroll = new();
+    private readonly ItemsRepeater _virtualRepeater = new();
+    private readonly ObservableCollection<VirtualBlock> _virtualBlocks = [];
+    private bool _virtualized;
+    private bool _lastRenderWasStreaming;
+    private int _tailRecordCount;
+    private int _minStreamingVersion;
+    private int _streamingSessionId;
+    private PuraTheme? _appliedTheme;
+    private PuraStreamingSession? _activeSession;
+
+    /// <summary>创建 Markdown 只读视图。</summary>
+    public PuraMarkdownView()
+    {
+        _virtualRepeater.Layout = new Avalonia.Layout.StackLayout();
+        _virtualRepeater.ItemsSource = _virtualBlocks;
+        _virtualRepeater.ItemTemplate = new FuncDataTemplate<VirtualBlock>(
+            (block, _) => RenderVirtualBlock(block));
+        _virtualScroll.Content = _virtualRepeater;
+
+        Content = _host;
+        AutomationProperties.SetLiveSetting(this, AutomationLiveSetting.Polite);
+    }
+
+    /// <summary>全量 Markdown 文本；变更时触发整篇重渲染。</summary>
+    public string? Markdown
+    {
+        get => GetValue(MarkdownProperty);
+        set => SetValue(MarkdownProperty, value);
+    }
+
+    /// <summary>控件配置（管道、主题、资源加载器、安全策略等）。</summary>
+    public PuraMarkdownOptions? Options
+    {
+        get => GetValue(OptionsProperty);
+        set => SetValue(OptionsProperty, value);
+    }
+
+    /// <summary>交互事件（选择/确认）。库只上报，宿主决定后续行为。</summary>
+    public event EventHandler<PuraInteractionEventArgs>? InteractionOccurred;
+
+    /// <summary>非致命问题：降级、插件异常、资源拒绝、预算超限。</summary>
+    public event EventHandler<PuraWarningEventArgs>? Warning;
+
+    /// <summary>无障碍播报（流式完成/中断）；宿主可接屏幕阅读器。</summary>
+    public event EventHandler<string>? Announced;
+
+    /// <summary>已渲染块记录（流式嫁接锚点；只读）。</summary>
+    public IReadOnlyList<BlockRecord> Blocks => _records;
+
+    /// <summary>开始一次流式会话（同一控件同时只允许一个进行中的会话）。</summary>
+    /// <param name="options">流式选项；默认后台解析 + UI 合帧。</param>
+    /// <returns>流式会话。</returns>
+    public PuraStreamingSession BeginStreaming(PuraStreamingOptions? options = null)
+    {
+        if (_activeSession is not null && _activeSession.State == PuraStreamingState.Streaming)
+        {
+            throw new InvalidOperationException("已有进行中的流式会话");
+        }
+
+        _activeSession = new PuraStreamingSession(this, options ?? new PuraStreamingOptions());
+        return _activeSession;
+    }
+
+    /// <summary>全量渲染当前 Markdown。</summary>
+    public void Render() => RenderText(Markdown ?? string.Empty, isStreaming: false);
+
+    /// <summary>触发一次无障碍播报（宿主可转发给平台播报器）。</summary>
+    public void Announce(string message) => Announced?.Invoke(this, message);
+
+    /// <summary>
+    /// 预热渲染路径：用一个代表性 Markdown 在离屏探针控件中走完整渲染（高亮/图表/组件/布局），
+    /// 把首次初始化（JIT、正则编译、字体与控件样式）从"首条流式消息"提前到应用启动阶段。
+    /// 必须在 UI 线程调用。
+    /// </summary>
+    /// <param name="markdown">预热用 Markdown（建议覆盖代码块、表格、图表与组件）。</param>
+    public void Prewarm(string markdown)
+    {
+        ArgumentNullException.ThrowIfNull(markdown);
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        var probe = new PuraMarkdownView { Options = options };
+        probe.Markdown = markdown;
+        probe.Measure(new Size(1024, 2048));
+        probe.Arrange(new Rect(probe.DesiredSize));
+    }
+
+    internal int BeginStreamingRender()
+    {
+        if (_virtualized)
+        {
+            _virtualBlocks.Clear();
+        }
+        else
+        {
+            _host.Children.Clear();
+        }
+
+        _records.Clear();
+        _tailRecordCount = 0;
+        _minStreamingVersion = 0;
+        _lastRenderWasStreaming = true;
+        return ++_streamingSessionId;
+    }
+
+    internal void MarkStreamingClosed(int minVersion)
+    {
+        _minStreamingVersion = minVersion;
+        _lastRenderWasStreaming = false;
+    }
+
+    /// <summary>
+    /// 应用一次流式刷新：稳定窗口追加控件，尾部窗口按内容哈希复用/增量更新。
+    /// 必须在 UI 线程调用。
+    /// </summary>
+    internal void ApplyStreamingUpdate(StreamingUpdate update)
+    {
+        if (update.SessionId != _streamingSessionId || update.Version < _minStreamingVersion)
+        {
+            return;
+        }
+
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        EnsureVirtualized(options.EnableBlockVirtualization);
+
+        // 稳定窗口会取代上一次的尾部块：必须先移除旧尾部，再追加稳定块，
+        // 否则旧尾部控件会残留并与新提交的块重复显示。
+        if (update.CommittedWindows.Count > 0 && _tailRecordCount > 0)
+        {
+            RemoveTailRecords();
+        }
+
+        foreach (var window in update.CommittedWindows)
+        {
+            ApplyCommittedWindow(window, options);
+        }
+
+        if (update.TailWindow is not null)
+        {
+            ApplyTailWindow(update.TailWindow, options);
+        }
+        else
+        {
+            RemoveTailRecords();
+        }
+
+        _lastRenderWasStreaming = true;
+    }
+
+    internal void ClearStreamingTail() => RemoveTailRecords();
+
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == MarkdownProperty || change.Property == OptionsProperty)
+        {
+            Render();
+        }
+    }
+
+    /// <summary>
+    /// 渲染后台准备好的完整文档：高亮已在后台计算，按帧预算分批挂载控件，避免长消息 Complete 时一次性冻结 UI。
+    /// 必须在 UI 线程调用。
+    /// </summary>
+    internal async Task RenderPreparedAsync(PreparedDocument prepared)
+    {
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        EnsureVirtualized(options.EnableBlockVirtualization);
+        if (_virtualized)
+        {
+            _virtualBlocks.Clear();
+        }
+        else
+        {
+            _host.Children.Clear();
+        }
+
+        _records.Clear();
+        _tailRecordCount = 0;
+
+        foreach (var warning in prepared.Warnings)
+        {
+            Warn(warning.Code, warning.Message, warning.NodeType, warning.Renderer);
+        }
+
+        var context = CreateContext(options, prepared.Sanitized, isStreaming: false, isTail: false, prepared.Highlights);
+
+        if (_virtualized)
+        {
+            RenderVirtualDocument(prepared.Document, prepared.Text, context, isStreaming: false);
+            return;
+        }
+
+        var frameBudget = Stopwatch.StartNew();
+        var frameBlocks = 0;
+
+        foreach (var block in prepared.Document)
+        {
+            Control view;
+            try
+            {
+                view = context.RenderMarkdown(block);
+            }
+            catch (Exception ex)
+            {
+                Warn("PURA-RENDER-900", $"块渲染异常，降级为文本：{ex.Message}", block.GetType().Name);
+                view = new TextBlock
+                {
+                    Text = $"[渲染失败: {block.GetType().Name}] {ex.Message}",
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = new SolidColorBrush(options.Theme.Colors.Danger),
+                    Margin = new Thickness(0, 0, 0, 8),
+                };
+            }
+
+            _records.Add(new BlockRecord(
+                _records.Count,
+                block.Span.Start,
+                block.Span.End,
+                HashOf(prepared.Text, block),
+                block,
+                view));
+            _host.Children.Add(view);
+
+            frameBlocks++;
+            if (frameBlocks >= 16 && frameBudget.ElapsedMilliseconds >= 8)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+                frameBlocks = 0;
+                frameBudget.Restart();
+            }
+        }
+
+        _lastRenderWasStreaming = false;
+    }
+
+    internal void RenderText(string text, bool isStreaming)
+    {
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        EnsureVirtualized(options.EnableBlockVirtualization);
+        if (_virtualized)
+        {
+            _virtualBlocks.Clear();
+        }
+        else
+        {
+            _host.Children.Clear();
+        }
+
+        _records.Clear();
+        _tailRecordCount = 0;
+        _minStreamingVersion = 0;
+
+        var limits = options.Limits;
+        if (text.Length > limits.MaxDocumentChars)
+        {
+            Warn("PURA-LIM-001", $"文档超过 {limits.MaxDocumentChars} 字符，已截断");
+            text = text[..limits.MaxDocumentChars];
+        }
+
+        MarkdownDocument document;
+        try
+        {
+            document = options.Pipeline.Parse(text);
+        }
+        catch (Exception ex)
+        {
+            Warn("PURA-PARSE-001", $"Markdig 解析异常，降级为纯文本：{ex.Message}");
+            AddFallbackText(text);
+            return;
+        }
+
+        var environment = options.Pipeline.Environment;
+        var sanitized = environment.Sanitizer.Sanitize(document, options);
+        foreach (var sanitizerWarning in sanitized.Warnings)
+        {
+            Warn("PURA-SEC-001", sanitizerWarning);
+        }
+
+        var context = CreateContext(options, sanitized, isStreaming, isTail: false);
+
+        if (_virtualized)
+        {
+            RenderVirtualDocument(document, text, context, isStreaming);
+            return;
+        }
+
+        foreach (var block in document)
+        {
+            try
+            {
+                var view = context.RenderMarkdown(block);
+                _records.Add(new BlockRecord(
+                    _records.Count,
+                    block.Span.Start,
+                    block.Span.End,
+                    HashOf(text, block),
+                    block,
+                    view));
+                _host.Children.Add(view);
+            }
+            catch (Exception ex)
+            {
+                Warn("PURA-RENDER-900", $"块渲染异常，降级为文本：{ex.Message}", block.GetType().Name);
+                var fallback = new TextBlock
+                {
+                    Text = $"[渲染失败: {block.GetType().Name}] {ex.Message}",
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = new SolidColorBrush(options.Theme.Colors.Danger),
+                    Margin = new Thickness(0, 0, 0, 8),
+                };
+                _records.Add(new BlockRecord(
+                    _records.Count,
+                    block.Span.Start,
+                    block.Span.End,
+                    HashOf(text, block),
+                    block,
+                    fallback));
+                _host.Children.Add(fallback);
+            }
+        }
+
+        _lastRenderWasStreaming = isStreaming;
+    }
+
+    private void ApplyCommittedWindow(StreamingWindowUpdate window, PuraMarkdownOptions options)
+    {
+        var context = CreateContext(options, window.Sanitized, isStreaming: true, isTail: false, window.Highlights);
+        foreach (var sanitizerWarning in window.Sanitized.Warnings)
+        {
+            Warn("PURA-SEC-001", sanitizerWarning);
+        }
+
+        if (_virtualized)
+        {
+            foreach (var block in window.Blocks)
+            {
+                var hash = HashOf(window.SourceText, block);
+                _virtualBlocks.Add(new VirtualBlock(block, hash, window.Offset + block.Span.Start, window.Offset + block.Span.End, context));
+                _records.Add(new BlockRecord(
+                    _records.Count,
+                    window.Offset + block.Span.Start,
+                    window.Offset + block.Span.End,
+                    hash,
+                    block,
+                    null));
+            }
+
+            return;
+        }
+
+        foreach (var block in window.Blocks)
+        {
+            Control view;
+            try
+            {
+                view = context.RenderMarkdown(block);
+            }
+            catch (Exception ex)
+            {
+                Warn("PURA-RENDER-900", $"块渲染异常，降级为文本：{ex.Message}", block.GetType().Name);
+                view = new TextBlock
+                {
+                    Text = $"[渲染失败: {block.GetType().Name}] {ex.Message}",
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = new SolidColorBrush(options.Theme.Colors.Danger),
+                    Margin = new Thickness(0, 0, 0, 8),
+                };
+            }
+
+            _records.Add(new BlockRecord(
+                _records.Count,
+                window.Offset + block.Span.Start,
+                window.Offset + block.Span.End,
+                HashOf(window.SourceText, block),
+                block,
+                view));
+            _host.Children.Add(view);
+        }
+    }
+
+    private void ApplyTailWindow(StreamingWindowUpdate window, PuraMarkdownOptions options)
+    {
+        var context = CreateContext(options, window.Sanitized, isStreaming: true, isTail: true, window.Highlights);
+
+        if (_virtualized)
+        {
+            ApplyVirtualTail(window, context);
+            return;
+        }
+
+        var tailStart = _records.Count - _tailRecordCount;
+        var oldTail = _tailRecordCount == 0
+            ? []
+            : _records.GetRange(tailStart, _tailRecordCount);
+        if (_tailRecordCount > 0)
+        {
+            _records.RemoveRange(tailStart, _tailRecordCount);
+        }
+
+        // 内容未变的前缀块复用已有控件；只替换/更新变化的后缀。
+        var reuse = 0;
+        while (reuse < oldTail.Count && reuse < window.Blocks.Count)
+        {
+            var old = oldTail[reuse];
+            var block = window.Blocks[reuse];
+            if (old.Hash == HashOf(window.SourceText, block) && old.Node.GetType() == block.GetType())
+            {
+                reuse++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        for (var i = reuse; i < oldTail.Count; i++)
+        {
+            if (oldTail[i].View is { } oldView)
+            {
+                _host.Children.Remove(oldView);
+            }
+        }
+
+        var baseIndex = _records.Count;
+        var newTail = new List<BlockRecord>(window.Blocks.Count);
+        for (var i = 0; i < window.Blocks.Count; i++)
+        {
+            var block = window.Blocks[i];
+            var hash = HashOf(window.SourceText, block);
+            var start = window.Offset + block.Span.Start;
+            var end = window.Offset + block.Span.End;
+
+            if (i < reuse)
+            {
+                newTail.Add(oldTail[i] with
+                {
+                    Index = baseIndex + i,
+                    Start = start,
+                    End = end,
+                    Hash = hash,
+                    Node = block,
+                });
+                continue;
+            }
+
+            Control view;
+            if (i < oldTail.Count
+                && oldTail[i].View is { } existingView
+                && oldTail[i].Node.GetType() == block.GetType()
+                && TryIncrementalUpdate(existingView, oldTail[i].Node, block, context))
+            {
+                view = existingView;
+                // 后缀旧控件已被移出宿主，更新后必须重新挂回。
+                _host.Children.Add(view);
+            }
+            else
+            {
+                view = context.RenderMarkdown(block);
+                _host.Children.Add(view);
+            }
+
+            newTail.Add(new BlockRecord(baseIndex + i, start, end, hash, block, view));
+        }
+
+        _records.AddRange(newTail);
+        _tailRecordCount = window.Blocks.Count;
+    }
+
+    private bool TryIncrementalUpdate(
+        Control existing,
+        MarkdownObject oldNode,
+        MarkdownObject newNode,
+        RenderContext context)
+    {
+        try
+        {
+            foreach (var renderer in context.Renderers.ResolveCandidates(newNode, context))
+            {
+                if (renderer is IIncrementalPuraRenderer incremental
+                    && incremental.CanUpdate(oldNode, newNode, context))
+                {
+                    incremental.Update(existing, newNode, context);
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Warn("PURA-RENDER-901", $"增量更新失败，回退重建：{ex.Message}", newNode.GetType().Name);
+        }
+
+        return false;
+    }
+
+    private RenderContext CreateContext(
+        PuraMarkdownOptions options,
+        SanitizeResult sanitized,
+        bool isStreaming,
+        bool isTail,
+        IReadOnlyDictionary<MarkdownObject, IReadOnlyList<HighlightSpan>>? precomputedHighlights = null)
+    {
+        var theme = ResolveTheme(options);
+        if (!ReferenceEquals(_appliedTheme, theme))
+        {
+            _appliedTheme = theme;
+            Background = new SolidColorBrush(theme.Colors.Background);
+        }
+
+        return new RenderContext
+        {
+            Theme = theme,
+            Options = options,
+            Renderers = options.Pipeline.Environment.Renderers,
+            Components = options.Pipeline.Environment.Components,
+            Highlighter = options.Pipeline.Environment.Highlighter,
+            Diagrams = options.Pipeline.Environment.Diagrams,
+            Sanitized = sanitized,
+            Dispatcher = Dispatcher.UIThread,
+            IsStreaming = isStreaming,
+            IsTail = isTail,
+            PrecomputedHighlights = precomputedHighlights,
+            InteractionSink = args => InteractionOccurred?.Invoke(this, args),
+            WarningSink = args => Warning?.Invoke(this, args),
+        };
+    }
+
+    private void RemoveTailRecords()
+    {
+        if (_virtualized)
+        {
+            RemoveVirtualTail();
+            return;
+        }
+
+        for (var i = 0; i < _tailRecordCount && _records.Count > 0; i++)
+        {
+            var last = _records[^1];
+            if (last.View is { } view)
+            {
+                _host.Children.Remove(view);
+            }
+
+            _records.RemoveAt(_records.Count - 1);
+        }
+
+        _tailRecordCount = 0;
+    }
+
+    private void EnsureVirtualized(bool enabled)
+    {
+        if (_virtualized == enabled)
+        {
+            return;
+        }
+
+        _virtualized = enabled;
+        if (enabled)
+        {
+            _host.Children.Clear();
+            Content = _virtualScroll;
+        }
+        else
+        {
+            _virtualBlocks.Clear();
+            Content = _host;
+        }
+    }
+
+    private void RenderVirtualDocument(
+        MarkdownDocument document,
+        string text,
+        RenderContext context,
+        bool isStreaming)
+    {
+        _virtualBlocks.Clear();
+        _records.Clear();
+
+        foreach (var block in document)
+        {
+            var hash = HashOf(text, block);
+            _virtualBlocks.Add(new VirtualBlock(block, hash, block.Span.Start, block.Span.End, context));
+            _records.Add(new BlockRecord(_records.Count, block.Span.Start, block.Span.End, hash, block, null));
+        }
+
+        _lastRenderWasStreaming = isStreaming;
+    }
+
+    private void ApplyVirtualTail(StreamingWindowUpdate window, RenderContext context)
+    {
+        RemoveVirtualTail();
+
+        foreach (var block in window.Blocks)
+        {
+            var hash = HashOf(window.SourceText, block);
+            _virtualBlocks.Add(new VirtualBlock(
+                block,
+                hash,
+                window.Offset + block.Span.Start,
+                window.Offset + block.Span.End,
+                context));
+            _records.Add(new BlockRecord(
+                _records.Count,
+                window.Offset + block.Span.Start,
+                window.Offset + block.Span.End,
+                hash,
+                block,
+                null));
+        }
+
+        _tailRecordCount = window.Blocks.Count;
+    }
+
+    private void RemoveVirtualTail()
+    {
+        for (var i = 0; i < _tailRecordCount && _records.Count > 0; i++)
+        {
+            _records.RemoveAt(_records.Count - 1);
+            if (_virtualBlocks.Count > 0)
+            {
+                _virtualBlocks.RemoveAt(_virtualBlocks.Count - 1);
+            }
+        }
+
+        _tailRecordCount = 0;
+    }
+
+    private Control RenderVirtualBlock(VirtualBlock block)
+    {
+        try
+        {
+            return block.Context.RenderMarkdown(block.Node);
+        }
+        catch (Exception ex)
+        {
+            Warn("PURA-RENDER-900", $"块渲染异常，降级为文本：{ex.Message}", block.Node.GetType().Name);
+            return new TextBlock
+            {
+                Text = $"[渲染失败: {block.Node.GetType().Name}] {ex.Message}",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = new SolidColorBrush(block.Context.Theme.Colors.Danger),
+                Margin = new Thickness(0, 0, 0, 8),
+            };
+        }
+    }
+
+    /// <summary>滚动到内容末尾（块级虚拟化模式使用内部 ScrollViewer）。</summary>
+    public void ScrollToEnd()
+    {
+        if (_virtualized)
+        {
+            _virtualScroll.ScrollToEnd();
+        }
+    }
+
+    private PuraTheme ResolveTheme(PuraMarkdownOptions options)
+    {
+        if (!options.FollowSystemTheme)
+        {
+            return options.Theme;
+        }
+
+        return ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
+            ? options.DarkTheme ?? PuraTheme.Dark
+            : options.Theme;
+    }
+
+    private void AddFallbackText(string text)
+    {
+        _host.Children.Add(new TextBlock
+        {
+            Text = text,
+            TextWrapping = TextWrapping.Wrap,
+            FontFamily = Options?.Theme.Typography.MonoFont ?? FontFamily.Default,
+        });
+        _lastRenderWasStreaming = false;
+    }
+
+    private void Warn(string code, string message, string? nodeType = null, string? renderer = null)
+        => Warning?.Invoke(this, new PuraWarningEventArgs(new PuraWarning(code, message, nodeType, renderer)));
+
+    private static ulong HashOf(string text, MarkdownObject block)
+    {
+        var span = block.Span;
+        var start = span.Start;
+        var end = span.End;
+        if (start < 0 || end < start || end >= text.Length)
+        {
+            return (ulong)(block.GetType().Name + block.Line).GetHashCode();
+        }
+
+        var hash = 14695981039346656037UL;
+        for (var i = start; i <= end; i++)
+        {
+            hash ^= text[i];
+            hash *= 1099511628211UL;
+        }
+
+        return hash;
+    }
+}
+
+/// <summary>块级虚拟化的条目标：保存节点、哈希与窗口渲染上下文，按需由 ItemTemplate 实例化控件。</summary>
+internal sealed class VirtualBlock(
+    MarkdownObject node,
+    ulong hash,
+    int start,
+    int end,
+    RenderContext context)
+{
+    public MarkdownObject Node { get; } = node;
+    public ulong Hash { get; } = hash;
+    public int Start { get; } = start;
+    public int End { get; } = end;
+    public RenderContext Context { get; } = context;
+}
+
+
+
+
+
+

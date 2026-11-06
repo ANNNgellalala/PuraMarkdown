@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>PuraMarkdown.Plugins.Samples</RootNamespace>
+    <Description>PuraMarkdown 插件示例：rating 组件与示例图表渲染器。</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
+  </ItemGroup>
+</Project>
+

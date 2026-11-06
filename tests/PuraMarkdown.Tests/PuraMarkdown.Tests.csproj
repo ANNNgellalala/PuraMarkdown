@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Tests</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless.XUnit" />
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Testing\PuraMarkdown.Testing.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Highlighting.ColorCode\PuraMarkdown.Highlighting.ColorCode.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Diagrams.Mermaid\PuraMarkdown.Diagrams.Mermaid.csproj" />
+    <ProjectReference Include="..\..\samples\PuraMarkdown.Plugins.Samples\PuraMarkdown.Plugins.Samples.csproj" />
+  </ItemGroup>
+</Project>
+
+
+
+

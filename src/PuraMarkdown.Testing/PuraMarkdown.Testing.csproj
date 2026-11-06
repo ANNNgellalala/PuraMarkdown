@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Testing</RootNamespace>
+    <Description>PuraMarkdown 测试工具：无头控件树 dump、golden、交互与流式驱动。</Description>
+    <PackageId>PuraMarkdown.Testing</PackageId>
+    <Authors>PuraMarkdown contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>avalonia;markdown;testing;golden</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown\PuraMarkdown.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+</Project>
+
+
+
+

@@ -1,0 +1,11 @@
+PuraMarkdownView
+  StackPanel
+    StackPanel
+      Grid
+        CheckBox checked=True enabled=False
+        StackPanel
+          TextBlock text=" done"
+      Grid
+        CheckBox checked=False enabled=False
+        StackPanel
+          TextBlock text=" todo"
