@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/PuraMarkdown.Benchmarks/PuraMarkdown.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/PuraMarkdown.Demo/PuraMarkdown.Demo.csproj" />
+    <Project Path="samples/PuraMarkdown.Plugins.Samples/PuraMarkdown.Plugins.Samples.csproj" />
+    <Project Path="samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/PuraMarkdown.Diagrams.Mermaid/PuraMarkdown.Diagrams.Mermaid.csproj" />
+    <Project Path="src/PuraMarkdown.Highlighting.ColorCode/PuraMarkdown.Highlighting.ColorCode.csproj" />
+    <Project Path="src/PuraMarkdown.Testing/PuraMarkdown.Testing.csproj" />
+    <Project Path="src/PuraMarkdown/PuraMarkdown.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PuraMarkdown.Tests/PuraMarkdown.Tests.csproj" />
+  </Folder>
+</Solution>
