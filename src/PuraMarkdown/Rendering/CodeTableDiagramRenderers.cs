@@ -366,14 +366,21 @@ internal sealed class TableRenderer : IPuraRenderer
 }
 
 /// <summary>图表围栏路由：按注册顺序询问 IDiagramRenderer；失败回退代码块。</summary>
-internal sealed class DiagramDispatchRenderer : IPuraRenderer
+internal sealed class FenceDispatchRenderer : IPuraRenderer
 {
+    private readonly IReadOnlyList<IFenceRenderer> _renderers;
+
+    public FenceDispatchRenderer(IReadOnlyList<IFenceRenderer> renderers)
+    {
+        _renderers = renderers;
+    }
+
     /// <summary>CanRender。</summary>
     /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
     public bool CanRender(MarkdownObject node, RenderContext context)
     {
-        if (node is not FencedCodeBlock fenced || context.Diagrams.Count == 0)
+        if (node is not FencedCodeBlock fenced || _renderers.Count == 0)
         {
             return false;
         }
@@ -385,7 +392,8 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         }
 
         var source = MarkdownText.GetLeafText(fenced);
-        return context.Diagrams.Any(d => SafeCanRender(d, language, source, context));
+        var isClosed = fenced.ClosingFencedCharCount > 0;
+        return _renderers.Any(renderer => SafeCanRender(renderer, language, source, isClosed, context));
     }
 
     /// <summary>Render。</summary>
@@ -396,21 +404,22 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         var fenced = (FencedCodeBlock)node;
         var language = CodeBlockRenderer.GetLanguage(fenced) ?? string.Empty;
         var source = MarkdownText.GetLeafText(fenced);
+        var isClosed = fenced.ClosingFencedCharCount > 0;
 
-        foreach (var diagram in context.Diagrams)
+        foreach (var renderer in _renderers)
         {
-            if (!SafeCanRender(diagram, language, source, context))
+            if (!SafeCanRender(renderer, language, source, isClosed, context))
             {
                 continue;
             }
 
             try
             {
-                return diagram.RenderDiagram(language, source, context);
+                return renderer.Render(language, source, isClosed, context);
             }
             catch (Exception ex)
             {
-                context.Warn("PURA-RENDER-003", $"图表渲染失败，回退代码块：{ex.Message}", fenced.GetType().Name, diagram.GetType().Name);
+                context.Warn("PURA-RENDER-003", $"围栏渲染失败，回退代码块：{ex.Message}", fenced.GetType().Name, renderer.Name);
                 break;
             }
         }
@@ -418,11 +427,11 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         return new CodeBlockRenderer().Render(node, context);
     }
 
-    private static bool SafeCanRender(IDiagramRenderer renderer, string language, string source, RenderContext context)
+    private static bool SafeCanRender(IFenceRenderer renderer, string language, string source, bool isClosed, RenderContext context)
     {
         try
         {
-            return renderer.CanRenderDiagram(language, source, context);
+            return renderer.CanRender(language, source, isClosed, context);
         }
         catch
         {
@@ -430,6 +439,7 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         }
     }
 }
+
 
 
 

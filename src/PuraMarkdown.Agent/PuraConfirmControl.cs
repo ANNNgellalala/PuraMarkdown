@@ -20,10 +20,10 @@ internal sealed class PuraConfirmControl : Border
     /// <param name="model">model 参数。</param>
     /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
-    public PuraConfirmControl(PuraConfirmComponent model, MarkdownObject node, RenderContext context)
+    public PuraConfirmControl(PuraConfirmComponent model, RenderContext context)
     {
         _context = context;
-        _componentId = model.Id ?? $"pura-agent-{node.Line}";
+        _componentId = model.Id ?? "pura-agent-confirm";
         _enabled = context.Options.InteractionEnabled && !context.IsStreaming;
 
         var colors = context.Theme.Colors;
@@ -113,4 +113,5 @@ internal sealed class PuraConfirmControl : Border
         });
     }
 }
+
 

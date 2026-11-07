@@ -8,6 +8,8 @@
     <Project Path="samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/PuraMarkdown.Agent/PuraMarkdown.Agent.csproj" />
+    <Project Path="src/PuraMarkdown.Chat/PuraMarkdown.Chat.csproj" />
     <Project Path="src/PuraMarkdown.Diagrams.Mermaid/PuraMarkdown.Diagrams.Mermaid.csproj" />
     <Project Path="src/PuraMarkdown.Highlighting.ColorCode/PuraMarkdown.Highlighting.ColorCode.csproj" />
     <Project Path="src/PuraMarkdown.Testing/PuraMarkdown.Testing.csproj" />

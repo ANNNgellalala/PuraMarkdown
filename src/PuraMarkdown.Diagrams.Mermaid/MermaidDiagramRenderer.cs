@@ -12,22 +12,27 @@ namespace PuraMarkdown.Diagrams.Mermaid;
 /// Mermaid 图表渲染器（真实引擎：Mermaider，MIT、纯 .NET、无浏览器/DOM）。
 /// M3 使用其 ASCII 渲染作为显示形态（无额外 SVG 渲染依赖）；SVG 渲染留作后续可选能力。
 /// </summary>
-public sealed class MermaidDiagramRenderer : IDiagramRenderer
+public sealed class MermaidDiagramRenderer : IFenceRenderer
 {
     private readonly ConcurrentDictionary<ulong, (string Ascii, string? Error)> _cache = new();
 
-    /// <summary>CanRenderDiagram。</summary>
-    /// <param name="language">language 参数。</param>
-    /// <param name="source">source 参数。</param>
-    /// <param name="context">context 参数。</param>
-    public bool CanRenderDiagram(string language, string source, RenderContext context)
+    /// <summary>围栏渲染器名称。</summary>
+    public string Name => "pura.mermaid";
+
+    /// <summary>是否处理 mermaid 围栏。</summary>
+    /// <param name="language">围栏语言。</param>
+    /// <param name="source">围栏源码。</param>
+    /// <param name="isClosed">围栏是否闭合。</param>
+    /// <param name="context">渲染上下文。</param>
+    public bool CanRender(string language, string source, bool isClosed, RenderContext context)
         => string.Equals(language, "mermaid", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>RenderDiagram。</summary>
-    /// <param name="language">language 参数。</param>
-    /// <param name="source">source 参数。</param>
-    /// <param name="context">context 参数。</param>
-    public Control RenderDiagram(string language, string source, RenderContext context)
+    /// <summary>渲染 Mermaid（ASCII）。</summary>
+    /// <param name="language">围栏语言。</param>
+    /// <param name="source">围栏源码。</param>
+    /// <param name="isClosed">围栏是否闭合。</param>
+    /// <param name="context">渲染上下文。</param>
+    public Control Render(string language, string source, bool isClosed, RenderContext context)
     {
         var theme = context.Theme;
 
@@ -163,6 +168,8 @@ public sealed class MermaidPlugin : IPuraPlugin
 
     /// <summary>Configure。</summary>
     /// <param name="builder">builder 参数。</param>
-    public void Configure(PuraPipelineBuilder builder) => builder.UseDiagramRenderer(new MermaidDiagramRenderer());
+    public void Configure(PuraPipelineBuilder builder) => builder.UseFenceRenderer(new MermaidDiagramRenderer());
 }
+
+
 

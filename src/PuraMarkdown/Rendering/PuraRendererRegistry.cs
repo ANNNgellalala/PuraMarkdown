@@ -15,7 +15,7 @@ public sealed class PuraRendererRegistry
     }
 
     /// <summary>Registrations。</summary>
-    public IReadOnlyList<RendererRegistration> Registrations => _registrations;
+    public IReadOnlyList<IPuraRenderer> Renderers => _registrations.Select(registration => registration.Renderer).ToArray();
 
     /// <summary>Resolve。</summary>
     /// <param name="node">node 参数。</param>
@@ -82,4 +82,5 @@ public sealed class PuraRendererRegistry
 /// <summary>RendererRegistration。</summary>
 /// <param name="Renderer">Renderer 参数。</param>
 /// <param name="Priority">Priority 参数。</param>
-public sealed record RendererRegistration(IPuraRenderer Renderer, int Priority);
+internal sealed record RendererRegistration(IPuraRenderer Renderer, int Priority);
+

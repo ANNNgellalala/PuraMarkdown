@@ -12,7 +12,6 @@ public static class PluginConformance
         var builder = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(plugin);
 
         var pipeline = builder.Build();
@@ -37,3 +36,5 @@ public static class PluginConformance
         return ControlTreeDumper.Dump(view);
     }
 }
+
+

@@ -14,12 +14,20 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Agent\PuraMarkdown.Agent.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Chat\PuraMarkdown.Chat.csproj" />
     <ProjectReference Include="..\..\src\PuraMarkdown.Testing\PuraMarkdown.Testing.csproj" />
     <ProjectReference Include="..\..\src\PuraMarkdown.Highlighting.ColorCode\PuraMarkdown.Highlighting.ColorCode.csproj" />
     <ProjectReference Include="..\..\src\PuraMarkdown.Diagrams.Mermaid\PuraMarkdown.Diagrams.Mermaid.csproj" />
     <ProjectReference Include="..\..\samples\PuraMarkdown.Plugins.Samples\PuraMarkdown.Plugins.Samples.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Using Include="PuraMarkdown.Agent" />
+  </ItemGroup>
 </Project>
+
+
+
 
 
 

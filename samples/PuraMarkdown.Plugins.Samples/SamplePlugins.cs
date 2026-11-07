@@ -121,10 +121,10 @@ public sealed class RatingRenderer : IAgentComponentRenderer
 {
     public string ComponentType => "rating";
 
-    public Control RenderComponent(PuraAgentComponent component, MarkdownObject node, RenderContext context)
+    public Control RenderComponent(PuraAgentComponent component, RenderContext context)
     {
         var model = (RatingComponent)component;
-        var componentId = model.Id ?? $"pura-agent-{node.Line}";
+        var componentId = model.Id ?? "pura-agent-rating";
         return new RatingControl(model, context, componentId);
     }
 }
@@ -221,18 +221,21 @@ public sealed class RatingPlugin : IPuraPlugin
 
     public void Configure(PuraPipelineBuilder builder)
     {
-        builder.UseAgentComponentParser(new RatingParser());
-        builder.UseAgentComponentRenderer(new RatingRenderer());
+        builder.UsePlugin(new AgentPlugin(
+            [new RatingParser()],
+            [new RatingRenderer()]));
     }
 }
 
 /// <summary>示例图表渲染器：验证 IDiagramRenderer 契约（真实 Mermaid 引擎在 M2 后续 spike 接入）。</summary>
-public sealed class SampleDiagramRenderer : IDiagramRenderer
+public sealed class SampleDiagramRenderer : IFenceRenderer
 {
-    public bool CanRenderDiagram(string language, string source, RenderContext context)
+    public string Name => "pura.samples.diagram";
+
+    public bool CanRender(string language, string source, bool isClosed, RenderContext context)
         => string.Equals(language, "mermaid", StringComparison.OrdinalIgnoreCase);
 
-    public Control RenderDiagram(string language, string source, RenderContext context)
+    public Control Render(string language, string source, bool isClosed, RenderContext context)
     {
         var theme = context.Theme;
         var preview = source.Length > 160 ? source[..160] + "…" : source;
@@ -277,6 +280,8 @@ public sealed class SampleDiagramPlugin : IPuraPlugin
 
     public string? Description => "示例图表插件（占位实现，验证 IDiagramRenderer）";
 
-    public void Configure(PuraPipelineBuilder builder) => builder.UseDiagramRenderer(new SampleDiagramRenderer());
+    public void Configure(PuraPipelineBuilder builder) => builder.UseFenceRenderer(new SampleDiagramRenderer());
 }
+
+
 

@@ -43,21 +43,21 @@ public interface IPuraInlineRenderer : IPuraRenderer
     Inline RenderInline(MarkdownObject node, RenderContext context);
 }
 
-/// <summary>图表围栏渲染器。核心只负责路由，不定义图表数据模型。</summary>
-public interface IDiagramRenderer
+/// <summary>围栏渲染器：接管 ```lang 代码围栏（图表、Agent、数学、自定义块）。</summary>
+public interface IFenceRenderer
 {
-    /// <summary>CanRenderDiagram。</summary>
-    /// <param name="language">language 参数。</param>
-    /// <param name="source">source 参数。</param>
-    /// <param name="context">context 参数。</param>
-    bool CanRenderDiagram(string language, string source, RenderContext context);
+    /// <summary>诊断名称（构建期唯一）。</summary>
+    string Name { get; }
 
-    /// <summary>RenderDiagram。</summary>
-    /// <param name="language">language 参数。</param>
-    /// <param name="source">source 参数。</param>
-    /// <param name="context">context 参数。</param>
-    Control RenderDiagram(string language, string source, RenderContext context);
+    /// <summary>是否处理该语言围栏；<paramref name="context"/>.IsTail 表示流式未完成。</summary>
+    bool CanRender(string language, string source, bool isClosed, RenderContext context);
+
+    /// <summary>渲染围栏；<paramref name="isClosed"/> 表示围栏是否已闭合。</summary>
+    Control Render(string language, string source, bool isClosed, RenderContext context);
 }
+
+/// <summary>围栏渲染器注册项（内部使用）。</summary>
+internal sealed record FenceRendererRegistration(IFenceRenderer Renderer, int Priority);
 
 /// <summary>代码高亮策略。默认实现为纯等宽文本（NullCodeHighlighter）。</summary>
 public interface ICodeHighlighter
@@ -77,3 +77,5 @@ public interface ICodeHighlighter
 /// <param name="Length">Length 参数。</param>
 /// <param name="Token">Token 参数。</param>
 public readonly record struct HighlightSpan(int Start, int Length, string Token);
+
+

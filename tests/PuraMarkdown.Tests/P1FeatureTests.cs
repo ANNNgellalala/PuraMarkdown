@@ -2,8 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Markdig.Syntax;
 using PuraMarkdown.Localization;
+using PuraMarkdown.Security;
 using PuraMarkdown.Platform;
+using PuraMarkdown.Rendering;
 using PuraMarkdown.Testing;
 using Xunit;
 
@@ -124,6 +127,45 @@ public sealed class P1FeatureTests
     }
 
     [AvaloniaFact]
+    public void Custom_sanitizer_can_block_nodes()
+    {
+        var view = new PuraMarkdownView
+        {
+            Options = new PuraMarkdownOptions
+            {
+                Pipeline = new PuraPipelineBuilder()
+                    .UseCommonMark()
+                    .UseGfm()
+                    .UseSanitizer(new BlockAllSanitizer())
+                    .Build(),
+            },
+        };
+        var warnings = new List<PuraWarning>();
+        view.Warning += (_, args) => warnings.Add(args.Warning);
+        Assert.IsType<BlockAllSanitizer>(view.Options!.Pipeline.Environment.Sanitizer);
+        view.Markdown = "blocked";
+
+        Assert.Empty(view.Blocks);
+        Assert.Contains(warnings, warning => warning.Code == "PURA-SEC-TEST");
+    }
+
+    [AvaloniaFact]
+    public async Task View_exposes_streaming_state_and_can_abort()
+    {
+        var view = new PuraMarkdownView { Options = CreateOptions() };
+        var session = view.BeginStreaming(new PuraStreamingOptions { Synchronous = true });
+        session.Append("x");
+        Assert.True(view.IsStreaming);
+        Assert.Same(session, view.ActiveSession);
+
+        view.AbortStreaming();
+        await Task.Yield();
+
+        Assert.False(view.IsStreaming);
+        view.Dispose();
+    }
+
+    [AvaloniaFact]
     public void Link_click_event_can_handle_without_default_handler()
     {
         var linkHandler = new RecordingLinkHandler();
@@ -145,6 +187,21 @@ public sealed class P1FeatureTests
         Assert.NotNull(clicked);
         Assert.Equal("https://example.com", clicked!.Url);
         Assert.Equal(0, linkHandler.Count);
+    }
+
+    private sealed class BlockAllSanitizer : IAstSanitizer
+    {
+        public SanitizeResult Sanitize(MarkdownDocument document, PuraMarkdownOptions options)
+        {
+            var result = new SanitizeResult();
+            foreach (var block in document)
+            {
+                result.Block(block);
+            }
+
+            result.AddWarning("PURA-SEC-TEST: blocked");
+            return result;
+        }
     }
 
     private sealed class EnglishLocalizer : IPuraLocalizer
@@ -187,5 +244,9 @@ public sealed class P1FeatureTests
         }
     }
 }
+
+
+
+
 
 

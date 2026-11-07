@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Chat</RootNamespace>
+    <AssemblyName>PuraMarkdown.Chat</AssemblyName>
+    <PackageId>PuraMarkdown.Chat</PackageId>
+    <Description>PuraMarkdown 聊天控件：消息级虚拟化、流式消息槽与自动滚动。</Description>
+    <PackageTags>avalonia;markdown;chat;agent;virtualization</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown\PuraMarkdown.csproj" />
+  </ItemGroup>
+</Project>
+

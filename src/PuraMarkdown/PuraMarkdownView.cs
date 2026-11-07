@@ -7,7 +7,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Markdig.Syntax;
-using PuraMarkdown.Agent;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Security;
 
@@ -17,7 +16,7 @@ namespace PuraMarkdown;
 /// Avalonia 只读 Markdown 控件。消费 Markdown 文本，输出 Avalonia 视觉树；
 /// 交互组件通过 <see cref="InteractionOccurred"/> 上报，不管理对话。
 /// </summary>
-public sealed class PuraMarkdownView : ContentControl
+public sealed class PuraMarkdownView : ContentControl, IDisposable
 {
     /// <summary><see cref="Markdown"/> 的样式属性。</summary>
     public static readonly StyledProperty<string?> MarkdownProperty =
@@ -106,6 +105,12 @@ public sealed class PuraMarkdownView : ContentControl
     /// <summary>已渲染块记录（流式嫁接锚点；只读）。</summary>
     public IReadOnlyList<BlockRecord> Blocks => _records;
 
+    /// <summary>当前活动流式会话（无则为 null）。</summary>
+    public PuraStreamingSession? ActiveSession => _activeSession;
+
+    /// <summary>是否正在流式渲染。</summary>
+    public bool IsStreaming => _activeSession?.State == PuraStreamingState.Streaming;
+
     /// <summary>开始一次流式会话（同一控件同时只允许一个进行中的会话）。</summary>
     /// <param name="options">流式选项；默认后台解析 + UI 合帧。</param>
     /// <returns>流式会话。</returns>
@@ -122,6 +127,25 @@ public sealed class PuraMarkdownView : ContentControl
 
     /// <summary>全量渲染当前 Markdown。</summary>
     public void Render() => RenderText(Markdown ?? string.Empty, isStreaming: false);
+
+    /// <summary>中断当前流式会话（保留已渲染内容）。</summary>
+    public void AbortStreaming()
+    {
+        if (_activeSession is { State: PuraStreamingState.Streaming } session)
+        {
+            _ = session.AbortAsync();
+        }
+    }
+
+    /// <summary>释放视图：取消活动流式会话并释放资源。</summary>
+    public void Dispose()
+    {
+        if (_activeSession is not null)
+        {
+            _ = _activeSession.DisposeAsync();
+            _activeSession = null;
+        }
+    }
 
     /// <summary>触发一次无障碍播报（宿主可转发给平台播报器）。</summary>
     public void Announce(string message)
@@ -478,6 +502,8 @@ public sealed class PuraMarkdownView : ContentControl
             return;
         }
 
+        _warnedKeys.Clear();
+
         EnsureVirtualized(options.EnableBlockVirtualization);
         if (_virtualized)
         {
@@ -515,7 +541,7 @@ public sealed class PuraMarkdownView : ContentControl
         var sanitized = environment.Sanitizer.Sanitize(document, options);
         foreach (var sanitizerWarning in sanitized.Warnings)
         {
-            Warn("PURA-SEC-001", sanitizerWarning);
+            WarnSanitizer(sanitizerWarning);
         }
 
         var context = CreateContext(options, sanitized, isStreaming, isTail: false);
@@ -574,7 +600,7 @@ public sealed class PuraMarkdownView : ContentControl
         var context = CreateContext(options, window.Sanitized, isStreaming: true, isTail: false, window.Highlights);
         foreach (var sanitizerWarning in window.Sanitized.Warnings)
         {
-            Warn("PURA-SEC-001", sanitizerWarning);
+            WarnSanitizer(sanitizerWarning);
         }
 
         if (_virtualized)
@@ -763,9 +789,7 @@ public sealed class PuraMarkdownView : ContentControl
             Theme = theme,
             Options = options,
             Renderers = options.Pipeline.Environment.Renderers,
-            Components = options.Pipeline.Environment.Components,
             Highlighter = options.Pipeline.Environment.Highlighter,
-            Diagrams = options.Pipeline.Environment.Diagrams,
             Sanitized = sanitized,
             Dispatcher = Dispatcher.UIThread,
             IsStreaming = isStreaming,
@@ -1035,6 +1059,13 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
+
+
+
+
+
+
 
 
 

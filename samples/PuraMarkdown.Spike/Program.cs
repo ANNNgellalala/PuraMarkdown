@@ -121,7 +121,6 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
@@ -162,7 +161,6 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
@@ -494,7 +492,6 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
@@ -582,6 +579,7 @@ public static class Program
             ? string.Concat(inlines.OfType<Run>().Select(run => run.Text))
             : textBlock.Text ?? string.Empty;
 }
+
 
 
 

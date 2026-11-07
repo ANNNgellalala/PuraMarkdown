@@ -132,7 +132,6 @@ internal sealed class DemoWindow : Window
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(new ColorCodePlugin())
             .UsePlugin(new MermaidPlugin())
             .UsePlugin(new RatingPlugin())
@@ -264,6 +263,7 @@ internal sealed class DemoWindow : Window
         };
     }
 }
+
 
 
 

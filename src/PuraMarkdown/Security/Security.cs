@@ -86,15 +86,22 @@ public sealed class PuraLimits
 public sealed class SanitizeResult
 {
     private readonly HashSet<MarkdownObject> _blockedNodes = [];
+    private readonly List<string> _warnings = [];
 
-    /// <summary>Warnings。</summary>
-    public IReadOnlyList<string> Warnings { get; init; } = [];
+    /// <summary>清洗告警。</summary>
+    public IReadOnlyList<string> Warnings => _warnings;
 
-    /// <summary>IsBlocked。</summary>
-    /// <param name="node">node 参数。</param>
+    /// <summary>判断节点是否被清洗策略阻断。</summary>
+    /// <param name="node">Markdown 节点。</param>
     public bool IsBlocked(MarkdownObject node) => _blockedNodes.Contains(node);
 
-    internal void Block(MarkdownObject node) => _blockedNodes.Add(node);
+    /// <summary>阻断节点（自定义 sanitizer 使用）。</summary>
+    /// <param name="node">要阻断的节点。</param>
+    public void Block(MarkdownObject node) => _blockedNodes.Add(node);
+
+    /// <summary>追加一条告警（自定义 sanitizer 使用）。</summary>
+    /// <param name="warning">告警文本，建议以 PURA-* 开头。</param>
+    public void AddWarning(string warning) => _warnings.Add(warning);
 }
 
 /// <summary>IAstSanitizer。</summary>
@@ -117,14 +124,13 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
     /// <param name="options">options 参数。</param>
     public SanitizeResult Sanitize(MarkdownDocument document, PuraMarkdownOptions options)
     {
-        var warnings = new List<string>();
-        var result = new SanitizeResult { Warnings = warnings };
+        var result = new SanitizeResult();
         var limits = options.Limits;
         var blocks = document.ToArray();
 
         if (blocks.Length > limits.MaxBlocks)
         {
-            warnings.Add($"PURA-LIM-005: 块数量超过 {limits.MaxBlocks}，超出部分不渲染");
+            result.AddWarning($"PURA-LIM-005: 块数量超过 {limits.MaxBlocks}，超出部分不渲染");
             foreach (var block in blocks.Skip(limits.MaxBlocks))
             {
                 result.Block(block);
@@ -136,7 +142,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
             if (MaxDepth(block) > limits.MaxNestingDepth)
             {
                 result.Block(block);
-                warnings.Add($"PURA-LIM-006: 嵌套深度超过 {limits.MaxNestingDepth}，已省略该块");
+                result.AddWarning($"PURA-LIM-006: 嵌套深度超过 {limits.MaxNestingDepth}，已省略该块");
             }
         }
 
@@ -148,7 +154,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
                     if (options.UrlPolicy.Evaluate(link.Url ?? string.Empty, UrlUsage.Link) == UrlDecision.Block)
                     {
                         result.Block(link);
-                        warnings.Add($"PURA-SEC-001: 链接被拒绝：{link.Url}");
+                        result.AddWarning($"PURA-SEC-001: 链接被拒绝：{link.Url}");
                     }
                     break;
 
@@ -156,7 +162,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
                     if (options.UrlPolicy.Evaluate(image.Url ?? string.Empty, UrlUsage.Image) == UrlDecision.Block)
                     {
                         result.Block(image);
-                        warnings.Add($"PURA-SEC-001: 图片被拒绝：{image.Url}");
+                        result.AddWarning($"PURA-SEC-001: 图片被拒绝：{image.Url}");
                     }
                     break;
             }
@@ -199,4 +205,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
         }
     }
 }
+
+
+
 

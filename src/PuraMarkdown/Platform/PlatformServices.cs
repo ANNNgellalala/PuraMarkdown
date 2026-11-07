@@ -93,3 +93,4 @@ public sealed class DefaultPlatformServices : IPuraPlatformServices
     /// <summary>Clipboard。</summary>
     public IPuraClipboard Clipboard { get; } = NullClipboard.Instance;
 }
+

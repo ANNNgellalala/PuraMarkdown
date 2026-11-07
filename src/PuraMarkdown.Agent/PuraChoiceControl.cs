@@ -28,11 +28,11 @@ internal sealed class PuraChoiceControl : Border
     /// <param name="model">model 参数。</param>
     /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
-    public PuraChoiceControl(PuraChoiceComponent model, MarkdownObject node, RenderContext context)
+    public PuraChoiceControl(PuraChoiceComponent model, RenderContext context)
     {
         _model = model;
         _context = context;
-        _componentId = model.Id ?? $"pura-agent-{node.Line}";
+        _componentId = model.Id ?? "pura-agent-choice";
         _enabled = context.Options.InteractionEnabled && !context.IsStreaming && !model.Disabled;
         foreach (var defaultId in model.DefaultSelected)
         {
@@ -271,6 +271,8 @@ internal sealed class PuraChoiceControl : Border
         });
     }
 }
+
+
 
 
 

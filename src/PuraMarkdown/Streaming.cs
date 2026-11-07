@@ -35,8 +35,6 @@ public enum PuraStreamingState
 /// <summary>流式选项：块复用、尾部窗口上限与同步模式。</summary>
 public sealed class PuraStreamingOptions
 {
-    /// <summary>开启后，渲染器可用块级复用减少重建（默认开启）。</summary>
-    public bool EnableBlockReuse { get; init; } = true;
 
     /// <summary>尾部窗口上限（字符）；超过时仅在稳定边界强制提交。</summary>
     public int TailWindowChars { get; init; } = 16 * 1024;
@@ -54,6 +52,7 @@ public sealed class PuraStreamingOptions
     /// 同步模式：<see cref="PuraStreamingSession.Append"/> 内联完成解析与渲染。
     /// 测试/无 UI 消息循环的控制台场景使用；UI 应用应保持默认的异步后台解析 + UI 合帧。
     /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool Synchronous { get; init; }
 }
 
@@ -787,6 +786,8 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
+
 
 
 

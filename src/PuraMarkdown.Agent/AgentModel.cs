@@ -107,7 +107,7 @@ public interface IAgentComponentRenderer
     /// <param name="node">组件所在的 Markdig 节点。</param>
     /// <param name="context">渲染上下文。</param>
     /// <returns>组件控件。</returns>
-    Control RenderComponent(PuraAgentComponent component, MarkdownObject node, Rendering.RenderContext context);
+    Control RenderComponent(PuraAgentComponent component, Rendering.RenderContext context);
 }
 
 /// <summary>组件类型到解析器/渲染器的注册表（构建期冻结）。</summary>
@@ -139,32 +139,5 @@ public sealed class PuraComponentRegistry
     /// <returns>渲染器；未注册时返回 <c>null</c>。</returns>
     public IAgentComponentRenderer? ResolveRenderer(string componentType)
         => _renderers.GetValueOrDefault(componentType);
-}
-
-/// <summary>可接收已上报交互状态的组件控件（虚拟化回收/重渲染后恢复选择状态）。</summary>
-public interface IPuraInteractionStateReceiver
-{
-    /// <summary>恢复上一次交互状态（不回传事件）。</summary>
-    /// <param name="state">交互事件参数。</param>
-    void ApplyInteractionState(PuraInteractionEventArgs state);
-}
-
-/// <summary>交互事件参数：库只上报，宿主决定是否回传 Agent。</summary>
-public sealed class PuraInteractionEventArgs : EventArgs
-{
-    /// <summary>组件类型（<c>choice</c>、<c>confirm</c> 或插件自定义）。</summary>
-    public required string ComponentType { get; init; }
-
-    /// <summary>组件实例 ID。</summary>
-    public string? ComponentId { get; init; }
-
-    /// <summary>选中的选项 ID 列表。</summary>
-    public IReadOnlyList<string> SelectedIds { get; init; } = [];
-
-    /// <summary>确认组件的结果（确认/取消）。</summary>
-    public bool? Confirmed { get; init; }
-
-    /// <summary>事件发生时间。</summary>
-    public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.Now;
 }
 

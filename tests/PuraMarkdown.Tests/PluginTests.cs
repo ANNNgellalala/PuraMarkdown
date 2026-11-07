@@ -32,11 +32,11 @@ public sealed class PluginTests
     }
 
     [Fact]
-    public void Duplicate_component_parser_is_rejected()
+    public void Duplicate_fence_renderer_is_rejected()
     {
         var builder = new PuraPipelineBuilder()
-            .UseAgentComponents()
-            .UseAgentComponentParser(new ChoiceParser());
+            .UseFenceRenderer(new PluginSamples.SampleDiagramRenderer())
+            .UseFenceRenderer(new PluginSamples.SampleDiagramRenderer());
 
         Assert.Throws<PuraConfigurationException>(() => builder.Build());
     }
@@ -102,7 +102,6 @@ public sealed class PluginTests
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
-            .UseAgentComponents()
             .UsePlugin(new PluginSamples.RatingPlugin())
             .Build();
 
@@ -254,7 +253,7 @@ public sealed class PluginTests
         public string? Description => null;
 
         public void Configure(PuraPipelineBuilder builder)
-            => builder.UseDiagramRenderer(new ThrowingDiagramRenderer());
+            => builder.UseFenceRenderer(new ThrowingDiagramRenderer());
     }
 
     private sealed class PluginParagraphRenderer : IPuraRenderer
@@ -273,13 +272,18 @@ public sealed class PluginTests
             => throw new InvalidOperationException("boom");
     }
 
-    private sealed class ThrowingDiagramRenderer : IDiagramRenderer
+    private sealed class ThrowingDiagramRenderer : IFenceRenderer
     {
-        public bool CanRenderDiagram(string language, string source, RenderContext context)
+        public string Name => "pura.test.throwing-diagram";
+
+        public bool CanRender(string language, string source, bool isClosed, RenderContext context)
             => string.Equals(language, "mermaid", StringComparison.OrdinalIgnoreCase);
 
-        public Control RenderDiagram(string language, string source, RenderContext context)
+        public Control Render(string language, string source, bool isClosed, RenderContext context)
             => throw new InvalidOperationException("diagram boom");
     }
 }
+
+
+
 

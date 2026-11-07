@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using PuraMarkdown.Localization;
 using PuraMarkdown.Platform;
 using PuraMarkdown.Security;
@@ -35,8 +34,6 @@ public sealed class PuraMarkdownOptions
     /// <summary>Clipboard。</summary>
     public IPuraClipboard Clipboard { get; init; } = NullClipboard.Instance;
 
-    /// <summary>Logger。</summary>
-    public ILogger? Logger { get; init; }
 
     /// <summary>Limits。</summary>
     public PuraLimits Limits { get; init; } = new();
@@ -53,6 +50,7 @@ public sealed class PuraMarkdownOptions
     /// </summary>
     public bool EnableBlockVirtualization { get; init; }
 }
+
 
 
 

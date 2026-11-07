@@ -4,7 +4,6 @@ using Avalonia.Threading;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using PuraMarkdown;
-using PuraMarkdown.Agent;
 using PuraMarkdown.Security;
 using PuraMarkdown.Platform;
 
@@ -21,12 +20,8 @@ public sealed class RenderContext
     public required PuraMarkdownOptions Options { get; init; }
     /// <summary>Renderers。</summary>
     public required PuraRendererRegistry Renderers { get; init; }
-    /// <summary>Components。</summary>
-    public required PuraComponentRegistry Components { get; init; }
     /// <summary>Highlighter。</summary>
     public required ICodeHighlighter Highlighter { get; init; }
-    /// <summary>Diagrams。</summary>
-    public required IReadOnlyList<IDiagramRenderer> Diagrams { get; init; }
     /// <summary>Sanitized。</summary>
     public required SanitizeResult Sanitized { get; init; }
     /// <summary>Dispatcher。</summary>
@@ -124,6 +119,8 @@ public sealed class PuraWarningEventArgs(PuraWarning warning) : EventArgs
     /// <summary>Warning。</summary>
     public PuraWarning Warning { get; } = warning;
 }
+
+
 
 
 

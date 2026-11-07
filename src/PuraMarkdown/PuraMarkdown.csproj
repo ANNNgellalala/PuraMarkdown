@@ -4,7 +4,7 @@
     <AssemblyName>PuraMarkdown</AssemblyName>
     <PackageId>PuraMarkdown</PackageId>
     <Authors>PuraMarkdown contributors</Authors>
-    <Description>Avalonia 只读 Markdown 控件：Markdig 解析、Agent 交互组件、增量流式、插件化渲染。</Description>
+    <Description>Avalonia 高性能只读 Markdown 渲染控件：Markdig 解析、增量流式、虚拟化与插件化渲染。</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>avalonia;markdown;agent;llm;chat;streaming</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,13 +16,13 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
-    <PackageReference Include="JsonSchema.Net" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
   </ItemGroup>
 </Project>
+
+
 
 
 
