@@ -132,7 +132,65 @@ var restored = PuraInteractionStates.Deserialize(json);
 
 ---
 
-## 2. 插件契约
+## 2. 语法层（`PuraMarkdown.Syntax`，无 Avalonia）
+
+```csharp
+namespace PuraMarkdown.Syntax;
+
+public sealed class PuraSyntaxBuilder
+{
+    PuraSyntaxBuilder UseCommonMark();
+    PuraSyntaxBuilder UseGfm();
+    PuraSyntaxBuilder UseMarkdownExtension(IMarkdownExtension extension);
+    PuraSyntaxBuilder UseSanitizer(IAstSanitizer sanitizer);
+    PuraSyntaxBuilder ConfigureLimits(Action<PuraLimits> configure);
+    PuraSyntaxBuilder UseUrlPolicy(IUrlPolicy urlPolicy);
+    PuraSyntaxPipeline Build();
+}
+
+public sealed class PuraSyntaxPipeline
+{
+    MarkdownPipeline MarkdownPipeline { get; }
+    PuraSyntaxOptions Options { get; }
+    PuraSyntaxOptions CreateOptions(PuraLimits limits, IUrlPolicy urlPolicy);
+
+    MarkdownDocument Parse(string markdown);
+    PuraDocument ParseDocument(string markdown, int version = 0, PuraSyntaxOptions? options = null);
+    PuraDocument ParseIncremental(PuraDocument previous, PuraTextChange change);
+}
+
+public sealed class PuraSyntaxOptions
+{
+    PuraLimits Limits { get; init; }
+    IUrlPolicy UrlPolicy { get; init; }
+    IAstSanitizer Sanitizer { get; init; }
+}
+
+public sealed record PuraDocument(
+    int Version, string Text, MarkdownDocument Markdown,
+    IReadOnlyList<PuraDiagnostic> Diagnostics, PuraOutline Outline,
+    SanitizeResult? Sanitized = null);
+
+public sealed class PuraSyntaxStreamingSession
+{
+    PuraDocument? Current { get; }
+    PuraDocument? Committed { get; }
+    PuraDocument? Tail { get; }
+    int CommittedOffset { get; }
+    void Append(string delta);
+    PuraDocument Complete();
+}
+```
+
+- `PuraDocument.Diagnostics` 由 sanitizer/limits 生成（`PURA-SEC-*`/`PURA-LIM-*`）；
+- `PuraDocument.Sanitized` 包含阻断节点集合，渲染层直接复用，避免二次清洗；
+- `PuraDocumentView` 接受已解析文档直接渲染；
+- `IPuraNodeRenderer` 输入 `MarkdownObject`，Arc 可实现自定义渲染器；
+- 末尾追加且前缀稳定时 `ParseIncremental` 复用旧 AST；其它编辑回退全量，命中时 `previous` 被消费。
+
+---
+
+## 3. 插件契约
 
 ```csharp
 public interface IPuraPlugin
@@ -191,7 +249,7 @@ public sealed class SanitizeResult
 
 ---
 
-## 3. Agent 包（`PuraMarkdown.Agent`）
+## 4. Agent 包（`PuraMarkdown.Agent`）
 
 ```csharp
 using PuraMarkdown.Agent;
@@ -227,7 +285,7 @@ public interface IAgentComponentRenderer
 
 ---
 
-## 4. Chat 包（`PuraMarkdown.Chat`）
+## 5. Chat 包（`PuraMarkdown.Chat`）
 
 ```csharp
 public enum PuraChatRole { User, Assistant, System }
@@ -288,7 +346,7 @@ public static class PuraChatSnapshotSerializer
 
 ---
 
-## 5. 平台契约（`PuraMarkdown.Platform`）
+## 6. 平台契约（`PuraMarkdown.Platform`）
 
 ```csharp
 public interface IImageLoader
@@ -312,7 +370,7 @@ public interface IPuraClipboard
 
 ---
 
-## 6. 测试包（`PuraMarkdown.Testing`）
+## 7. 测试包（`PuraMarkdown.Testing`）
 
 - `ControlTreeDumper.Dump/Find<T>`；
 - `GoldenFile.AssertMatches`；
@@ -322,7 +380,7 @@ public interface IPuraClipboard
 
 ---
 
-## 7. 稳定性说明
+## 8. 稳定性说明
 
 | 级别 | 内容 |
 | --- | --- |
@@ -332,6 +390,8 @@ public interface IPuraClipboard
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
 > `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+
+
 
 
 
