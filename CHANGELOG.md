@@ -6,6 +6,10 @@
 
 首个 alpha 版本：设计定稿（v0.4）+ M0–M4 实现完成。
 
+### Added
+- 宿主 P1 功能：流式 `AppendAsync/FlushAsync/Completed/Aborted`、文本选择/复制/纯文本、大纲与锚点滚动、链接/图片事件、系统主题实时切换。
+- 本地化：`IPuraLocalizer` / `ChinesePuraLocalizer`，默认中文，可替换 UI 文案。
+
 ### Fixed
 - 安全预算：`MaxBlocks`/`MaxNestingDepth`/`MaxFenceChars` 生效并给出 warning。
 - 流式：worker 异常通过 Warning 上报；`MaxTailChars` 限制超大未闭合块；引用定义跨流式窗口解析；Complete/Abort 支持后台线程调用。
@@ -25,6 +29,7 @@
 - 测试与工具：`PuraMarkdown.Testing`（控件树 dump/golden/交互探针/流式驱动/插件一致性）、85 个测试、golden 基线。
 - 示例与文档：Avalonia Demo、Spike 离屏示例、设计文档、ADR、性能分析/修复记录、虚拟化说明。
 - CI：GitHub Actions（restore/build/test/pack），裁剪与 Native AOT 手动验证通过。
+
 
 
 
