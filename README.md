@@ -170,6 +170,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [文档索引](docs/README.md) | 当前有效 vs 历史文档 | 所有人 |
 | [版本与升级策略](docs/29-版本与升级策略.md) | 包版本矩阵、API 稳定性分级、APP 升级步骤 | 宿主维护者 |
 | [Agent 与 Chat 能力增强](docs/30-Agent与Chat能力增强.md) | 会话模型/快照/流式状态，Agent 状态持久化/组件目录，不含新 UI | 宿主/Arc.Avalonia |
+| [语法与渲染分离讨论](docs/31-语法与渲染分离讨论.md) | 类 IDE/LSP 的 Syntax/Renderer 拆分、语义文档模型与迁移路径 | 架构/Arc.Avalonia |
 | [需求方案（用户输入）](docs/PuraMarkdown需求方案.md) | 原始需求与边界定义 | 所有人 |
 | [需求对齐与设计复审](docs/00-需求对齐与设计复审.md) | v0.2 → v0.3 的差异、6 项已确认决策、IR/虚拟树/适配层讨论结论 | 决策者 |
 | [IR/虚拟树/多平台讨论](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md) | 三项架构取舍的分析、触发条件、回补成本 | 决策者/架构 |
@@ -230,6 +231,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
