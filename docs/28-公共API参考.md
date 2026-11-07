@@ -186,7 +186,7 @@ public sealed class PuraSyntaxStreamingSession
 - `PuraDocument.Sanitized` 包含阻断节点集合，渲染层直接复用，避免二次清洗；
 - `PuraDocumentView` 接受已解析文档直接渲染；
 - `IPuraNodeRenderer` 输入 `MarkdownObject`，Arc 可实现自定义渲染器；
-- 末尾追加且前缀稳定时 `ParseIncremental` 复用旧 AST；其它编辑回退全量，命中时 `previous` 被消费。
+- `ParseIncremental` 按顶层块定位受影响区间（前后扩一块）只重解析该段，复用其余 AST；引用定义/异常回退全量；命中时 `previous` 被消费。
 
 ---
 
@@ -390,6 +390,7 @@ public interface IPuraClipboard
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
 > `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+
 
 
 
