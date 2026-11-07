@@ -24,7 +24,7 @@
 
 - **Agent 语法移出核心**：新增 `PuraMarkdown.Agent`（`AgentPlugin`/`AgentFenceRenderer`），核心不再依赖 JsonSchema.Net；支持 `UseAgentComponent` 组合式注册。
 - **Chat 独立**：新增 `PuraMarkdown.Chat`（`PuraChatView`/`PuraChatMessage`）。
-- **语法/渲染分离（B 阶段）**：新增 `PuraMarkdown.Syntax`（`PuraDocument`/诊断/大纲/扫描）；`PuraMarkdown` 消费语法层，新增 `PuraDocumentView`/`IPuraNodeRenderer`。
+- **语法/渲染分离（B 阶段）**：新增 `PuraMarkdown.Syntax`（`PuraDocument`/诊断/大纲/扫描）；`PuraMarkdown` 消费语法层，新增 `PuraDocumentView`/`IPuraNodeRenderer`。所有包接入 PublicAPI 分析器；Avalonia Trim/AOT 与性能基线已复跑。
 - Mermaid 插件迁移到 `IFenceRenderer`。
 - 版本统一由 `Directory.Build.props` 管理，标记 `v0.1.0-alpha.1`。
 
@@ -43,6 +43,7 @@
 - 虚拟化：交互组件状态按 ComponentId 持久化，回收/重建后恢复。
 - 流式尾部超限时只在稳定边界强制提交，避免切断未闭合代码围栏/表格。
 - 流式稳定块提交前移除旧尾部块，修复代码块重复显示。
+
 
 
 

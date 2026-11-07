@@ -12,6 +12,7 @@
 | [语法与渲染分离讨论](31-语法与渲染分离讨论.md) | 类 IDE/LSP 的 Syntax/Renderer 拆分方案与迁移路径 |
 | [技术演进路径 B→C](32-技术演进路径-B到C.md) | B（Markdig AST 分离）工作包、验收与 C 过渡 |
 | [B 阶段实施记录](33-B阶段实施记录.md) | B0–B5 落地内容、验证与剩余硬化项 |
+| [B 阶段基线：API/Trim/性能](34-B阶段基线-API-Trim-性能.md) | PublicAPI baseline、Trim/AOT 结果、性能对比表 |
 | [Agent 插件化与公共 API 收敛实现](25-Agent插件化与公共API收敛实现.md) | 当前架构变化与验证 |
 | [插件通用接口与 Agent 插件化讨论](24-插件通用接口与Agent插件化讨论.md) | 设计决策记录 |
 | [公共 API 设计评审](23-公共API设计评审.md) | API 分层、收敛项与开放问题 |
@@ -37,6 +38,7 @@
 - `22`：P1 功能与本地化
 
 > 用户原始需求：[PuraMarkdown需求方案.md](PuraMarkdown需求方案.md)
+
 
 
 
