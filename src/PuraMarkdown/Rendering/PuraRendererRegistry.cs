@@ -15,12 +15,12 @@ public sealed class PuraRendererRegistry
     }
 
     /// <summary>Registrations。</summary>
-    public IReadOnlyList<IPuraRenderer> Renderers => _registrations.Select(registration => registration.Renderer).ToArray();
+    public IReadOnlyList<IPuraNodeRenderer> Renderers => _registrations.Select(registration => registration.Renderer).ToArray();
 
     /// <summary>Resolve。</summary>
     /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
-    public IPuraRenderer Resolve(MarkdownObject node, RenderContext context)
+    public IPuraNodeRenderer Resolve(MarkdownObject node, RenderContext context)
     {
         var candidates = ResolveCandidates(node, context);
         return candidates.Count > 0
@@ -29,9 +29,9 @@ public sealed class PuraRendererRegistry
     }
 
     /// <summary>返回所有能处理该节点的渲染器（按优先级），供回退链使用。</summary>
-    public IReadOnlyList<IPuraRenderer> ResolveCandidates(MarkdownObject node, RenderContext context)
+    public IReadOnlyList<IPuraNodeRenderer> ResolveCandidates(MarkdownObject node, RenderContext context)
     {
-        var candidates = new List<IPuraRenderer>();
+        var candidates = new List<IPuraNodeRenderer>();
         foreach (var registration in _registrations)
         {
             try
@@ -82,5 +82,8 @@ public sealed class PuraRendererRegistry
 /// <summary>RendererRegistration。</summary>
 /// <param name="Renderer">Renderer 参数。</param>
 /// <param name="Priority">Priority 参数。</param>
-internal sealed record RendererRegistration(IPuraRenderer Renderer, int Priority);
+internal sealed record RendererRegistration(IPuraNodeRenderer Renderer, int Priority);
+
+
+
 

@@ -2,6 +2,7 @@ using Markdig;
 using Markdig.Syntax;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Security;
+using PuraMarkdown.Syntax;
 
 namespace PuraMarkdown;
 
@@ -44,26 +45,33 @@ public sealed class PuraRenderEnvironment
 /// <summary>冻结后的解析 + 渲染环境。</summary>
 public sealed class PuraPipeline
 {
-    internal PuraPipeline(MarkdownPipeline markdownPipeline, PuraRenderEnvironment environment)
+    internal PuraPipeline(PuraSyntaxPipeline syntax, PuraRenderEnvironment environment)
     {
-        MarkdownPipeline = markdownPipeline;
+        Syntax = syntax;
         Environment = environment;
     }
 
-    internal MarkdownPipeline MarkdownPipeline { get; }
+    /// <summary>语法层（Markdig 解析、PuraDocument、扫描器）。</summary>
+    public PuraSyntaxPipeline Syntax { get; }
 
     /// <summary>渲染环境。</summary>
     public PuraRenderEnvironment Environment { get; }
 
     /// <summary>解析 Markdown 文本。</summary>
     /// <param name="markdown">Markdown 源文本。</param>
-    public MarkdownDocument Parse(string markdown) => Markdown.Parse(markdown, MarkdownPipeline);
+    public MarkdownDocument Parse(string markdown) => Syntax.Parse(markdown);
+
+    /// <summary>解析为带诊断/大纲的文档。</summary>
+    /// <param name="markdown">Markdown 源文本。</param>
+    /// <param name="version">文档版本。</param>
+    public PuraDocument ParseDocument(string markdown, int version = 0)
+        => Syntax.ParseDocument(markdown, version);
 }
 
 /// <summary>构建 Markdig 管道与渲染器注册表；只在启动时使用。</summary>
 public sealed class PuraPipelineBuilder
 {
-    private readonly MarkdownPipelineBuilder _markdown = new();
+    private readonly PuraSyntaxBuilder _syntax = new();
     private readonly List<RendererRegistration> _renderers = [];
     private readonly List<FenceRendererRegistration> _fenceRenderers = [];
     private readonly List<IPuraPlugin> _plugins = [];
@@ -74,25 +82,21 @@ public sealed class PuraPipelineBuilder
     /// <summary>启用 CommonMark 基础能力（含精确源码位置）。</summary>
     public PuraPipelineBuilder UseCommonMark()
     {
-        _markdown.UsePreciseSourceLocation();
+        _syntax.UseCommonMark();
         return this;
     }
 
     /// <summary>启用 GFM：表格、任务列表、强调扩展、自动链接。</summary>
     public PuraPipelineBuilder UseGfm()
     {
-        _markdown
-            .UsePipeTables()
-            .UseTaskLists()
-            .UseEmphasisExtras()
-            .UseAutoLinks();
+        _syntax.UseGfm();
         return this;
     }
 
     /// <summary>注册块级渲染器（也可注册行内渲染器，但推荐用 <see cref="UseInlineRenderer"/>）。</summary>
     /// <param name="renderer">渲染器。</param>
     /// <param name="priority">优先级，越大越先尝试。</param>
-    public PuraPipelineBuilder UseRenderer(IPuraRenderer renderer, int priority = 100)
+    public PuraPipelineBuilder UseRenderer(IPuraNodeRenderer renderer, int priority = 100)
     {
         ArgumentNullException.ThrowIfNull(renderer);
         _renderers.Add(new RendererRegistration(renderer, priority));
@@ -168,17 +172,13 @@ public sealed class PuraPipelineBuilder
     public PuraPipelineBuilder UseMarkdownExtension(IMarkdownExtension extension)
     {
         ArgumentNullException.ThrowIfNull(extension);
-        _markdown.Extensions.Add(extension);
+        _syntax.UseMarkdownExtension(extension);
         return this;
     }
 
     /// <summary>构建不可变管道；重复/非法注册在此 fail fast。</summary>
     public PuraPipeline Build()
     {
-        _markdown
-            .UsePreciseSourceLocation()
-            .DisableHtml();
-
         ValidateRegistrations();
 
         var renderers = new List<RendererRegistration>(_renderers)
@@ -212,7 +212,7 @@ public sealed class PuraPipelineBuilder
             PluginNames = _plugins.Select(plugin => plugin.Name).ToArray(),
         };
 
-        return new PuraPipeline(_markdown.Build(), environment);
+        return new PuraPipeline(_syntax.Build(), environment);
     }
 
     private void ValidateRegistrations()
@@ -231,3 +231,6 @@ public sealed class PuraPipelineBuilder
         }
     }
 }
+
+
+

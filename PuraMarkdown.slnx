@@ -3,6 +3,7 @@
     <Project Path="benchmarks/PuraMarkdown.Benchmarks/PuraMarkdown.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/">
+    <Project Path="samples/PuraMarkdown.ArcSample/PuraMarkdown.ArcSample.csproj" />
     <Project Path="samples/PuraMarkdown.Demo/PuraMarkdown.Demo.csproj" />
     <Project Path="samples/PuraMarkdown.Plugins.Samples/PuraMarkdown.Plugins.Samples.csproj" />
     <Project Path="samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj" />
@@ -12,6 +13,7 @@
     <Project Path="src/PuraMarkdown.Chat/PuraMarkdown.Chat.csproj" />
     <Project Path="src/PuraMarkdown.Diagrams.Mermaid/PuraMarkdown.Diagrams.Mermaid.csproj" />
     <Project Path="src/PuraMarkdown.Highlighting.ColorCode/PuraMarkdown.Highlighting.ColorCode.csproj" />
+    <Project Path="src/PuraMarkdown.Syntax/PuraMarkdown.Syntax.csproj" />
     <Project Path="src/PuraMarkdown.Testing/PuraMarkdown.Testing.csproj" />
     <Project Path="src/PuraMarkdown/PuraMarkdown.csproj" />
   </Folder>

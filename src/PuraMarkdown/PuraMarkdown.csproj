@@ -20,7 +20,11 @@
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown.Syntax\PuraMarkdown.Syntax.csproj" />
+  </ItemGroup>
 </Project>
+
 
 
 

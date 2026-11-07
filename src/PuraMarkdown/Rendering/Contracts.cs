@@ -7,15 +7,19 @@ namespace PuraMarkdown.Rendering;
 /// <summary>
 /// 把 Markdig 节点渲染为 Avalonia 控件。实现必须是 UI 线程安全的（只在 UI 线程调用）。
 /// </summary>
-public interface IPuraRenderer
+/// <summary>节点渲染器：输入 Markdig AST 节点，输出 Avalonia 控件。</summary>
+public interface IPuraNodeRenderer
 {
-    /// 必须廉价、确定性、无副作用；可能在后台线程被调用。
+    /// <summary>是否处理该节点；必须廉价、确定性、无副作用。</summary>
     bool CanRender(MarkdownObject node, RenderContext context);
 
-    /// <summary>Render。</summary>
-    /// <param name="node">node 参数。</param>
-    /// <param name="context">context 参数。</param>
+    /// <summary>渲染节点。</summary>
     Control Render(MarkdownObject node, RenderContext context);
+}
+
+/// <summary>块级渲染器（兼容旧名；等价于 <see cref="IPuraNodeRenderer"/>）。</summary>
+public interface IPuraRenderer : IPuraNodeRenderer
+{
 }
 
 /// <summary>支持"节点类型不变、内容变化"时就地更新控件（流式尾部块）。</summary>

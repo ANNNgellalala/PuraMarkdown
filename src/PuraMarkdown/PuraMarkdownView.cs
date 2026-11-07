@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using Markdig.Syntax;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Security;
+using PuraMarkdown.Syntax;
 
 namespace PuraMarkdown;
 
@@ -235,38 +236,17 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
             return [];
         }
 
-        MarkdownDocument document;
         try
         {
-            document = options.Pipeline.Parse(text);
+            return options.Pipeline.ParseDocument(text)
+                .Outline.Headings
+                .Select(heading => new PuraHeadingInfo(heading.Level, heading.Text, heading.Anchor))
+                .ToArray();
         }
         catch
         {
             return [];
         }
-
-        var headings = new List<PuraHeadingInfo>();
-        var usedAnchors = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var heading in document.Descendants<HeadingBlock>())
-        {
-            var headingText = MarkdownText.GetHeadingText(heading);
-            if (headingText.Length == 0)
-            {
-                continue;
-            }
-
-            var baseAnchor = Slug(headingText);
-            var anchor = baseAnchor;
-            var suffix = 2;
-            while (!usedAnchors.Add(anchor))
-            {
-                anchor = $"{baseAnchor}-{suffix++}";
-            }
-
-            headings.Add(new PuraHeadingInfo(heading.Level, headingText, anchor));
-        }
-
-        return headings;
     }
 
     /// <summary>获取当前内容的纯文本（不含 Markdown 标记），可用于复制/搜索/无障碍。</summary>
@@ -552,22 +532,41 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
             return;
         }
 
-        _warnedKeys.Clear();
-
-        EnsureVirtualized(options.EnableBlockVirtualization);
-        if (_virtualized)
+        PuraDocument document;
+        try
         {
-            _virtualBlocks.Clear();
+            document = options.Pipeline.ParseDocument(text);
         }
-        else
+        catch (Exception ex)
         {
-            _host.Children.Clear();
+            PrepareRender();
+            Warn("PURA-PARSE-001", $"Markdig 解析异常，降级为纯文本：{ex.Message}");
+            AddFallbackText(text);
+            return;
         }
 
-        _records.Clear();
-        _tailRecordCount = 0;
-        _minStreamingVersion = 0;
+        RenderDocumentCore(document, isStreaming);
+    }
 
+    /// <summary>渲染已解析的语法文档（不重新解析 Markdown）。</summary>
+    /// <param name="document">语法层文档。</param>
+    public void RenderDocument(PuraDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        RenderDocumentCore(document, isStreaming: false);
+    }
+
+    private void RenderDocumentCore(PuraDocument document, bool isStreaming)
+    {
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        PrepareRender();
+
+        var text = document.Text;
         var limits = options.Limits;
         if (text.Length > limits.MaxDocumentChars)
         {
@@ -575,20 +574,9 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
             text = text[..limits.MaxDocumentChars];
         }
 
-        MarkdownDocument document;
-        try
-        {
-            document = options.Pipeline.Parse(text);
-        }
-        catch (Exception ex)
-        {
-            Warn("PURA-PARSE-001", $"Markdig 解析异常，降级为纯文本：{ex.Message}");
-            AddFallbackText(text);
-            return;
-        }
-
+        var markdown = document.Markdown;
         var environment = options.Pipeline.Environment;
-        var sanitized = environment.Sanitizer.Sanitize(document, options);
+        var sanitized = environment.Sanitizer.Sanitize(markdown, options);
         foreach (var sanitizerWarning in sanitized.Warnings)
         {
             WarnSanitizer(sanitizerWarning);
@@ -598,11 +586,11 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
 
         if (_virtualized)
         {
-            RenderVirtualDocument(document, text, context, isStreaming);
+            RenderVirtualDocument(markdown, text, context, isStreaming);
             return;
         }
 
-        foreach (var block in document)
+        foreach (var block in markdown)
         {
             if (sanitized.IsBlocked(block))
             {
@@ -643,6 +631,24 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
         }
 
         _lastRenderWasStreaming = isStreaming;
+    }
+
+    private void PrepareRender()
+    {
+        _warnedKeys.Clear();
+        EnsureVirtualized(Options?.EnableBlockVirtualization ?? false);
+        if (_virtualized)
+        {
+            _virtualBlocks.Clear();
+        }
+        else
+        {
+            _host.Children.Clear();
+        }
+
+        _records.Clear();
+        _tailRecordCount = 0;
+        _minStreamingVersion = 0;
     }
 
     private void ApplyCommittedWindow(StreamingWindowUpdate window, PuraMarkdownOptions options)
@@ -1109,6 +1115,7 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
 
 
 
