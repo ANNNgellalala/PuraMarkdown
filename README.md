@@ -168,6 +168,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [迁移指南（alpha.1）](docs/27-迁移指南-0.1.0-alpha.1.md) | 从旧版（Agent 在核心/IDiagramRenderer）升级 | 现有宿主 |
 | [公共 API 参考](docs/28-公共API参考.md) | 宿主/插件/Chat API 签名与稳定性分级 | 宿主/插件作者 |
 | [文档索引](docs/README.md) | 当前有效 vs 历史文档 | 所有人 |
+| [版本与升级策略](docs/29-版本与升级策略.md) | 包版本矩阵、API 稳定性分级、APP 升级步骤 | 宿主维护者 |
 | [需求方案（用户输入）](docs/PuraMarkdown需求方案.md) | 原始需求与边界定义 | 所有人 |
 | [需求对齐与设计复审](docs/00-需求对齐与设计复审.md) | v0.2 → v0.3 的差异、6 项已确认决策、IR/虚拟树/适配层讨论结论 | 决策者 |
 | [IR/虚拟树/多平台讨论](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md) | 三项架构取舍的分析、触发条件、回补成本 | 决策者/架构 |
@@ -228,6 +229,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
