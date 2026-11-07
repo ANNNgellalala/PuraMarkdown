@@ -1,3 +1,5 @@
+> 历史文档：记录当时的设计/实现，API 可能已过时。当前接入请阅读 [应用集成指南](26-应用集成指南.md) / [迁移指南](27-迁移指南-0.1.0-alpha.1.md) / [公共 API 参考](28-公共API参考.md)。
+
 # Markdown 完整性检查与修复（2026-11-07）
 
 > 方法：代码走查 + 现有测试 + 针对性补测。范围：Markdown 解析/渲染、流式、虚拟化、安全预算、A11y、API/发布。
@@ -97,3 +99,4 @@ dotnet test tests/PuraMarkdown.Tests  → 85 通过 / 0 失败
 1. P2 收尾：LICENSE、CI 拆分（tag 才 pack）、CommonMark spec 子集；
 2. 引用式链接"定义后置"的 append-only 场景可提供 warning 或延迟重渲染；
 3. 图片加载预算、屏幕阅读器手工走查。
+

@@ -1,3 +1,5 @@
+> 历史文档：记录当时的设计/实现，API 可能已过时。当前接入请阅读 [应用集成指南](26-应用集成指南.md) / [迁移指南](27-迁移指南-0.1.0-alpha.1.md) / [公共 API 参考](28-公共API参考.md)。
+
 # 插件与渲染契约（v0.3）
 
 > 状态：草案 v0.3（按提案重构：Markdig AST 直连 Avalonia，无 IR）
@@ -431,3 +433,4 @@ public sealed class RatingPlugin : IPuraPlugin
 | 在组件 JSON 中放 HTML/Markdown 并二次渲染 | 注入风险；组件文案按纯文本 |
 | 依赖 Markdig 内部节点类型 | 升级易碎；只消费公开节点类型 |
 | 在插件中管理对话/发送消息 | 越界；库只上报交互事件 |
+

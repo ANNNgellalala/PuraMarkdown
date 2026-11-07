@@ -1,5 +1,7 @@
 # 公共 API 设计评审（2026-11-07）
 
+> 状态：P0 收敛项、视图生命周期、`IFenceRenderer`、Agent/Chat 拆分已在 [实现记录](25-Agent插件化与公共API收敛实现.md) 落地；PublicAPI baseline 仍待 1.0 冻结时补充。
+
 > 目标：在 1.0 前收敛公共 API：**稳定面尽量小、扩展面清晰、内部实现不外溢**，并为插件作者/宿主分别定义契约。
 > 结论：建议先做一轮 **API 收敛 + 一致性修复**（允许 0.1 alpha 阶段破坏性调整），再冻结 1.0 公共面。
 
@@ -188,3 +190,4 @@ public sealed class PuraChatView : ContentControl
 5. **1.1**：`IFenceRenderer`、`PuraMarkdown.Chat`、插件元数据。
 
 > 当前 `0.1.0-alpha.1` 阶段建议一次完成 1–2，避免 1.0 后留下历史包袱。
+

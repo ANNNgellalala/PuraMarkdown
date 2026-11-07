@@ -1,9 +1,9 @@
 # PuraMarkdown
 
-> 面向 Agent 对话的 **Avalonia 只读 Markdown 控件**：Markdig 解析、Avalonia 原生渲染、Agent 交互组件、流式增量、插件可替换。
+> 高性能 **Avalonia 只读 Markdown 渲染库**：Markdig 解析、Avalonia 原生渲染、增量流式、块级/消息级虚拟化、插件可替换。Agent 交互与聊天控件以独立插件包提供。
 >
-> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（94 个测试、6 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
-> 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · JsonSchema.Net **9.6.0** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**。
+> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（95 个测试、6 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
+> 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**；JsonSchema.Net 仅由 `PuraMarkdown.Agent` 使用。
 
 ---
 
@@ -23,7 +23,7 @@ Agent 回复不只是"一段 Markdown"：
 Markdown 文本（全量 or Append 增量）
    │  ① Markdig 解析（CommonMark+GFM, DisableHtml, 精确 Span）
    ▼
-混合 AST（标准节点 + PuraAgentBlock + 插件节点）
+Markdig AST + 插件节点（围栏/行内/块）
    │  ② 节点分发：渲染器注册表按优先级匹配
    ▼
 ③ 渲染执行：IPuraRenderer → Avalonia Control
@@ -54,7 +54,7 @@ Markdown 文本（全量 or Append 增量）
 ```
 ````
 
-核心内置 `choice`（单选/多选）与 `confirm`；其它组件类型由插件注册 `IAgentComponentParser` + `IAgentComponentRenderer` 扩展。容器指令（`:::choice`）不在核心范围，可由插件实现。
+`choice`/`confirm` 由 `PuraMarkdown.Agent` 包提供；其它组件通过 `builder.UseAgentComponent(parser, renderer)` 扩展。容器指令（`:::choice`）不在核心范围，可由插件实现。
 
 ## 主要契约
 
@@ -67,10 +67,10 @@ Markdown 文本（全量 or Append 增量）
 | `IPuraInlineRenderer` | 自定义行内语法渲染 |
 | `IAstSanitizer` | AST 清洗/阻断（`UseSanitizer` 可替换） |
 | `ICodeHighlighter` | 代码 token 化；默认纯等宽 |
-| `IPuraPlugin` / `PuraPipelineBuilder` | 插件打包与注册（显式、AOT 友好） |
+| `IPuraPlugin` / `PuraPipelineBuilder` | 插件注册（围栏/行内/块/高亮/清洗） |
 | `PuraMarkdownView` / `PuraStreamingSession` | 控件与 append-only 流式 API |
 
-## 包结构（规划）
+## 包结构
 
 | 包 | 内容 |
 | --- | --- |
@@ -128,12 +128,12 @@ PuraMarkdown.slnx
 ├─ src/PuraMarkdown.Highlighting.ColorCode/  # 官方高亮插件（ColorCode.Core）
 ├─ src/PuraMarkdown.Diagrams.Mermaid/    # 官方 Mermaid 插件（Mermaider，纯 .NET）
 ├─ samples/PuraMarkdown.Plugins.Samples/ # 示例插件：rating 组件、示例图表
-├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 51 个测试 + golden
+├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 95 个测试 + golden
+├─ benchmarks/PuraMarkdown.Benchmarks/   # BenchmarkDotNet 基准
 └─ samples/PuraMarkdown.Spike/           # 离屏渲染示例（打印控件树）
 ```
 
-已实现：Markdig GFM 管道、渲染器注册表与默认渲染组、块宿主与 `BlockRecord`、`pura-agent` 自定义 BlockParser、choice/confirm（单选即报/多选确认）、Schema 校验与错误路径、链接点击/图片异步/任务列表、主题跟随系统、A11y 名称、只读模式、降级卡、**稳定边界 + 尾部窗口增量流式**、插件校验/回退链、ColorCode 高亮、Mermaid 真实引擎、图表契约与示例插件、自定义组件扩展、键盘交互、播报事件、golden 基线。
-细节与偏差见 [M0](docs/08-M0-实现进展.md) / [M1](docs/09-M1-实现进展.md) / [M2](docs/10-M2-实现进展.md) / [M3](docs/11-M3-实现进展.md) 实现进展。
+当前实现：Markdig GFM 管道、渲染器注册表与默认渲染组、`BlockRecord`、**稳定边界 + 尾部窗口增量流式**、块级/消息级虚拟化、`IFenceRenderer`/行内/块插件契约、`UseSanitizer`、ColorCode 高亮、Mermaid 插件、Agent 独立包（`pura-agent` 围栏 + choice/confirm + 组合式自定义组件）、Chat 独立包、文本选择/复制/大纲、链接/图片事件、主题与本地化、安全预算。
 
 ## Demo
 
@@ -160,8 +160,14 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 
 ## 文档导航
 
+> 应用接入请优先阅读 26/27/28；其余为历史设计与里程碑记录，代码示例可能使用已删除 API（如 `IDiagramRenderer`、`PuraAgentBlock`）。
+
 | 文档 | 内容 | 适合谁 |
 | --- | --- | --- |
+| [应用集成指南](docs/26-应用集成指南.md) | 包选择、最小接入、Agent/Chat、流式、常见坑 | **APP 接入优先** |
+| [迁移指南（alpha.1）](docs/27-迁移指南-0.1.0-alpha.1.md) | 从旧版（Agent 在核心/IDiagramRenderer）升级 | 现有宿主 |
+| [公共 API 参考](docs/28-公共API参考.md) | 宿主/插件/Chat API 签名与稳定性分级 | 宿主/插件作者 |
+| [文档索引](docs/README.md) | 当前有效 vs 历史文档 | 所有人 |
 | [需求方案（用户输入）](docs/PuraMarkdown需求方案.md) | 原始需求与边界定义 | 所有人 |
 | [需求对齐与设计复审](docs/00-需求对齐与设计复审.md) | v0.2 → v0.3 的差异、6 项已确认决策、IR/虚拟树/适配层讨论结论 | 决策者 |
 | [IR/虚拟树/多平台讨论](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md) | 三项架构取舍的分析、触发条件、回补成本 | 决策者/架构 |
@@ -203,7 +209,8 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 - **流式 = 块级脏检查 + 尾部窗口 + 视觉树嫁接**（ADR-0015）。
 - **核心直接依赖 Avalonia，跨平台交给 Avalonia**（Win/macOS/Linux）；不建渲染适配层、不建虚拟渲染树（ADR-0016、ADR-0021/0022）。
 - **不渲染 HTML**（ADR-0009）、**append-only**（ADR-0010）、**交互只产事件**（ADR-0006）。
-- **长消息当前用 `StackPanel`**，M3 按实测再优化。
+- **块级虚拟化可选**（`EnableBlockVirtualization`）；消息级虚拟化见 `PuraMarkdown.Chat`。
+- **Agent 语法独立为插件包**（`PuraMarkdown.Agent`），核心只做 Markdown（ADR-0024）。
 
 > IR/虚拟渲染树/多平台适配三项的取舍、触发条件与回补成本：见 [讨论文档](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md)。
 
@@ -221,6 +228,13 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
+
+
+
+
+
+
 
 
 

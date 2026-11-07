@@ -14,13 +14,13 @@
 - 本地化：`IPuraLocalizer` / `ChinesePuraLocalizer`，默认中文，可替换 UI 文案。
 - 插件契约：`IFenceRenderer`（取代 `IDiagramRenderer`）、`UseInlineRenderer`、`UseSanitizer`、插件 fail-fast/回退链。
 - 性能与虚拟化：块级虚拟化（`EnableBlockVirtualization`）、`PuraMarkdown.Chat` 消息级虚拟化、Complete 分帧渲染。
-- 测试与工具：`PuraMarkdown.Testing`、94 个测试、golden 基线、性能诊断模式。
+- 测试与工具：`PuraMarkdown.Testing`、95 个测试、golden 基线、性能诊断模式。
 - 示例与文档：Avalonia Demo、Spike、设计文档、ADR、性能/虚拟化/API 文档。
 - CI：GitHub Actions（restore/build/test/pack），裁剪与 Native AOT 手动验证通过。
 
 ### Changed
 
-- **Agent 语法移出核心**：新增 `PuraMarkdown.Agent`（`AgentPlugin`/`AgentFenceRenderer`），核心不再依赖 JsonSchema.Net。
+- **Agent 语法移出核心**：新增 `PuraMarkdown.Agent`（`AgentPlugin`/`AgentFenceRenderer`），核心不再依赖 JsonSchema.Net；支持 `UseAgentComponent` 组合式注册。
 - **Chat 独立**：新增 `PuraMarkdown.Chat`（`PuraChatView`/`PuraChatMessage`）。
 - Mermaid 插件迁移到 `IFenceRenderer`。
 - 版本统一由 `Directory.Build.props` 管理，标记 `v0.1.0-alpha.1`。
@@ -40,4 +40,6 @@
 - 虚拟化：交互组件状态按 ComponentId 持久化，回收/重建后恢复。
 - 流式尾部超限时只在稳定边界强制提交，避免切断未闭合代码围栏/表格。
 - 流式稳定块提交前移除旧尾部块，修复代码块重复显示。
+
+
 
