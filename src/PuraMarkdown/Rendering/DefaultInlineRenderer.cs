@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Markdig.Extensions.TaskLists;
 using Markdig.Syntax.Inlines;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Platform;
 using PuraMarkdown.Security;
 using PuraMarkdown.Rendering;
@@ -145,15 +146,18 @@ internal static class DefaultInlineRenderer
     private static void RenderLink(LinkInline link, InlineCollection target, RenderContext context)
     {
         var theme = context.Theme;
+        var localizer = context.Options.Localizer;
         var blocked = context.Sanitized.IsBlocked(link);
         var url = link.Url ?? string.Empty;
 
         if (link.IsImage)
         {
-            var alt = GetInlineText(link) is { Length: > 0 } altText ? altText : "图片";
+            var alt = GetInlineText(link) is { Length: > 0 } altText
+                ? altText
+                : localizer.Get(PuraStringKeys.Image);
             var placeholder = new TextBlock
             {
-                Text = $"[图片: {alt}]",
+                Text = localizer.Get(PuraStringKeys.ImagePlaceholder, alt),
                 Foreground = new SolidColorBrush(theme.Colors.Muted),
                 FontStyle = FontStyle.Italic,
                 FontSize = theme.Typography.BodySize,
@@ -170,7 +174,7 @@ internal static class DefaultInlineRenderer
             }
             else if (blocked)
             {
-                placeholder.Text = $"[图片被拒绝: {url}]";
+                placeholder.Text = localizer.Get(PuraStringKeys.ImageBlocked, url);
             }
 
             return;
@@ -186,26 +190,7 @@ internal static class DefaultInlineRenderer
             return;
         }
 
-        var hyperlink = new HyperlinkButton
-        {
-            Content = linkText,
-            Padding = new Thickness(0),
-            FontSize = theme.Typography.BodySize,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        hyperlink.Click += async (_, _) =>
-        {
-            try
-            {
-                await context.Options.LinkHandler.OpenAsync(url);
-            }
-            catch (Exception ex)
-            {
-                context.Warn("PURA-LINK-001", $"打开链接失败：{ex.Message}", nameof(LinkInline));
-            }
-        };
-
-        target.Add(new InlineUIContainer(hyperlink));
+        target.Add(new InlineUIContainer(CreateHyperlink(linkText, url, context)));
     }
 
     private static HyperlinkButton CreateHyperlink(string text, string url, RenderContext context)
@@ -219,6 +204,13 @@ internal static class DefaultInlineRenderer
         };
         hyperlink.Click += async (_, _) =>
         {
+            var args = new PuraLinkClickedEventArgs(url, text);
+            context.LinkClickSink?.Invoke(args);
+            if (args.Handled)
+            {
+                return;
+            }
+
             try
             {
                 await context.Options.LinkHandler.OpenAsync(url);
@@ -234,11 +226,14 @@ internal static class DefaultInlineRenderer
 
     private static async Task LoadImageAsync(RenderContext context, string url, Image image, TextBlock placeholder)
     {
+        var localizer = context.Options.Localizer;
+        context.ImageLoadingSink?.Invoke(url);
         try
         {
             var result = await context.Options.ImageLoader.LoadAsync(url).ConfigureAwait(false);
             context.Dispatcher.Post(() =>
             {
+                context.ImageLoadedSink?.Invoke(url, result);
                 switch (result)
                 {
                     case IImageResult.Success success:
@@ -247,10 +242,10 @@ internal static class DefaultInlineRenderer
                         placeholder.IsVisible = false;
                         break;
                     case IImageResult.Refused refused:
-                        placeholder.Text = $"[图片未加载: {refused.Reason}]";
+                        placeholder.Text = localizer.Get(PuraStringKeys.ImageNotLoaded, refused.Reason);
                         break;
                     case IImageResult.Failed failed:
-                        placeholder.Text = $"[图片加载失败: {failed.Reason}]";
+                        placeholder.Text = localizer.Get(PuraStringKeys.ImageLoadFailed, failed.Reason);
                         break;
                 }
             });
@@ -258,7 +253,12 @@ internal static class DefaultInlineRenderer
         catch (Exception ex)
         {
             context.Warn("PURA-IMG-001", $"图片加载异常：{ex.Message}", nameof(LinkInline));
-            context.Dispatcher.Post(() => placeholder.Text = "[图片加载失败]");
+            var failed = new IImageResult.Failed(ex.Message);
+            context.Dispatcher.Post(() =>
+            {
+                context.ImageLoadedSink?.Invoke(url, failed);
+                placeholder.Text = localizer.Get(PuraStringKeys.ImageLoadFailed, string.Empty);
+            });
         }
     }
 
@@ -300,5 +300,7 @@ internal static class DefaultInlineRenderer
         }
     }
 }
+
+
 
 

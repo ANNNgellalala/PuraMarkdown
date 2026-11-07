@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Markdig.Extensions.Tables;
 using Markdig.Syntax;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Rendering;
 
 namespace PuraMarkdown.Rendering;
@@ -37,6 +38,7 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
         }
 
         var theme = context.Theme;
+        var localizer = context.Options.Localizer;
 
         var header = new Grid();
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
@@ -44,7 +46,7 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
 
         var languageLabel = new TextBlock
         {
-            Text = string.IsNullOrEmpty(language) ? "text" : language,
+            Text = string.IsNullOrEmpty(language) ? localizer.Get(PuraStringKeys.CodeLanguageFallback) : language,
             FontSize = theme.Typography.BodySize - 2,
             Foreground = new SolidColorBrush(theme.Colors.Muted),
             FontFamily = theme.Typography.MonoFont,
@@ -55,7 +57,7 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
 
         var copyButton = new Button
         {
-            Content = "复制",
+            Content = localizer.Get(PuraStringKeys.Copy),
             FontSize = theme.Typography.BodySize - 3,
             Padding = new Thickness(8, 2),
         };
@@ -64,24 +66,22 @@ internal sealed class CodeBlockRenderer : IIncrementalPuraRenderer
             try
             {
                 await context.Options.Clipboard.SetTextAsync(originalCode);
-                copyButton.Content = "已复制";
+                copyButton.Content = localizer.Get(PuraStringKeys.Copied);
             }
             catch
             {
-                copyButton.Content = "复制失败";
+                copyButton.Content = localizer.Get(PuraStringKeys.CopyFailed);
             }
         };
-        AutomationProperties.SetName(copyButton, "复制代码");
+        AutomationProperties.SetName(copyButton, localizer.Get(PuraStringKeys.CopyCodeAutomation));
         Grid.SetColumn(copyButton, 1);
         header.Children.Add(copyButton);
 
-        var codeText = new TextBlock
-        {
-            TextWrapping = TextWrapping.NoWrap,
-            FontFamily = theme.Typography.MonoFont,
-            FontSize = theme.Typography.BodySize - 1,
-            Foreground = new SolidColorBrush(theme.Colors.Text),
-        };
+        var codeText = PuraTextBlockFactory.Create(context);
+        codeText.TextWrapping = TextWrapping.NoWrap;
+        codeText.FontFamily = theme.Typography.MonoFont;
+        codeText.FontSize = theme.Typography.BodySize - 1;
+        codeText.Foreground = new SolidColorBrush(theme.Colors.Text);
 
         if (context.IsStreaming && code.Length > 16 * 1024)
         {
@@ -430,6 +430,9 @@ internal sealed class DiagramDispatchRenderer : IPuraRenderer
         }
     }
 }
+
+
+
 
 
 

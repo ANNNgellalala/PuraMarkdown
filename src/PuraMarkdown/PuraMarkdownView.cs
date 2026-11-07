@@ -94,6 +94,15 @@ public sealed class PuraMarkdownView : ContentControl
     /// <summary>无障碍播报（流式完成/中断）；宿主可接屏幕阅读器。</summary>
     public event EventHandler<string>? Announced;
 
+    /// <summary>链接被点击；设置 <see cref="PuraLinkClickedEventArgs.Handled"/> 可阻止默认打开。</summary>
+    public event EventHandler<PuraLinkClickedEventArgs>? LinkClicked;
+
+    /// <summary>图片开始加载。</summary>
+    public event EventHandler<PuraImageEventArgs>? ImageLoading;
+
+    /// <summary>图片加载完成（成功/拒绝/失败）。</summary>
+    public event EventHandler<PuraImageLoadedEventArgs>? ImageLoaded;
+
     /// <summary>已渲染块记录（流式嫁接锚点；只读）。</summary>
     public IReadOnlyList<BlockRecord> Blocks => _records;
 
@@ -142,6 +151,159 @@ public sealed class PuraMarkdownView : ContentControl
         probe.Arrange(new Rect(probe.DesiredSize));
     }
 
+    /// <summary>获取当前文档的标题大纲（含自动生成的锚点）。</summary>
+    public IReadOnlyList<PuraHeadingInfo> GetOutline()
+    {
+        var text = GetCurrentText();
+        var options = Options;
+        if (string.IsNullOrEmpty(text) || options is null)
+        {
+            return [];
+        }
+
+        MarkdownDocument document;
+        try
+        {
+            document = options.Pipeline.Parse(text);
+        }
+        catch
+        {
+            return [];
+        }
+
+        var headings = new List<PuraHeadingInfo>();
+        var usedAnchors = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var heading in document.Descendants<HeadingBlock>())
+        {
+            var headingText = MarkdownText.GetHeadingText(heading);
+            if (headingText.Length == 0)
+            {
+                continue;
+            }
+
+            var baseAnchor = Slug(headingText);
+            var anchor = baseAnchor;
+            var suffix = 2;
+            while (!usedAnchors.Add(anchor))
+            {
+                anchor = $"{baseAnchor}-{suffix++}";
+            }
+
+            headings.Add(new PuraHeadingInfo(heading.Level, headingText, anchor));
+        }
+
+        return headings;
+    }
+
+    /// <summary>获取当前内容的纯文本（不含 Markdown 标记），可用于复制/搜索/无障碍。</summary>
+    public string GetPlainText()
+    {
+        var text = GetCurrentText();
+        var options = Options;
+        if (string.IsNullOrEmpty(text) || options is null)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            return MarkdownText.GetPlainText(options.Pipeline.Parse(text));
+        }
+        catch
+        {
+            return text;
+        }
+    }
+
+    /// <summary>复制当前内容纯文本到剪贴板。</summary>
+    /// <param name="cancellationToken">取消令牌。</param>
+    public async Task CopyAllAsync(CancellationToken cancellationToken = default)
+    {
+        var options = Options;
+        if (options is null)
+        {
+            return;
+        }
+
+        await options.Clipboard.SetTextAsync(GetPlainText(), cancellationToken).ConfigureAwait(true);
+    }
+
+    /// <summary>滚动到指定标题锚点（虚拟化模式使用估算偏移）。</summary>
+    /// <param name="anchor">锚点文本，可带前导 #。</param>
+    /// <returns>是否找到并滚动。</returns>
+    public bool ScrollToAnchor(string anchor)
+    {
+        if (string.IsNullOrWhiteSpace(anchor))
+        {
+            return false;
+        }
+
+        var target = anchor.TrimStart('#');
+        for (var i = 0; i < _records.Count; i++)
+        {
+            if (_records[i].Node is not HeadingBlock heading)
+            {
+                continue;
+            }
+
+            if (!string.Equals(Slug(MarkdownText.GetHeadingText(heading)), target, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (_virtualized)
+            {
+                var extent = _virtualScroll.Extent.Height;
+                if (extent > 0)
+                {
+                    _virtualScroll.Offset = new Vector(0, extent * i / Math.Max(1, _records.Count));
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (_records[i].View is { } control)
+            {
+                control.BringIntoView();
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    /// <summary>按当前主题重新渲染（系统主题切换后可调用）。</summary>
+    public void RefreshTheme() => Render();
+
+    private string GetCurrentText() => _activeSession?.CurrentText ?? Markdown ?? string.Empty;
+
+    private static string Slug(string text)
+    {
+        var builder = new System.Text.StringBuilder(text.Length);
+        var pendingDash = false;
+        foreach (var ch in text.Trim().ToLowerInvariant())
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                if (pendingDash && builder.Length > 0)
+                {
+                    builder.Append('-');
+                }
+
+                pendingDash = false;
+                builder.Append(ch);
+            }
+            else if (char.IsWhiteSpace(ch) || ch is '-' or '_')
+            {
+                pendingDash = true;
+            }
+        }
+
+        return builder.Length == 0 ? "section" : builder.ToString();
+    }
     internal int BeginStreamingRender()
     {
         if (_virtualized)
@@ -611,6 +773,9 @@ public sealed class PuraMarkdownView : ContentControl
             PrecomputedHighlights = precomputedHighlights,
             ComponentStates = _componentStates,
             InteractionSink = OnInteraction,
+            LinkClickSink = args => LinkClicked?.Invoke(this, args),
+            ImageLoadingSink = url => ImageLoading?.Invoke(this, new PuraImageEventArgs(url)),
+            ImageLoadedSink = (url, result) => ImageLoaded?.Invoke(this, new PuraImageLoadedEventArgs(url, result)),
             WarningSink = args => Warning?.Invoke(this, args),
         };
     }
@@ -870,6 +1035,9 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
+
+
 
 
 

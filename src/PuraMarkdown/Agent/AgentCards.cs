@@ -18,10 +18,11 @@ internal static class AgentCards
 
     /// <summary>Unsupported。</summary>
     /// <param name="theme">theme 参数。</param>
+    /// <param name="title">title 参数。</param>
     /// <param name="type">type 参数。</param>
     /// <param name="raw">raw 参数。</param>
-    public static Control Unsupported(PuraTheme theme, string type, string raw)
-        => Build(theme, "不支持的组件类型", type, raw, theme.Colors.Muted);
+    public static Control Unsupported(PuraTheme theme, string title, string type, string raw)
+        => Build(theme, title, type, raw, theme.Colors.Muted);
 
     /// <summary>Loading。</summary>
     /// <param name="theme">theme 参数。</param>
@@ -97,3 +98,4 @@ internal static class AgentCards
         };
     }
 }
+

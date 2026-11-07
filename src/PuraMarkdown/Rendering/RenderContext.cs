@@ -3,8 +3,10 @@ using Avalonia.Controls.Documents;
 using Avalonia.Threading;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
+using PuraMarkdown;
 using PuraMarkdown.Agent;
 using PuraMarkdown.Security;
+using PuraMarkdown.Platform;
 
 namespace PuraMarkdown.Rendering;
 
@@ -44,6 +46,15 @@ public sealed class RenderContext
     public Action<PuraInteractionEventArgs>? InteractionSink { get; init; }
     /// <summary>WarningSink。</summary>
     public Action<PuraWarningEventArgs>? WarningSink { get; init; }
+
+    /// <summary>链接点击回调；宿主可设置 Handled 阻止默认打开。</summary>
+    public Action<PuraLinkClickedEventArgs>? LinkClickSink { get; init; }
+
+    /// <summary>图片开始加载回调。</summary>
+    public Action<string>? ImageLoadingSink { get; init; }
+
+    /// <summary>图片加载完成回调。</summary>
+    public Action<string, IImageResult>? ImageLoadedSink { get; init; }
 
     /// <summary>RenderMarkdown。</summary>
     /// <param name="node">node 参数。</param>
@@ -113,4 +124,7 @@ public sealed class PuraWarningEventArgs(PuraWarning warning) : EventArgs
     /// <summary>Warning。</summary>
     public PuraWarning Warning { get; } = warning;
 }
+
+
+
 

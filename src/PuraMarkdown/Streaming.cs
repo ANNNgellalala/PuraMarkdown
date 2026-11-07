@@ -4,6 +4,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Markdig.Syntax;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Security;
 
@@ -45,6 +46,9 @@ public sealed class PuraStreamingOptions
     /// 保留最后一次可见内容，Complete 时全量校正。默认 1MB。
     /// </summary>
     public int MaxTailChars { get; init; } = 1024 * 1024;
+
+    /// <summary>启用块级虚拟化时，流式追加后自动滚动到底部（默认 true）。</summary>
+    public bool AutoScrollToEnd { get; init; } = true;
 
     /// <summary>
     /// 同步模式：<see cref="PuraStreamingSession.Append"/> 内联完成解析与渲染。
@@ -118,6 +122,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private bool _closed;
     private Exception? _lastWorkerError;
     private bool _tailOversizedWarned;
+    private readonly List<TaskCompletionSource> _flushWaiters = [];
     private int _flushCount;
     private int _commits;
     private int _totalParsedChars;
@@ -135,6 +140,36 @@ public sealed class PuraStreamingSession : IAsyncDisposable
 
     /// <summary>诊断：后台 worker 最近一次异常。</summary>
     public Exception? LastWorkerError => _lastWorkerError;
+
+    /// <summary>完成事件（全量校正渲染完成后触发）。</summary>
+    public event EventHandler? Completed;
+
+    /// <summary>中断事件（保留内容渲染完成后触发）。</summary>
+    public event EventHandler? Aborted;
+
+    /// <summary>待处理字符数（已接收未提交/未渲染的尾部窗口）。</summary>
+    public int PendingChars
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _tail.Length;
+            }
+        }
+    }
+
+    /// <summary>当前完整文本（含已提交与尾部窗口）。</summary>
+    public string CurrentText
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _full.ToString();
+            }
+        }
+    }
 
     /// <summary>当前会话状态。</summary>
     public PuraStreamingState State
@@ -199,14 +234,53 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         }
     }
 
+    /// <summary>追加增量文本（异步形式，便于宿主背压/取消）。</summary>
+    /// <param name="delta">追加的文本片段。</param>
+    /// <param name="cancellationToken">取消令牌。</param>
+    public Task AppendAsync(ReadOnlyMemory<char> delta, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Append(delta.ToString());
+        return Task.CompletedTask;
+    }
+
+    /// <summary>等待当前缓冲的增量完成一次解析与 UI 应用（测试/截图/导出前使用）。</summary>
+    public Task FlushAsync()
+    {
+        lock (_gate)
+        {
+            if (_options.Synchronous || _worker is null || _closed)
+            {
+                return Task.CompletedTask;
+            }
+
+            var waiter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _flushWaiters.Add(waiter);
+            if (_signal.CurrentCount == 0)
+            {
+                _signal.Release();
+            }
+
+            return waiter.Task;
+        }
+    }
+
+    /// <summary>等待流式渲染空闲（<see cref="FlushAsync"/> 的别名）。</summary>
+    public Task WaitForIdleAsync() => FlushAsync();
+
     /// <summary>完成流式：取消后台任务并做一次全量校正渲染（后台解析 + 分帧 UI 挂载）。</summary>
-    public Task CompleteAsync() => FinishAsync(PuraStreamingState.Completed, "消息内容生成完成");
+    /// <param name="cancellationToken">取消令牌。</param>
+    public Task CompleteAsync(CancellationToken cancellationToken = default)
+        => FinishAsync(PuraStreamingState.Completed, PuraStringKeys.StreamingCompleted, cancellationToken);
 
     /// <summary>中断流式：保留已有内容并切换为可用状态。</summary>
-    public Task AbortAsync() => FinishAsync(PuraStreamingState.Aborted, "消息生成已中断");
+    /// <param name="cancellationToken">取消令牌。</param>
+    public Task AbortAsync(CancellationToken cancellationToken = default)
+        => FinishAsync(PuraStreamingState.Aborted, PuraStringKeys.StreamingAborted, cancellationToken);
 
-    private async Task FinishAsync(PuraStreamingState finalState, string announcement)
+    private async Task FinishAsync(PuraStreamingState finalState, string announcementKey, CancellationToken cancellationToken)
     {
+        var announcement = _markdownOptions?.Localizer.Get(announcementKey) ?? announcementKey;
         string text;
         lock (_gate)
         {
@@ -226,15 +300,18 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         var options = _markdownOptions;
         if (_options.Synchronous || options is null)
         {
+            DrainFlushWaiters();
             _view.RenderText(text, isStreaming: false);
             _view.Announce(announcement);
+            RaiseFinished(finalState);
             return;
         }
 
         try
         {
             // 全量解析 + 代码高亮放后台，UI 线程只分帧挂载控件；允许宿主从非 UI 线程调用。
-            var prepared = await Task.Run(() => PrepareDocument(text, options)).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var prepared = await Task.Run(() => PrepareDocument(text, options), cancellationToken).ConfigureAwait(false);
             await RenderOnUiAsync(() => _view.RenderPreparedAsync(prepared)).ConfigureAwait(false);
         }
         catch
@@ -249,8 +326,37 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         await RenderOnUiAsync(() =>
         {
             _view.Announce(announcement);
+            RaiseFinished(finalState);
             return Task.CompletedTask;
         }).ConfigureAwait(false);
+    }
+
+    private void RaiseFinished(PuraStreamingState finalState)
+    {
+        DrainFlushWaiters();
+        if (finalState == PuraStreamingState.Completed)
+        {
+            Completed?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            Aborted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void DrainFlushWaiters()
+    {
+        List<TaskCompletionSource> waiters;
+        lock (_gate)
+        {
+            waiters = [.. _flushWaiters];
+            _flushWaiters.Clear();
+        }
+
+        foreach (var waiter in waiters)
+        {
+            waiter.TrySetResult();
+        }
     }
 
     private static async Task RenderOnUiAsync(Func<Task> action)
@@ -344,10 +450,12 @@ public sealed class PuraStreamingSession : IAsyncDisposable
                 var update = BuildUpdate();
                 if (update is null)
                 {
+                    DrainFlushWaiters();
                     continue;
                 }
 
                 await ApplyOnUiAsync(update).ConfigureAwait(false);
+                DrainFlushWaiters();
                 if (_closed)
                 {
                     return;
@@ -370,6 +478,11 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         if (Dispatcher.UIThread.CheckAccess())
         {
             _view.ApplyStreamingUpdate(update);
+            if (_options.AutoScrollToEnd)
+            {
+                _view.ScrollToEnd();
+            }
+
             return;
         }
 
@@ -379,6 +492,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             try
             {
                 _view.ApplyStreamingUpdate(update);
+                if (_options.AutoScrollToEnd)
+                {
+                    _view.ScrollToEnd();
+                }
             }
             finally
             {
@@ -394,6 +511,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         if (update is not null)
         {
             _view.ApplyStreamingUpdate(update);
+            if (_options.AutoScrollToEnd)
+            {
+                _view.ScrollToEnd();
+            }
         }
     }
 
@@ -666,6 +787,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
+
+
+
 
 
 

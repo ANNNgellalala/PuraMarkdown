@@ -23,14 +23,12 @@ internal sealed class ParagraphRenderer : IIncrementalPuraRenderer
     public Control Render(MarkdownObject node, RenderContext context)
     {
         var paragraph = (ParagraphBlock)node;
-        var textBlock = new TextBlock
-        {
-            TextWrapping = TextWrapping.Wrap,
-            Foreground = new SolidColorBrush(context.Theme.Colors.Text),
-            FontSize = context.Theme.Typography.BodySize,
-            FontFamily = context.Theme.Typography.BodyFont,
-            Margin = new Thickness(0, 0, 0, context.Theme.Spacing.BlockSpacing),
-        };
+        var textBlock = PuraTextBlockFactory.Create(context, wrap: true);
+        textBlock.TextWrapping = TextWrapping.Wrap;
+        textBlock.Foreground = new SolidColorBrush(context.Theme.Colors.Text);
+        textBlock.FontSize = context.Theme.Typography.BodySize;
+        textBlock.FontFamily = context.Theme.Typography.BodyFont;
+        textBlock.Margin = new Thickness(0, 0, 0, context.Theme.Spacing.BlockSpacing);
 
         DefaultInlineRenderer.RenderChildren(paragraph.Inline, textBlock.Inlines!, context);
         return textBlock;
@@ -66,15 +64,13 @@ internal sealed class HeadingRenderer : IIncrementalPuraRenderer
     public Control Render(MarkdownObject node, RenderContext context)
     {
         var heading = (HeadingBlock)node;
-        var textBlock = new TextBlock
-        {
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = context.Theme.Typography.HeadingSize(heading.Level),
-            FontWeight = FontWeight.Bold,
-            Foreground = new SolidColorBrush(context.Theme.Colors.Text),
-            FontFamily = context.Theme.Typography.BodyFont,
-            Margin = new Thickness(0, heading.Level == 1 ? 12 : 8, 0, 4),
-        };
+        var textBlock = PuraTextBlockFactory.Create(context, wrap: true);
+        textBlock.TextWrapping = TextWrapping.Wrap;
+        textBlock.FontSize = context.Theme.Typography.HeadingSize(heading.Level);
+        textBlock.FontWeight = FontWeight.Bold;
+        textBlock.Foreground = new SolidColorBrush(context.Theme.Colors.Text);
+        textBlock.FontFamily = context.Theme.Typography.BodyFont;
+        textBlock.Margin = new Thickness(0, heading.Level == 1 ? 12 : 8, 0, 4);
 
         DefaultInlineRenderer.RenderChildren(heading.Inline, textBlock.Inlines!, context);
         AutomationProperties.SetHeadingLevel(textBlock, Math.Clamp(heading.Level, 1, 6));
@@ -230,13 +226,11 @@ internal sealed class ListRenderer : IPuraRenderer
             {
                 if (ReferenceEquals(child, taskParagraph))
                 {
-                    var taskText = new TextBlock
-                    {
-                        TextWrapping = TextWrapping.Wrap,
-                        FontSize = context.Theme.Typography.BodySize,
-                        Foreground = new SolidColorBrush(context.Theme.Colors.Text),
-                        FontFamily = context.Theme.Typography.BodyFont,
-                    };
+                    var taskText = PuraTextBlockFactory.Create(context, wrap: true);
+                    taskText.TextWrapping = TextWrapping.Wrap;
+                    taskText.FontSize = context.Theme.Typography.BodySize;
+                    taskText.Foreground = new SolidColorBrush(context.Theme.Colors.Text);
+                    taskText.FontFamily = context.Theme.Typography.BodyFont;
                     DefaultInlineRenderer.RenderChildren(taskParagraph.Inline, taskText.Inlines!, context, skipFirst: true);
                     content.Children.Add(taskText);
                 }
@@ -298,6 +292,7 @@ internal sealed class FallbackTextRenderer : IPuraRenderer
             TextWrapping = TextWrapping.Wrap,
         };
 }
+
 
 
 

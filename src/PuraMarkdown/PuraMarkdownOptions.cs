@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Platform;
 using PuraMarkdown.Security;
 
@@ -40,10 +41,18 @@ public sealed class PuraMarkdownOptions
     /// <summary>Limits。</summary>
     public PuraLimits Limits { get; init; } = new();
 
+    /// <summary>本地化文案（默认中文；内置 <see cref="ChinesePuraLocalizer"/>）。</summary>
+    public IPuraLocalizer Localizer { get; init; } = ChinesePuraLocalizer.Instance;
+
+    /// <summary>正文是否可选中/复制（使用 SelectableTextBlock）。默认 false。</summary>
+    public bool EnableTextSelection { get; init; }
+
     /// <summary>
     /// 启用块级虚拟化：控件内部使用 ItemsRepeater 只实例化视口内的块，适合单条超长消息。
     /// 启用后控件自带 ScrollViewer，宿主不要再外层再包一层滚动容器；默认 false（StackPanel）。
     /// </summary>
     public bool EnableBlockVirtualization { get; init; }
 }
+
+
 

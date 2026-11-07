@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Json.Schema;
 using Markdig.Syntax;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Rendering;
 
 namespace PuraMarkdown.Agent;
@@ -27,16 +28,17 @@ internal sealed class AgentComponentRenderer : IPuraRenderer
     public Control Render(MarkdownObject node, RenderContext context)
     {
         var agentBlock = (PuraAgentBlock)node;
+        var localizer = context.Options.Localizer;
 
         if (!agentBlock.IsClosed)
         {
-            return AgentCards.Loading(context.Theme, "组件加载中…");
+            return AgentCards.Loading(context.Theme, localizer.Get(PuraStringKeys.ComponentLoading));
         }
 
         // 流式尾部窗口：不执行 JSON 解析/Schema 校验等重型工作，等块稳定提交后再渲染。
         if (context.IsStreaming && context.IsTail)
         {
-            return AgentCards.Loading(context.Theme, "交互组件准备中…");
+            return AgentCards.Loading(context.Theme, localizer.Get(PuraStringKeys.ComponentPreparing));
         }
 
         var raw = MarkdownText.GetLeafText(agentBlock).Trim();
@@ -44,13 +46,13 @@ internal sealed class AgentComponentRenderer : IPuraRenderer
 
         if (raw.Length == 0)
         {
-            return AgentCards.Error(context.Theme, "组件载荷为空", "pura-agent 围栏内没有 JSON 对象", raw);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentEmpty), localizer.Get(PuraStringKeys.ComponentEmptyDetail), raw);
         }
 
         if (raw.Length > context.Options.Limits.MaxFenceChars)
         {
             context.Warn("PURA-LIM-004", $"组件载荷超过 {context.Options.Limits.MaxFenceChars} 字符", nodeType);
-            return AgentCards.Error(context.Theme, "组件载荷超限", $"超过 {context.Options.Limits.MaxFenceChars} 字符", string.Empty);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentTooLarge), localizer.Get(PuraStringKeys.ComponentTooLargeDetail, context.Options.Limits.MaxFenceChars), string.Empty);
         }
 
         string? type;
@@ -60,42 +62,42 @@ internal sealed class AgentComponentRenderer : IPuraRenderer
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
             {
-                return AgentCards.Error(context.Theme, "组件载荷必须是 JSON 对象", "$", raw);
+                return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentMustBeObject), "$", raw);
             }
 
             if (!AgentJson.TryGetType(root, out type) || string.IsNullOrWhiteSpace(type))
             {
-                return AgentCards.Error(context.Theme, "缺少 type 字段", "type", raw);
+                return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentMissingType), "type", raw);
             }
         }
         catch (JsonException ex)
         {
             context.Warn("PURA-DATA-001", $"pura-agent JSON 解析失败：{ex.Message}", nodeType);
-            return AgentCards.Error(context.Theme, "JSON 解析失败", ex.Message, raw);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentJsonParseFailed), ex.Message, raw);
         }
 
         var parser = context.Components.ResolveParser(type);
         if (parser is null)
         {
-            return AgentCards.Unsupported(context.Theme, type, raw);
+            return AgentCards.Unsupported(context.Theme, localizer.Get(PuraStringKeys.UnsupportedComponent), type, raw);
         }
 
         if (!parser.TryParse(raw, out var component, out var error) || component is null)
         {
             context.Warn("PURA-DATA-002", $"组件 {type} 校验失败：{error?.Message}", nodeType);
-            return AgentCards.Error(context.Theme, "组件校验失败", FormatError(error), raw);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentValidationFailed), FormatError(error, localizer), raw);
         }
 
         if (!SchemaValidation.TryValidate(parser, raw, out var schemaError))
         {
             context.Warn("PURA-DATA-002", $"组件 {type} schema 校验失败：{schemaError}", nodeType);
-            return AgentCards.Error(context.Theme, "组件 schema 校验失败", schemaError, raw);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentSchemaFailed), schemaError, raw);
         }
 
         var renderer = context.Components.ResolveRenderer(component.Type);
         if (renderer is null)
         {
-            return AgentCards.Unsupported(context.Theme, component.Type, raw);
+            return AgentCards.Unsupported(context.Theme, localizer.Get(PuraStringKeys.UnsupportedComponent), component.Type, raw);
         }
 
         try
@@ -105,12 +107,14 @@ internal sealed class AgentComponentRenderer : IPuraRenderer
         catch (Exception ex)
         {
             context.Warn("PURA-RENDER-001", $"组件渲染失败：{ex.Message}", nodeType, renderer.GetType().Name);
-            return AgentCards.Error(context.Theme, "组件渲染失败", ex.Message, raw);
+            return AgentCards.Error(context.Theme, localizer.Get(PuraStringKeys.ComponentRenderFailed), ex.Message, raw);
         }
     }
 
-    private static string FormatError(PuraComponentError? error)
-        => error is null ? "未知校验错误" : error.Path is null ? error.Message : $"{error.Path}: {error.Message}";
+    private static string FormatError(PuraComponentError? error, IPuraLocalizer localizer)
+        => error is null
+            ? localizer.Get(PuraStringKeys.ComponentUnknownValidation)
+            : error.Path is null ? error.Message : $"{error.Path}: {error.Message}";
 }
 
 internal static class SchemaValidation
@@ -188,6 +192,7 @@ internal sealed class ConfirmComponentRenderer : IAgentComponentRenderer
     public Control RenderComponent(PuraAgentComponent component, MarkdownObject node, RenderContext context)
         => new PuraConfirmControl((PuraConfirmComponent)component, node, context);
 }
+
 
 
 

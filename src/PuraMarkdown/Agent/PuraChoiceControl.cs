@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Markdig.Syntax;
+using PuraMarkdown.Localization;
 using PuraMarkdown.Rendering;
 
 namespace PuraMarkdown.Agent;
@@ -234,13 +235,13 @@ internal sealed class PuraChoiceControl : Border
         var selected = _model.Options.Where(o => _selected.Contains(o.Id)).Select(o => o.Id).ToArray();
         if (selected.Length < Math.Max(1, _model.Min))
         {
-            ShowError($"至少选择 {Math.Max(1, _model.Min)} 项");
+            ShowError(_context.Options.Localizer.Get(PuraStringKeys.ChoiceSelectAtLeast, Math.Max(1, _model.Min)));
             return;
         }
 
         if (_model.Max is { } max && selected.Length > max)
         {
-            ShowError($"最多选择 {max} 项");
+            ShowError(_context.Options.Localizer.Get(PuraStringKeys.ChoiceSelectAtMost, max));
             return;
         }
 
@@ -270,6 +271,7 @@ internal sealed class PuraChoiceControl : Border
         });
     }
 }
+
 
 
 
