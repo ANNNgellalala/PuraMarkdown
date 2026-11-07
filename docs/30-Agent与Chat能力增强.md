@@ -1,7 +1,7 @@
 # Agent 与 Chat 能力增强（无新增 UI 组件）
 
 > 目标：PuraMarkdown 专注 **Markdown 渲染 + Agent 协议/会话数据能力**；不新增消息气泡、按钮等面向 Agent 的 UI 组件，UI 组件由 Arc.Avalonia 等宿主/组件库负责。
-> 状态：已实现，当前 108 个测试通过。
+> 状态：已实现，当前 110 个测试通过。
 
 ---
 
@@ -141,7 +141,7 @@ PuraMarkdown 只保证：Markdown 渲染、Agent 围栏协议、交互状态、�
 
 ```
 dotnet build PuraMarkdown.slnx        → 0 警告 / 0 错误
-dotnet test tests/PuraMarkdown.Tests  → 108 通过 / 0 失败
+dotnet test tests/PuraMarkdown.Tests  → 110 通过 / 0 失败
 ```
 
 新增测试覆盖：
@@ -158,6 +158,7 @@ dotnet test tests/PuraMarkdown.Tests  → 108 通过 / 0 失败
 - PuraMarkdown 提供渲染视图与 `PuraChatMessage`/快照/`InteractionStates`；
 - 两者通过 `PuraChatMessage`、`InteractionOccurred`、`PuraInteractionStates` 对接，不互相继承控件；
 - 需要"消息操作菜单"等 UI 时，由 Arc.Avalonia 基于 `PuraChatMessage.Metadata`/`Id` 实现。
+
 
 
 

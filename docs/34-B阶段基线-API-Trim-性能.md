@@ -20,7 +20,7 @@
 | `PuraMarkdown` | 576 |
 | `PuraMarkdown.Agent` | 135 |
 | `PuraMarkdown.Chat` | 103 |
-| `PuraMarkdown.Syntax` | 180 |
+| `PuraMarkdown.Syntax` | 211 |
 | `PuraMarkdown.Testing` | 21 |
 | `PuraMarkdown.Diagrams.Mermaid` | 12 |
 | `PuraMarkdown.Highlighting.ColorCode` | 11 |
@@ -126,4 +126,5 @@ dotnet publish ... -p:PublishTrimmed=true -p:TrimMode=partial
 dotnet publish ... -p:PublishAot=true
 dotnet run --project samples/PuraMarkdown.Spike -- --conversation-perf
 ```
+
 
