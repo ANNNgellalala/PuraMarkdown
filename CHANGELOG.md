@@ -12,9 +12,11 @@
 - 流式：稳定边界 + 尾部窗口增量、后台解析 + UI 合帧、`AppendAsync`/`FlushAsync`/`Completed`/`Aborted`、取消、代码高亮后台预计算与节流。
 - 宿主功能：文本选择/复制/纯文本、大纲与锚点滚动、链接/图片事件、系统主题实时切换。
 - 本地化：`IPuraLocalizer` / `ChinesePuraLocalizer`，默认中文，可替换 UI 文案。
+- Chat 会话能力：消息时间戳/版本/元数据/错误、历史增删改、自动滚动策略、流式同消息更新、中断/失败状态、快照 JSON。
+- Agent 能力：交互状态持久化与 JSON 序列化、组件目录 `ComponentTypes`、组合式组件注册与重复校验。
 - 插件契约：`IFenceRenderer`（取代 `IDiagramRenderer`）、`UseInlineRenderer`、`UseSanitizer`、插件 fail-fast/回退链。
 - 性能与虚拟化：块级虚拟化（`EnableBlockVirtualization`）、`PuraMarkdown.Chat` 消息级虚拟化、Complete 分帧渲染。
-- 测试与工具：`PuraMarkdown.Testing`、95 个测试、golden 基线、性能诊断模式。
+- 测试与工具：`PuraMarkdown.Testing`、101 个测试、golden 基线、性能诊断模式。
 - 示例与文档：Avalonia Demo、Spike、设计文档、ADR、性能/虚拟化/API 文档。
 - CI：GitHub Actions（restore/build/test/pack），裁剪与 Native AOT 手动验证通过。
 
@@ -40,6 +42,8 @@
 - 虚拟化：交互组件状态按 ComponentId 持久化，回收/重建后恢复。
 - 流式尾部超限时只在稳定边界强制提交，避免切断未闭合代码围栏/表格。
 - 流式稳定块提交前移除旧尾部块，修复代码块重复显示。
+
+
 
 
 

@@ -22,6 +22,8 @@
 | `void Prewarm(string markdown)` | 预热首次渲染路径 |
 | `void ScrollToEnd()` | 块级虚拟化模式滚动到底部 |
 | `IReadOnlyList<PuraHeadingInfo> GetOutline()` | 标题大纲（Level/Text/Anchor） |
+| `InteractionStates` | 已上报交互状态（ComponentId 索引） |
+| `SetInteractionState` / `ApplyInteractionStates` / `ClearInteractionStates` | 状态持久化/恢复（恢复时自动重渲染） |
 | `string GetPlainText()` | 纯文本提取 |
 | `Task CopyAllAsync(CancellationToken = default)` | 复制纯文本 |
 | `bool ScrollToAnchor(string anchor)` | 滚动到标题锚点 |
@@ -110,7 +112,19 @@ public sealed class PuraStreamingSession : IAsyncDisposable
 `PuraStreamingState`：`Created/Streaming/Completed/Aborted`。
 `PuraStreamingStatistics`：Flush/Commit 次数、已提交/尾部字符、解析量等。
 
-### 1.5 主题/本地化/预算
+### 1.5 交互状态
+
+```csharp
+IReadOnlyDictionary<string, PuraInteractionEventArgs> InteractionStates { get; }
+void SetInteractionState(PuraInteractionEventArgs state);
+void ApplyInteractionStates(IEnumerable<PuraInteractionEventArgs> states);
+void ClearInteractionStates();
+
+string json = PuraInteractionStates.Serialize(states);
+var restored = PuraInteractionStates.Deserialize(json);
+```
+
+### 1.6 主题/本地化/预算
 
 - `PuraTheme`：`Light`/`Dark` + `Colors/Typography/Spacing/CodeTheme`。
 - `PuraLocalizer`：`IPuraLocalizer.Get(key, args)`；内置 `ChinesePuraLocalizer`；键见 `PuraStringKeys`。
@@ -188,6 +202,7 @@ builder.UsePlugin(new AgentPlugin());               // 显式
 
 public sealed class AgentPlugin : IPuraPlugin
 {
+    IReadOnlyList<string> ComponentTypes { get; }
     AgentPlugin();
     AgentPlugin(IEnumerable<IAgentComponentParser>? parsers,
                 IEnumerable<IAgentComponentRenderer>? renderers);
@@ -216,27 +231,58 @@ public interface IAgentComponentRenderer
 
 ```csharp
 public enum PuraChatRole { User, Assistant, System }
-public enum PuraChatMessageStatus { Complete, Streaming, Failed }
+public enum PuraChatMessageStatus { Complete, Streaming, Failed, Aborted }
+public enum PuraChatAutoScrollMode { Never, NearBottom, Always }
 
 public sealed class PuraChatMessage
 {
     string Id { get; init; }
     PuraChatRole Role { get; init; }
-    string Markdown { get; set; }
+    string Markdown { get; set; }          // 变更递增 ContentVersion/UpdatedAt
     PuraChatMessageStatus Status { get; set; }
+    string? Error { get; set; }
+    DateTimeOffset CreatedAt { get; init; }
+    DateTimeOffset UpdatedAt { get; }
+    int ContentVersion { get; }
+    IDictionary<string, string> Metadata { get; }
 }
 
 public sealed class PuraChatView : ContentControl
 {
     PuraMarkdownOptions? Options { get; set; }
+    PuraChatAutoScrollMode AutoScrollMode { get; set; }
     ObservableCollection<PuraChatMessage> Messages { get; }
+    PuraStreamingSession? ActiveSession { get; }
+    bool IsStreaming { get; }
+    bool IsNearBottom { get; }
+
+    event EventHandler<PuraChatMessage>? MessageAdded;
+    event EventHandler<PuraChatMessage>? MessageUpdated;
+    event EventHandler<PuraChatMessage>? MessageRemoved;
     event EventHandler<PuraInteractionEventArgs>? InteractionOccurred;
     event EventHandler<PuraWarningEventArgs>? Warning;
 
     void AddMessage(PuraChatMessage message);
+    void InsertMessage(int index, PuraChatMessage message);
+    void UpdateMessage(PuraChatMessage message);
+    bool RemoveMessage(string messageId);
+    void ClearMessages();
+    void ReplaceMessages(IEnumerable<PuraChatMessage> messages);
+    PuraChatMessage? FindMessage(string messageId);
+
     PuraStreamingSession BeginStreamingMessage(PuraChatMessage? message = null);
+    void AbortStreaming();
     void ScrollToEnd();
     void ScrollToMessage(string messageId);
+
+    PuraChatSnapshot CreateSnapshot();
+    void RestoreSnapshot(PuraChatSnapshot snapshot);
+}
+
+public static class PuraChatSnapshotSerializer
+{
+    string Serialize(PuraChatSnapshot snapshot);
+    PuraChatSnapshot Deserialize(string json);
 }
 ```
 
@@ -286,3 +332,6 @@ public interface IPuraClipboard
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
 > `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+
+
+
