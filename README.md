@@ -180,6 +180,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [Markdown 完整性检查](docs/20-Markdown完整性检查.md) | 软换行/强制提交等修复记录与剩余 P0/P1/P2 清单 | 架构/质量 |
 | [公共 API 与功能扩展建议](docs/21-公共API与功能扩展建议.md) | API 一致性、宿主集成、扩展点与内容语法建议 | 架构/产品 |
 | [P1 功能与本地化实现](docs/22-P1功能与本地化实现.md) | 流式生命周期、选择/复制、大纲、事件、主题、中文默认本地化 | 实现者/验收 |
+| [公共 API 设计评审](docs/23-公共API设计评审.md) | API 分层、1.0 前收敛项、扩展点与开放问题 | 架构/决策 |
 | [示例 Agent 回复](samples/agent-conversation.md) | 新语法样例 | 实现者 |
 | [Markdig 调研](docs/research/markdig.md) / [生态调研](docs/research/ecosystem.md) | 技术事实与选型依据 | 实现者 |
 | [ADR](docs/adr/) | 决策记录（0011–0016 为 v0.3 新决策） | 所有人 |
@@ -212,6 +213,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
