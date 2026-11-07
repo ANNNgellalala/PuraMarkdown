@@ -97,6 +97,32 @@ public sealed class PluginTests
     }
 
     [AvaloniaFact]
+    public void Agent_components_can_be_composed()
+    {
+        var pipeline = new PuraPipelineBuilder()
+            .UseCommonMark()
+            .UseGfm()
+            .UseAgentComponents()
+            .UseAgentComponent(new PluginSamples.RatingParser(), new PluginSamples.RatingRenderer())
+            .Build();
+
+        var view = new PuraMarkdownView { Options = new PuraMarkdownOptions { Pipeline = pipeline } };
+        view.Markdown = """
+            ```pura-agent
+            {"type":"choice","version":"1.0","question":"Q","options":[{"id":"a","label":"A"}]}
+            ```
+
+            ```pura-agent
+            { "type": "rating", "version": "1.0", "label": "评分", "max": 5 }
+            ```
+            """;
+
+        var dump = ControlTreeDumper.Dump(view);
+        Assert.Single(ControlTreeDumper.Find<Avalonia.Controls.RadioButton>(view));
+        Assert.Contains(ControlTreeDumper.Find<Avalonia.Controls.Button>(view), button => Equals(button.Content, "5"));
+    }
+
+    [AvaloniaFact]
     public void Rating_plugin_renders_and_reports()
     {
         var pipeline = new PuraPipelineBuilder()
@@ -283,6 +309,8 @@ public sealed class PluginTests
             => throw new InvalidOperationException("diagram boom");
     }
 }
+
+
 
 
 

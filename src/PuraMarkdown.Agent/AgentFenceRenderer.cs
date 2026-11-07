@@ -8,13 +8,17 @@ namespace PuraMarkdown.Agent;
 /// <summary>Agent 语法插件：接管 `pura-agent` 围栏。</summary>
 public sealed class AgentPlugin : IPuraPlugin
 {
-    private readonly IReadOnlyList<IAgentComponentParser> _parsers;
-    private readonly IReadOnlyList<IAgentComponentRenderer> _renderers;
+    private readonly AgentComponentSet _components;
 
     /// <summary>创建内置 choice/confirm 的 Agent 插件。</summary>
     public AgentPlugin()
-        : this(null, null)
+        : this(new AgentComponentSet())
     {
+    }
+
+    internal AgentPlugin(AgentComponentSet components)
+    {
+        _components = components;
     }
 
     /// <summary>创建 Agent 插件，可追加自定义组件解析器/渲染器。</summary>
@@ -23,9 +27,18 @@ public sealed class AgentPlugin : IPuraPlugin
     public AgentPlugin(
         IEnumerable<IAgentComponentParser>? parsers,
         IEnumerable<IAgentComponentRenderer>? renderers)
+        : this(new AgentComponentSet())
     {
-        _parsers = (parsers ?? []).ToArray();
-        _renderers = (renderers ?? []).ToArray();
+        var rendererList = (renderers ?? []).ToArray();
+        foreach (var parser in parsers ?? [])
+        {
+            var renderer = rendererList.FirstOrDefault(candidate =>
+                string.Equals(candidate.ComponentType, parser.ComponentType, StringComparison.OrdinalIgnoreCase));
+            if (renderer is not null)
+            {
+                _components.Add(parser, renderer);
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -40,43 +53,18 @@ public sealed class AgentPlugin : IPuraPlugin
     /// <inheritdoc/>
     public void Configure(PuraPipelineBuilder builder)
     {
-        var allParsers = new List<IAgentComponentParser> { new ChoiceParser(), new ConfirmParser() };
-        allParsers.AddRange(_parsers);
-        var allRenderers = new List<IAgentComponentRenderer>
-        {
-            new ChoiceComponentRenderer(),
-            new ConfirmComponentRenderer(),
-        };
-        allRenderers.AddRange(_renderers);
-
-        var registry = new PuraComponentRegistry(allParsers, allRenderers);
-        builder.UseFenceRenderer(new AgentFenceRenderer(registry));
+        builder.UseFenceRenderer(new AgentFenceRenderer(_components));
     }
-}
-
-/// <summary>扩展方法：`builder.UseAgentComponents()` 等价于注册 <see cref="AgentPlugin"/>。</summary>
-public static class AgentPipelineExtensions
-{
-    /// <summary>启用内置 Agent 组件。</summary>
-    public static PuraPipelineBuilder UseAgentComponents(this PuraPipelineBuilder builder)
-        => builder.UsePlugin(new AgentPlugin());
-
-    /// <summary>启用 Agent 组件并追加自定义组件。</summary>
-    public static PuraPipelineBuilder UseAgentComponents(
-        this PuraPipelineBuilder builder,
-        IEnumerable<IAgentComponentParser>? parsers,
-        IEnumerable<IAgentComponentRenderer>? renderers)
-        => builder.UsePlugin(new AgentPlugin(parsers, renderers));
 }
 
 /// <summary>把 `pura-agent` 围栏解析为组件控件。</summary>
 public sealed class AgentFenceRenderer : IFenceRenderer
 {
-    private readonly PuraComponentRegistry _registry;
+    private readonly AgentComponentSet _components;
 
-    internal AgentFenceRenderer(PuraComponentRegistry registry)
+    internal AgentFenceRenderer(AgentComponentSet components)
     {
-        _registry = registry;
+        _components = components;
     }
 
     /// <inheritdoc/>
@@ -94,7 +82,7 @@ public sealed class AgentFenceRenderer : IFenceRenderer
             return AgentCards.Loading(context.Theme, context.Options.Localizer.Get(PuraStringKeys.ComponentPreparing));
         }
 
-        return AgentComponentRenderer.RenderPayload(source, context, _registry);
+        return AgentComponentRenderer.RenderPayload(source, context, _components.CreateRegistry());
     }
 }
 
@@ -262,6 +250,9 @@ internal static class SchemaValidation
         return null;
     }
 }
+
+
+
 
 
 

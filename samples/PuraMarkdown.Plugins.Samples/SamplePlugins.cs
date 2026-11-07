@@ -221,9 +221,7 @@ public sealed class RatingPlugin : IPuraPlugin
 
     public void Configure(PuraPipelineBuilder builder)
     {
-        builder.UsePlugin(new AgentPlugin(
-            [new RatingParser()],
-            [new RatingRenderer()]));
+        builder.UseAgentComponent(new RatingParser(), new RatingRenderer());
     }
 }
 
@@ -282,6 +280,7 @@ public sealed class SampleDiagramPlugin : IPuraPlugin
 
     public void Configure(PuraPipelineBuilder builder) => builder.UseFenceRenderer(new SampleDiagramRenderer());
 }
+
 
 
 
