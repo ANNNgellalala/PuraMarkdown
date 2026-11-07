@@ -178,6 +178,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [块级虚拟化实现](docs/18-块级虚拟化实现.md) | 单条 1MB/1000 块：默认 69.8MB/2.65s → 1.6MB/0.45s | 架构/性能 |
 | [Git 版本管理与发布流程](docs/19-Git版本管理与发布流程.md) | 分支、提交规范、版本号、tag 与发布步骤 | 贡献者/发布负责人 |
 | [Markdown 完整性检查](docs/20-Markdown完整性检查.md) | 软换行/强制提交等修复记录与剩余 P0/P1/P2 清单 | 架构/质量 |
+| [公共 API 与功能扩展建议](docs/21-公共API与功能扩展建议.md) | API 一致性、宿主集成、扩展点与内容语法建议 | 架构/产品 |
 | [示例 Agent 回复](samples/agent-conversation.md) | 新语法样例 | 实现者 |
 | [Markdig 调研](docs/research/markdig.md) / [生态调研](docs/research/ecosystem.md) | 技术事实与选型依据 | 实现者 |
 | [ADR](docs/adr/) | 决策记录（0011–0016 为 v0.3 新决策） | 所有人 |
@@ -210,6 +211,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
