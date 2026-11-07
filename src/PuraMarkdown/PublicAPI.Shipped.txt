@@ -315,7 +315,7 @@ PuraMarkdown.PuraMarkdownView.Warning -> System.EventHandler<PuraMarkdown.Render
 PuraMarkdown.PuraPipeline
 PuraMarkdown.PuraPipeline.Environment.get -> PuraMarkdown.PuraRenderEnvironment!
 PuraMarkdown.PuraPipeline.Parse(string! markdown) -> Markdig.Syntax.MarkdownDocument!
-PuraMarkdown.PuraPipeline.ParseDocument(string! markdown, int version = 0, PuraMarkdown.Security.PuraSyntaxOptions? options = null) -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.PuraPipeline.ParseDocument(string! markdown, int version = 0, PuraMarkdown.Syntax.PuraSyntaxOptions? options = null) -> PuraMarkdown.Syntax.PuraDocument!
 PuraMarkdown.PuraPipeline.Syntax.get -> PuraMarkdown.Syntax.PuraSyntaxPipeline!
 PuraMarkdown.PuraPipelineBuilder
 PuraMarkdown.PuraPipelineBuilder.Build() -> PuraMarkdown.PuraPipeline!
@@ -574,3 +574,4 @@ static readonly PuraMarkdown.PuraMarkdownView.OptionsProperty -> Avalonia.Styled
 virtual PuraMarkdown.Platform.IImageResult.EqualityContract.get -> System.Type!
 virtual PuraMarkdown.Platform.IImageResult.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
 virtual PuraMarkdown.Platform.IImageResult.PrintMembers(System.Text.StringBuilder! builder) -> bool
+

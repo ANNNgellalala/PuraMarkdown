@@ -66,7 +66,7 @@ new PuraMarkdownOptions
 | 方法 | 说明 |
 | --- | --- |
 | `UseCommonMark()` / `UseGfm()` | CommonMark / GFM |
-| `UseRenderer(IPuraRenderer, int priority = 100)` | 块渲染器 |
+| `UseRenderer(IPuraNodeRenderer, int priority = 100)` | 块/节点渲染器 |
 | `UseInlineRenderer(IPuraInlineRenderer, int priority = 100)` | 行内渲染器 |
 | `UseFenceRenderer(IFenceRenderer, int priority = 100)` | 围栏渲染器 |
 | `UseCodeHighlighter(ICodeHighlighter)` | 代码高亮 |
@@ -188,6 +188,44 @@ public sealed class PuraSyntaxStreamingSession
 - `IPuraNodeRenderer` 输入 `MarkdownObject`，Arc 可实现自定义渲染器；
 - `ParseIncremental` 按顶层块定位受影响区间（前后扩一块）只重解析该段，复用其余 AST；引用定义/异常回退全量；命中时 `previous` 被消费。
 
+### 2.1 语法节点兼容矩阵
+
+```csharp
+public static class MarkdigCompatibility
+{
+    public const string TestedPackageVersion = "1.5.1";
+    public const string TestedAssemblyVersion = "1.5.0.0";
+
+    public static string CurrentAssemblyVersion { get; }
+    public static IReadOnlyList<PuraNodeSupportInfo> Nodes { get; }
+    public static IReadOnlyList<Type> SupportedNodeTypes { get; }
+
+    public static bool IsSupported(MarkdownObject node);
+    public static PuraNodeSupportInfo? Describe(MarkdownObject node);
+}
+```
+
+`PuraNodeSupport`：`Rendered / Structural / ParsedNotRendered / Fallback / NotContract`。  
+完整节点表与升级检查清单见 [Markdig 支持节点子集与兼容矩阵](35-Markdig支持节点子集与兼容矩阵.md)。
+
+### 2.2 文档渲染宿主
+
+```csharp
+public sealed class PuraDocumentView : ContentControl
+{
+    PuraMarkdownOptions? Options { get; set; }
+    PuraDocument? Document { get; set; }
+
+    event EventHandler<PuraInteractionEventArgs>? InteractionOccurred;
+    event EventHandler<PuraWarningEventArgs>? Warning;
+    event EventHandler<PuraLinkClickedEventArgs>? LinkClicked;
+    event EventHandler<PuraImageEventArgs>? ImageLoading;
+    event EventHandler<PuraImageLoadedEventArgs>? ImageLoaded;
+}
+```
+
+`PuraMarkdownView.RenderDocument(PuraDocument)` 也可直接渲染预解析文档，不重新解析。
+
 ---
 
 ## 3. 插件契约
@@ -201,10 +239,15 @@ public interface IPuraPlugin
     void Configure(PuraPipelineBuilder builder);
 }
 
-public interface IPuraRenderer
+public interface IPuraNodeRenderer
 {
     bool CanRender(MarkdownObject node, RenderContext context);
     Control Render(MarkdownObject node, RenderContext context);
+}
+
+// 兼容旧名；等价于 IPuraNodeRenderer
+public interface IPuraRenderer : IPuraNodeRenderer
+{
 }
 
 public interface IIncrementalPuraRenderer : IPuraRenderer
@@ -390,6 +433,7 @@ public interface IPuraClipboard
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
 > `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+
 
 
 

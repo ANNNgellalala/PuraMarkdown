@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using Markdig.Syntax;
 using PuraMarkdown.Localization;
 using PuraMarkdown.Security;
+using PuraMarkdown.Syntax;
 using PuraMarkdown.Platform;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Testing;
@@ -244,6 +245,7 @@ public sealed class P1FeatureTests
         }
     }
 }
+
 
 
 

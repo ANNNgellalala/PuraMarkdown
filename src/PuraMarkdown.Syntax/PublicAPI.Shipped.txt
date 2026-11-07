@@ -25,12 +25,12 @@ override PuraMarkdown.Syntax.PuraTextChange.GetHashCode() -> int
 override PuraMarkdown.Syntax.PuraTextChange.ToString() -> string!
 PuraMarkdown.Security.DefaultAstSanitizer
 PuraMarkdown.Security.DefaultAstSanitizer.DefaultAstSanitizer() -> void
-PuraMarkdown.Security.DefaultAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.Security.PuraSyntaxOptions! options) -> PuraMarkdown.Security.SanitizeResult!
+PuraMarkdown.Security.DefaultAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.Syntax.PuraSyntaxOptions! options) -> PuraMarkdown.Security.SanitizeResult!
 PuraMarkdown.Security.DefaultUrlPolicy
 PuraMarkdown.Security.DefaultUrlPolicy.DefaultUrlPolicy() -> void
 PuraMarkdown.Security.DefaultUrlPolicy.Evaluate(string! url, PuraMarkdown.Security.UrlUsage usage) -> PuraMarkdown.Security.UrlDecision
 PuraMarkdown.Security.IAstSanitizer
-PuraMarkdown.Security.IAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.Security.PuraSyntaxOptions! options) -> PuraMarkdown.Security.SanitizeResult!
+PuraMarkdown.Security.IAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.Syntax.PuraSyntaxOptions! options) -> PuraMarkdown.Security.SanitizeResult!
 PuraMarkdown.Security.IUrlPolicy
 PuraMarkdown.Security.IUrlPolicy.Evaluate(string! url, PuraMarkdown.Security.UrlUsage usage) -> PuraMarkdown.Security.UrlDecision
 PuraMarkdown.Security.PuraLimits
@@ -43,14 +43,6 @@ PuraMarkdown.Security.PuraLimits.MaxFenceChars.set -> void
 PuraMarkdown.Security.PuraLimits.MaxNestingDepth.get -> int
 PuraMarkdown.Security.PuraLimits.MaxNestingDepth.set -> void
 PuraMarkdown.Security.PuraLimits.PuraLimits() -> void
-PuraMarkdown.Security.PuraSyntaxOptions
-PuraMarkdown.Security.PuraSyntaxOptions.Limits.get -> PuraMarkdown.Security.PuraLimits!
-PuraMarkdown.Security.PuraSyntaxOptions.Limits.init -> void
-PuraMarkdown.Security.PuraSyntaxOptions.PuraSyntaxOptions() -> void
-PuraMarkdown.Security.PuraSyntaxOptions.Sanitizer.get -> PuraMarkdown.Security.IAstSanitizer!
-PuraMarkdown.Security.PuraSyntaxOptions.Sanitizer.init -> void
-PuraMarkdown.Security.PuraSyntaxOptions.UrlPolicy.get -> PuraMarkdown.Security.IUrlPolicy!
-PuraMarkdown.Security.PuraSyntaxOptions.UrlPolicy.init -> void
 PuraMarkdown.Security.SanitizeResult
 PuraMarkdown.Security.SanitizeResult.AddDiagnostic(PuraMarkdown.Syntax.PuraDiagnostic! diagnostic) -> void
 PuraMarkdown.Security.SanitizeResult.AddWarning(string! warning, Markdig.Syntax.MarkdownObject? node = null) -> void
@@ -162,12 +154,20 @@ PuraMarkdown.Syntax.PuraSyntaxBuilder.UseGfm() -> PuraMarkdown.Syntax.PuraSyntax
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseMarkdownExtension(Markdig.IMarkdownExtension! extension) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseSanitizer(PuraMarkdown.Security.IAstSanitizer! sanitizer) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseUrlPolicy(PuraMarkdown.Security.IUrlPolicy! urlPolicy) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxOptions
+PuraMarkdown.Syntax.PuraSyntaxOptions.Limits.get -> PuraMarkdown.Security.PuraLimits!
+PuraMarkdown.Syntax.PuraSyntaxOptions.Limits.init -> void
+PuraMarkdown.Syntax.PuraSyntaxOptions.PuraSyntaxOptions() -> void
+PuraMarkdown.Syntax.PuraSyntaxOptions.Sanitizer.get -> PuraMarkdown.Security.IAstSanitizer!
+PuraMarkdown.Syntax.PuraSyntaxOptions.Sanitizer.init -> void
+PuraMarkdown.Syntax.PuraSyntaxOptions.UrlPolicy.get -> PuraMarkdown.Security.IUrlPolicy!
+PuraMarkdown.Syntax.PuraSyntaxOptions.UrlPolicy.init -> void
 PuraMarkdown.Syntax.PuraSyntaxPipeline
-PuraMarkdown.Syntax.PuraSyntaxPipeline.CreateOptions(PuraMarkdown.Security.PuraLimits! limits, PuraMarkdown.Security.IUrlPolicy! urlPolicy) -> PuraMarkdown.Security.PuraSyntaxOptions!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.CreateOptions(PuraMarkdown.Security.PuraLimits! limits, PuraMarkdown.Security.IUrlPolicy! urlPolicy) -> PuraMarkdown.Syntax.PuraSyntaxOptions!
 PuraMarkdown.Syntax.PuraSyntaxPipeline.MarkdownPipeline.get -> Markdig.MarkdownPipeline!
-PuraMarkdown.Syntax.PuraSyntaxPipeline.Options.get -> PuraMarkdown.Security.PuraSyntaxOptions!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.Options.get -> PuraMarkdown.Syntax.PuraSyntaxOptions!
 PuraMarkdown.Syntax.PuraSyntaxPipeline.Parse(string! markdown) -> Markdig.Syntax.MarkdownDocument!
-PuraMarkdown.Syntax.PuraSyntaxPipeline.ParseDocument(string! markdown, int version = 0, PuraMarkdown.Security.PuraSyntaxOptions? options = null) -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.ParseDocument(string! markdown, int version = 0, PuraMarkdown.Syntax.PuraSyntaxOptions? options = null) -> PuraMarkdown.Syntax.PuraDocument!
 PuraMarkdown.Syntax.PuraSyntaxPipeline.ParseIncremental(PuraMarkdown.Syntax.PuraDocument! previous, PuraMarkdown.Syntax.PuraTextChange! change) -> PuraMarkdown.Syntax.PuraDocument!
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Append(string! delta) -> void
@@ -175,7 +175,7 @@ PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Committed.get -> PuraMarkdown.Syn
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession.CommittedOffset.get -> int
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Complete() -> PuraMarkdown.Syntax.PuraDocument!
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Current.get -> PuraMarkdown.Syntax.PuraDocument?
-PuraMarkdown.Syntax.PuraSyntaxStreamingSession.PuraSyntaxStreamingSession(PuraMarkdown.Syntax.PuraSyntaxPipeline! pipeline, PuraMarkdown.Security.PuraSyntaxOptions? options = null) -> void
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession.PuraSyntaxStreamingSession(PuraMarkdown.Syntax.PuraSyntaxPipeline! pipeline, PuraMarkdown.Syntax.PuraSyntaxOptions? options = null) -> void
 PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Tail.get -> PuraMarkdown.Syntax.PuraDocument?
 PuraMarkdown.Syntax.PuraTextChange
 PuraMarkdown.Syntax.PuraTextChange.<Clone>$() -> PuraMarkdown.Syntax.PuraTextChange!
@@ -209,4 +209,3 @@ static PuraMarkdown.Syntax.PuraOutline.operator !=(PuraMarkdown.Syntax.PuraOutli
 static PuraMarkdown.Syntax.PuraOutline.operator ==(PuraMarkdown.Syntax.PuraOutline? left, PuraMarkdown.Syntax.PuraOutline? right) -> bool
 static PuraMarkdown.Syntax.PuraTextChange.operator !=(PuraMarkdown.Syntax.PuraTextChange? left, PuraMarkdown.Syntax.PuraTextChange? right) -> bool
 static PuraMarkdown.Syntax.PuraTextChange.operator ==(PuraMarkdown.Syntax.PuraTextChange? left, PuraMarkdown.Syntax.PuraTextChange? right) -> bool
-
