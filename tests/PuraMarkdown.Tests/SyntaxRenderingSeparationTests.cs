@@ -39,6 +39,45 @@ public sealed class SyntaxRenderingSeparationTests
         Assert.IsType<HeadingBlock>(document.Markdown[0]);
     }
 
+
+    [Fact]
+    public void Syntax_incremental_append_reuses_stable_prefix()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var first = syntax.ParseDocument("# A\n\n");
+        var firstBlockCount = first.Markdown.Count;
+
+        var next = syntax.ParseIncremental(first, new PuraTextChange(first.Text.Length, 0, "## B\n"));
+
+        Assert.Equal(2, next.Outline.Headings.Count);
+        Assert.Equal("B", next.Outline.Headings[1].Text);
+        Assert.Equal(firstBlockCount + 1, next.Markdown.Count);
+    }
+
+    [Fact]
+    public void Syntax_document_contains_security_diagnostics()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var document = syntax.ParseDocument("[bad](javascript:alert(1))");
+
+        Assert.NotNull(document.Sanitized);
+        Assert.Contains(document.Diagnostics, diagnostic => diagnostic.Code == "PURA-SEC-001");
+        Assert.NotEmpty(document.Sanitized!.Warnings);
+    }
+
+    [Fact]
+    public void Syntax_document_contains_budget_diagnostics()
+    {
+        var syntax = new PuraSyntaxBuilder()
+            .UseCommonMark()
+            .UseGfm()
+            .ConfigureLimits(limits => limits.MaxBlocks = 1)
+            .Build();
+        var document = syntax.ParseDocument("a\n\nb\n\nc");
+
+        Assert.Contains(document.Diagnostics, diagnostic => diagnostic.Code == "PURA-LIM-005");
+    }
+
     [Fact]
     public void Syntax_streaming_session_updates_outline()
     {
@@ -94,6 +133,9 @@ public sealed class SyntaxRenderingSeparationTests
             => new TextBlock { Text = "ARC" };
     }
 }
+
+
+
 
 
 

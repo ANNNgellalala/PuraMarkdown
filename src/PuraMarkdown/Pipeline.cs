@@ -33,7 +33,6 @@ public sealed class PuraRenderEnvironment
     public required PuraRendererRegistry Renderers { get; init; }
 
     /// <summary>AST 清洗策略。</summary>
-    public required IAstSanitizer Sanitizer { get; init; }
 
     /// <summary>代码高亮策略。</summary>
     public required ICodeHighlighter Highlighter { get; init; }
@@ -64,8 +63,9 @@ public sealed class PuraPipeline
     /// <summary>解析为带诊断/大纲的文档。</summary>
     /// <param name="markdown">Markdown 源文本。</param>
     /// <param name="version">文档版本。</param>
-    public PuraDocument ParseDocument(string markdown, int version = 0)
-        => Syntax.ParseDocument(markdown, version);
+    /// <param name="options">语法选项（sanitizer/limits/url policy）；null 使用 pipeline 默认。</param>
+    public PuraDocument ParseDocument(string markdown, int version = 0, PuraSyntaxOptions? options = null)
+        => Syntax.ParseDocument(markdown, version, options);
 }
 
 /// <summary>构建 Markdig 管道与渲染器注册表；只在启动时使用。</summary>
@@ -77,7 +77,6 @@ public sealed class PuraPipelineBuilder
     private readonly List<IPuraPlugin> _plugins = [];
     private readonly HashSet<string> _pluginNames = new(StringComparer.OrdinalIgnoreCase);
     private ICodeHighlighter _highlighter = NullCodeHighlighter.Instance;
-    private IAstSanitizer _sanitizer = new DefaultAstSanitizer();
 
     /// <summary>启用 CommonMark 基础能力（含精确源码位置）。</summary>
     public PuraPipelineBuilder UseCommonMark()
@@ -137,7 +136,7 @@ public sealed class PuraPipelineBuilder
     public PuraPipelineBuilder UseSanitizer(IAstSanitizer sanitizer)
     {
         ArgumentNullException.ThrowIfNull(sanitizer);
-        _sanitizer = sanitizer;
+        _syntax.UseSanitizer(sanitizer);
         return this;
     }
 
@@ -207,7 +206,6 @@ public sealed class PuraPipelineBuilder
         var environment = new PuraRenderEnvironment
         {
             Renderers = new PuraRendererRegistry(renderers),
-            Sanitizer = _sanitizer,
             Highlighter = _highlighter,
             PluginNames = _plugins.Select(plugin => plugin.Name).ToArray(),
         };
@@ -231,6 +229,9 @@ public sealed class PuraPipelineBuilder
         }
     }
 }
+
+
+
 
 
 

@@ -1,4 +1,5 @@
 using Markdig.Syntax;
+using PuraMarkdown.Syntax;
 
 namespace PuraMarkdown.Security;
 
@@ -87,9 +88,13 @@ public sealed class SanitizeResult
 {
     private readonly HashSet<MarkdownObject> _blockedNodes = [];
     private readonly List<string> _warnings = [];
+    private readonly List<PuraDiagnostic> _diagnostics = [];
 
     /// <summary>清洗告警。</summary>
     public IReadOnlyList<string> Warnings => _warnings;
+
+    /// <summary>结构化诊断（语法层可直接消费）。</summary>
+    public IReadOnlyList<PuraDiagnostic> Diagnostics => _diagnostics;
 
     /// <summary>判断节点是否被清洗策略阻断。</summary>
     /// <param name="node">Markdown 节点。</param>
@@ -101,7 +106,34 @@ public sealed class SanitizeResult
 
     /// <summary>追加一条告警（自定义 sanitizer 使用）。</summary>
     /// <param name="warning">告警文本，建议以 PURA-* 开头。</param>
-    public void AddWarning(string warning) => _warnings.Add(warning);
+    /// <param name="node">关联节点（用于诊断 Span）。</param>
+    public void AddWarning(string warning, MarkdownObject? node = null)
+    {
+        _warnings.Add(warning);
+        var separator = warning.IndexOf(": ", StringComparison.Ordinal);
+        var code = warning.StartsWith("PURA-", StringComparison.Ordinal) && separator > 0
+            ? warning[..separator]
+            : "PURA-SEC-001";
+        var message = separator > 0 ? warning[(separator + 2)..] : warning;
+        var span = node?.Span ?? new SourceSpan(0, 0);
+        _diagnostics.Add(new PuraDiagnostic(code, PuraDiagnosticSeverity.Warning, message, span, node?.GetType().Name));
+    }
+
+    /// <summary>追加结构化诊断。</summary>
+    public void AddDiagnostic(PuraDiagnostic diagnostic) => _diagnostics.Add(diagnostic);
+}
+
+/// <summary>一次解析/清洗的语法选项（安全预算、URL 策略、sanitizer）。</summary>
+public sealed class PuraSyntaxOptions
+{
+    /// <summary>安全/规模预算。</summary>
+    public PuraLimits Limits { get; init; } = new();
+
+    /// <summary>URL 策略。</summary>
+    public IUrlPolicy UrlPolicy { get; init; } = DefaultUrlPolicy.Instance;
+
+    /// <summary>AST 清洗器。</summary>
+    public IAstSanitizer Sanitizer { get; init; } = new DefaultAstSanitizer();
 }
 
 /// <summary>IAstSanitizer。</summary>
@@ -110,7 +142,7 @@ public interface IAstSanitizer
     /// <summary>Sanitize。</summary>
     /// <param name="document">document 参数。</param>
     /// <param name="options">options 参数。</param>
-    SanitizeResult Sanitize(MarkdownDocument document, PuraMarkdownOptions options);
+    SanitizeResult Sanitize(MarkdownDocument document, PuraSyntaxOptions options);
 }
 
 /// <summary>
@@ -122,7 +154,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
     /// <summary>Sanitize。</summary>
     /// <param name="document">document 参数。</param>
     /// <param name="options">options 参数。</param>
-    public SanitizeResult Sanitize(MarkdownDocument document, PuraMarkdownOptions options)
+    public SanitizeResult Sanitize(MarkdownDocument document, PuraSyntaxOptions options)
     {
         var result = new SanitizeResult();
         var limits = options.Limits;
@@ -142,7 +174,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
             if (MaxDepth(block) > limits.MaxNestingDepth)
             {
                 result.Block(block);
-                result.AddWarning($"PURA-LIM-006: 嵌套深度超过 {limits.MaxNestingDepth}，已省略该块");
+                result.AddWarning($"PURA-LIM-006: 嵌套深度超过 {limits.MaxNestingDepth}，已省略该块", block);
             }
         }
 
@@ -154,7 +186,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
                     if (options.UrlPolicy.Evaluate(link.Url ?? string.Empty, UrlUsage.Link) == UrlDecision.Block)
                     {
                         result.Block(link);
-                        result.AddWarning($"PURA-SEC-001: 链接被拒绝：{link.Url}");
+                        result.AddWarning($"PURA-SEC-001: 链接被拒绝：{link.Url}", link);
                     }
                     break;
 
@@ -162,7 +194,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
                     if (options.UrlPolicy.Evaluate(image.Url ?? string.Empty, UrlUsage.Image) == UrlDecision.Block)
                     {
                         result.Block(image);
-                        result.AddWarning($"PURA-SEC-001: 图片被拒绝：{image.Url}");
+                        result.AddWarning($"PURA-SEC-001: 图片被拒绝：{image.Url}", image);
                     }
                     break;
             }
@@ -205,6 +237,7 @@ public sealed class DefaultAstSanitizer : IAstSanitizer
         }
     }
 }
+
 
 
 

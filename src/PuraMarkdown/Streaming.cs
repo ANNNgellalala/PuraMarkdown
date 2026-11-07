@@ -654,8 +654,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
         var definitions = _definitions.ToString();
         var definitionsLength = definitions.Length;
         var source = definitionsLength == 0 ? text : definitions + text;
-        var document = options.Pipeline.Parse(source);
-        var sanitized = options.Pipeline.Environment.Sanitizer.Sanitize(document, options);
+        var parsed = options.Pipeline.ParseDocument(source, 0, options.CreateSyntaxOptions());
+        var document = parsed.Markdown;
+        var sanitized = parsed.Sanitized
+            ?? options.Pipeline.Syntax.Options.Sanitizer.Sanitize(document, options.CreateSyntaxOptions());
         var blocks = document.ToArray()
             .Where(block => block is not Markdig.Syntax.LinkReferenceDefinitionGroup)
             .ToArray();
@@ -780,8 +782,10 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             text = text[..options.Limits.MaxDocumentChars];
         }
 
-        var document = options.Pipeline.Parse(text);
-        var sanitized = options.Pipeline.Environment.Sanitizer.Sanitize(document, options);
+        var parsed = options.Pipeline.ParseDocument(text, 0, options.CreateSyntaxOptions());
+        var document = parsed.Markdown;
+        var sanitized = parsed.Sanitized
+            ?? options.Pipeline.Syntax.Options.Sanitizer.Sanitize(document, options.CreateSyntaxOptions());
         foreach (var warning in sanitized.Warnings)
         {
             warnings.Add(new PuraMarkdown.Rendering.PuraWarning("PURA-SEC-001", warning));
@@ -803,6 +807,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
 
 
 

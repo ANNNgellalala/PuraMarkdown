@@ -535,7 +535,7 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
         PuraDocument document;
         try
         {
-            document = options.Pipeline.ParseDocument(text);
+            document = options.Pipeline.ParseDocument(text, 0, options.CreateSyntaxOptions());
         }
         catch (Exception ex)
         {
@@ -575,8 +575,8 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
         }
 
         var markdown = document.Markdown;
-        var environment = options.Pipeline.Environment;
-        var sanitized = environment.Sanitizer.Sanitize(markdown, options);
+        var sanitized = document.Sanitized
+            ?? options.Pipeline.Syntax.Options.Sanitizer.Sanitize(markdown, options.CreateSyntaxOptions());
         foreach (var sanitizerWarning in sanitized.Warnings)
         {
             WarnSanitizer(sanitizerWarning);
@@ -1115,6 +1115,7 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
 
 
 

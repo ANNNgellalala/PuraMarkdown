@@ -142,7 +142,7 @@ public sealed class P1FeatureTests
         };
         var warnings = new List<PuraWarning>();
         view.Warning += (_, args) => warnings.Add(args.Warning);
-        Assert.IsType<BlockAllSanitizer>(view.Options!.Pipeline.Environment.Sanitizer);
+        Assert.IsType<BlockAllSanitizer>(view.Options!.Pipeline.Syntax.Options.Sanitizer);
         view.Markdown = "blocked";
 
         Assert.Empty(view.Blocks);
@@ -191,7 +191,7 @@ public sealed class P1FeatureTests
 
     private sealed class BlockAllSanitizer : IAstSanitizer
     {
-        public SanitizeResult Sanitize(MarkdownDocument document, PuraMarkdownOptions options)
+        public SanitizeResult Sanitize(MarkdownDocument document, PuraSyntaxOptions options)
         {
             var result = new SanitizeResult();
             foreach (var block in document)
@@ -244,6 +244,7 @@ public sealed class P1FeatureTests
         }
     }
 }
+
 
 
 

@@ -315,7 +315,7 @@ PuraMarkdown.PuraMarkdownView.Warning -> System.EventHandler<PuraMarkdown.Render
 PuraMarkdown.PuraPipeline
 PuraMarkdown.PuraPipeline.Environment.get -> PuraMarkdown.PuraRenderEnvironment!
 PuraMarkdown.PuraPipeline.Parse(string! markdown) -> Markdig.Syntax.MarkdownDocument!
-PuraMarkdown.PuraPipeline.ParseDocument(string! markdown, int version = 0) -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.PuraPipeline.ParseDocument(string! markdown, int version = 0, PuraMarkdown.Security.PuraSyntaxOptions? options = null) -> PuraMarkdown.Syntax.PuraDocument!
 PuraMarkdown.PuraPipeline.Syntax.get -> PuraMarkdown.Syntax.PuraSyntaxPipeline!
 PuraMarkdown.PuraPipelineBuilder
 PuraMarkdown.PuraPipelineBuilder.Build() -> PuraMarkdown.PuraPipeline!
@@ -337,8 +337,6 @@ PuraMarkdown.PuraRenderEnvironment.PluginNames.init -> void
 PuraMarkdown.PuraRenderEnvironment.PuraRenderEnvironment() -> void
 PuraMarkdown.PuraRenderEnvironment.Renderers.get -> PuraMarkdown.Rendering.PuraRendererRegistry!
 PuraMarkdown.PuraRenderEnvironment.Renderers.init -> void
-PuraMarkdown.PuraRenderEnvironment.Sanitizer.get -> PuraMarkdown.Security.IAstSanitizer!
-PuraMarkdown.PuraRenderEnvironment.Sanitizer.init -> void
 PuraMarkdown.PuraSpacing
 PuraMarkdown.PuraSpacing.<Clone>$() -> PuraMarkdown.PuraSpacing!
 PuraMarkdown.PuraSpacing.BlockSpacing.get -> double
@@ -531,39 +529,6 @@ PuraMarkdown.Rendering.RenderContext.Theme.init -> void
 PuraMarkdown.Rendering.RenderContext.Warn(string! code, string! message, string? nodeType = null, string? renderer = null) -> void
 PuraMarkdown.Rendering.RenderContext.WarningSink.get -> System.Action<PuraMarkdown.Rendering.PuraWarningEventArgs!>?
 PuraMarkdown.Rendering.RenderContext.WarningSink.init -> void
-PuraMarkdown.Security.DefaultAstSanitizer
-PuraMarkdown.Security.DefaultAstSanitizer.DefaultAstSanitizer() -> void
-PuraMarkdown.Security.DefaultAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.PuraMarkdownOptions! options) -> PuraMarkdown.Security.SanitizeResult!
-PuraMarkdown.Security.DefaultUrlPolicy
-PuraMarkdown.Security.DefaultUrlPolicy.DefaultUrlPolicy() -> void
-PuraMarkdown.Security.DefaultUrlPolicy.Evaluate(string! url, PuraMarkdown.Security.UrlUsage usage) -> PuraMarkdown.Security.UrlDecision
-PuraMarkdown.Security.IAstSanitizer
-PuraMarkdown.Security.IAstSanitizer.Sanitize(Markdig.Syntax.MarkdownDocument! document, PuraMarkdown.PuraMarkdownOptions! options) -> PuraMarkdown.Security.SanitizeResult!
-PuraMarkdown.Security.IUrlPolicy
-PuraMarkdown.Security.IUrlPolicy.Evaluate(string! url, PuraMarkdown.Security.UrlUsage usage) -> PuraMarkdown.Security.UrlDecision
-PuraMarkdown.Security.PuraLimits
-PuraMarkdown.Security.PuraLimits.MaxBlocks.get -> int
-PuraMarkdown.Security.PuraLimits.MaxBlocks.set -> void
-PuraMarkdown.Security.PuraLimits.MaxDocumentChars.get -> int
-PuraMarkdown.Security.PuraLimits.MaxDocumentChars.set -> void
-PuraMarkdown.Security.PuraLimits.MaxFenceChars.get -> int
-PuraMarkdown.Security.PuraLimits.MaxFenceChars.set -> void
-PuraMarkdown.Security.PuraLimits.MaxNestingDepth.get -> int
-PuraMarkdown.Security.PuraLimits.MaxNestingDepth.set -> void
-PuraMarkdown.Security.PuraLimits.PuraLimits() -> void
-PuraMarkdown.Security.SanitizeResult
-PuraMarkdown.Security.SanitizeResult.AddWarning(string! warning) -> void
-PuraMarkdown.Security.SanitizeResult.Block(Markdig.Syntax.MarkdownObject! node) -> void
-PuraMarkdown.Security.SanitizeResult.IsBlocked(Markdig.Syntax.MarkdownObject! node) -> bool
-PuraMarkdown.Security.SanitizeResult.SanitizeResult() -> void
-PuraMarkdown.Security.SanitizeResult.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
-PuraMarkdown.Security.UrlDecision
-PuraMarkdown.Security.UrlDecision.Allow = 0 -> PuraMarkdown.Security.UrlDecision
-PuraMarkdown.Security.UrlDecision.Block = 1 -> PuraMarkdown.Security.UrlDecision
-PuraMarkdown.Security.UrlUsage
-PuraMarkdown.Security.UrlUsage.Image = 1 -> PuraMarkdown.Security.UrlUsage
-PuraMarkdown.Security.UrlUsage.Link = 0 -> PuraMarkdown.Security.UrlUsage
-PuraMarkdown.Security.UrlUsage.Other = 2 -> PuraMarkdown.Security.UrlUsage
 static PuraMarkdown.BlockRecord.operator !=(PuraMarkdown.BlockRecord? left, PuraMarkdown.BlockRecord? right) -> bool
 static PuraMarkdown.BlockRecord.operator ==(PuraMarkdown.BlockRecord? left, PuraMarkdown.BlockRecord? right) -> bool
 static PuraMarkdown.Localization.ChinesePuraLocalizer.Instance.get -> PuraMarkdown.Localization.ChinesePuraLocalizer!
@@ -604,7 +569,6 @@ static PuraMarkdown.Rendering.HighlightSpan.operator ==(PuraMarkdown.Rendering.H
 static PuraMarkdown.Rendering.NullCodeHighlighter.Instance.get -> PuraMarkdown.Rendering.NullCodeHighlighter!
 static PuraMarkdown.Rendering.PuraWarning.operator !=(PuraMarkdown.Rendering.PuraWarning? left, PuraMarkdown.Rendering.PuraWarning? right) -> bool
 static PuraMarkdown.Rendering.PuraWarning.operator ==(PuraMarkdown.Rendering.PuraWarning? left, PuraMarkdown.Rendering.PuraWarning? right) -> bool
-static PuraMarkdown.Security.DefaultUrlPolicy.Instance.get -> PuraMarkdown.Security.DefaultUrlPolicy!
 static readonly PuraMarkdown.PuraMarkdownView.MarkdownProperty -> Avalonia.StyledProperty<string?>!
 static readonly PuraMarkdown.PuraMarkdownView.OptionsProperty -> Avalonia.StyledProperty<PuraMarkdown.PuraMarkdownOptions?>!
 virtual PuraMarkdown.Platform.IImageResult.EqualityContract.get -> System.Type!

@@ -2,6 +2,7 @@ using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using System.Text;
+using PuraMarkdown.Security;
 
 namespace PuraMarkdown.Syntax;
 
@@ -46,7 +47,8 @@ public sealed record PuraDocument(
     string Text,
     MarkdownDocument Markdown,
     IReadOnlyList<PuraDiagnostic> Diagnostics,
-    PuraOutline Outline);
+    PuraOutline Outline,
+    SanitizeResult? Sanitized = null);
 
 /// <summary>文本增量（用于增量解析契约）。</summary>
 public sealed record PuraTextChange(int Offset, int RemovedLength, string InsertedText);
@@ -54,31 +56,50 @@ public sealed record PuraTextChange(int Offset, int RemovedLength, string Insert
 /// <summary>冻结后的 Markdig 解析管道；进程级复用。</summary>
 public sealed class PuraSyntaxPipeline
 {
-    internal PuraSyntaxPipeline(MarkdownPipeline markdownPipeline)
+    internal PuraSyntaxPipeline(MarkdownPipeline markdownPipeline, PuraSyntaxOptions options)
     {
         MarkdownPipeline = markdownPipeline;
+        Options = options;
     }
 
     /// <summary>Markdig 管道（高级用户可直接使用）。</summary>
     public MarkdownPipeline MarkdownPipeline { get; }
 
+    /// <summary>默认语法选项（sanitizer/limits/url policy）。</summary>
+    public PuraSyntaxOptions Options { get; }
+
+    /// <summary>为单次解析创建选项（覆盖 limits/url policy，沿用 pipeline sanitizer）。</summary>
+    public PuraSyntaxOptions CreateOptions(PuraLimits limits, IUrlPolicy urlPolicy)
+        => new()
+        {
+            Limits = limits,
+            UrlPolicy = urlPolicy,
+            Sanitizer = Options.Sanitizer,
+        };
+
     /// <summary>解析为 Markdig 语法树。</summary>
     public MarkdownDocument Parse(string markdown) => Markdown.Parse(markdown, MarkdownPipeline);
 
     /// <summary>解析并生成 PuraDocument（版本/诊断/大纲）。</summary>
-    public PuraDocument ParseDocument(string markdown, int version = 0)
+    public PuraDocument ParseDocument(string markdown, int version = 0, PuraSyntaxOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(markdown);
         var document = Parse(markdown);
+        var effective = options ?? Options;
+        var sanitized = effective.Sanitizer.Sanitize(document, effective);
         return new PuraDocument(
             version,
             markdown,
             document,
-            BuildDiagnostics(document),
-            BuildOutline(document));
+            sanitized.Diagnostics,
+            BuildOutline(document),
+            sanitized);
     }
 
-    /// <summary>增量解析契约；B 阶段内部先全量解析，C 阶段可替换为真正增量。</summary>
+    /// <summary>
+    /// 增量解析：对“末尾追加且前缀已稳定”的常见流式场景复用旧 AST 前缀；其它编辑回退全量解析。
+    /// 注意：命中复用路径时 <paramref name="previous"/> 的 AST 会被消费，调用方不应继续使用旧文档。
+    /// </summary>
     public PuraDocument ParseIncremental(PuraDocument previous, PuraTextChange change)
     {
         ArgumentNullException.ThrowIfNull(previous);
@@ -87,14 +108,70 @@ public sealed class PuraSyntaxPipeline
             previous.Text.AsSpan(0, change.Offset),
             change.InsertedText,
             previous.Text.AsSpan(change.Offset + change.RemovedLength));
+
+        if (change.Offset == previous.Text.Length
+            && change.RemovedLength == 0
+            && previous.Text.Length > 0
+            && StreamingBlockScanner.FindStableBoundary(previous.Text, 0) == previous.Text.Length)
+        {
+            var tail = Parse(change.InsertedText);
+            var merged = new MarkdownDocument();
+            var oldBlocks = previous.Markdown.ToArray();
+            foreach (var block in oldBlocks)
+            {
+                previous.Markdown.Remove(block);
+                merged.Add(block);
+            }
+
+            var charOffset = previous.Text.Length;
+            var lineOffset = CountLines(previous.Text);
+            foreach (var block in tail.ToArray())
+            {
+                Shift(block, charOffset, lineOffset);
+                tail.Remove(block);
+                merged.Add(block);
+            }
+
+            var sanitized = Options.Sanitizer.Sanitize(merged, Options);
+            return new PuraDocument(
+                previous.Version + 1,
+                text,
+                merged,
+                sanitized.Diagnostics,
+                BuildOutline(merged),
+                sanitized);
+        }
+
         return ParseDocument(text, previous.Version + 1);
     }
 
-    private static IReadOnlyList<PuraDiagnostic> BuildDiagnostics(MarkdownDocument document)
+    private static int CountLines(string text)
     {
-        // B 阶段：解析层诊断暂为空；安全/预算诊断仍由渲染层 sanitizer 产生。
-        _ = document;
-        return [];
+        var count = 0;
+        foreach (var ch in text)
+        {
+            if (ch == '\n')
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static void Shift(Block block, int charOffset, int lineOffset)
+    {
+        foreach (var node in block.Descendants())
+        {
+            node.Span = new SourceSpan(node.Span.Start + charOffset, node.Span.End + charOffset);
+            if (node is Block nested)
+            {
+                nested.Line += lineOffset;
+            }
+        }
+
+        block.Span = new SourceSpan(block.Span.Start + charOffset, block.Span.End + charOffset);
+        block.Line += lineOffset;
     }
 
     private static PuraOutline BuildOutline(MarkdownDocument document)
@@ -208,6 +285,9 @@ public sealed class PuraSyntaxBuilder
 {
     private readonly MarkdownPipelineBuilder _markdown = new();
     private readonly List<IMarkdownExtension> _extensions = [];
+    private IAstSanitizer _sanitizer = new DefaultAstSanitizer();
+    private PuraLimits _limits = new();
+    private IUrlPolicy _urlPolicy = DefaultUrlPolicy.Instance;
 
     /// <summary>启用 CommonMark 基础能力（含精确源码位置）。</summary>
     public PuraSyntaxBuilder UseCommonMark()
@@ -235,6 +315,30 @@ public sealed class PuraSyntaxBuilder
         return this;
     }
 
+    /// <summary>设置 AST 清洗器。</summary>
+    public PuraSyntaxBuilder UseSanitizer(IAstSanitizer sanitizer)
+    {
+        ArgumentNullException.ThrowIfNull(sanitizer);
+        _sanitizer = sanitizer;
+        return this;
+    }
+
+    /// <summary>配置安全/规模预算。</summary>
+    public PuraSyntaxBuilder ConfigureLimits(Action<PuraLimits> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        configure(_limits);
+        return this;
+    }
+
+    /// <summary>设置 URL 策略。</summary>
+    public PuraSyntaxBuilder UseUrlPolicy(IUrlPolicy urlPolicy)
+    {
+        ArgumentNullException.ThrowIfNull(urlPolicy);
+        _urlPolicy = urlPolicy;
+        return this;
+    }
+
     /// <summary>构建不可变语法管道（关闭 HTML、启用精确 Span）。</summary>
     public PuraSyntaxPipeline Build()
     {
@@ -247,36 +351,69 @@ public sealed class PuraSyntaxBuilder
             .UsePreciseSourceLocation()
             .DisableHtml();
 
-        return new PuraSyntaxPipeline(_markdown.Build());
+        return new PuraSyntaxPipeline(_markdown.Build(), new PuraSyntaxOptions
+        {
+            Sanitizer = _sanitizer,
+            Limits = _limits,
+            UrlPolicy = _urlPolicy,
+        });
     }
 }
 
-/// <summary>B 阶段的简单语法流式会话；稳定边界/块复用后续可下沉到此。</summary>
+/// <summary>B 阶段的语法流式会话：稳定边界 + 已提交/尾部窗口 + 完整文档。</summary>
 public sealed class PuraSyntaxStreamingSession
 {
     private readonly PuraSyntaxPipeline _pipeline;
+    private readonly PuraSyntaxOptions _options;
     private readonly StringBuilder _text = new();
+    private int _committedOffset;
+    private int _version;
 
     /// <summary>创建语法流式会话。</summary>
-    public PuraSyntaxStreamingSession(PuraSyntaxPipeline pipeline)
+    public PuraSyntaxStreamingSession(PuraSyntaxPipeline pipeline, PuraSyntaxOptions? options = null)
     {
         _pipeline = pipeline;
+        _options = options ?? pipeline.Options;
     }
 
-    /// <summary>当前解析文档。</summary>
+    /// <summary>当前完整文档（兼容入口）。</summary>
     public PuraDocument? Current { get; private set; }
 
-    /// <summary>追加文本（会重新解析，B 阶段语义等价）。</summary>
+    /// <summary>已提交窗口文档。</summary>
+    public PuraDocument? Committed { get; private set; }
+
+    /// <summary>尾部窗口文档。</summary>
+    public PuraDocument? Tail { get; private set; }
+
+    /// <summary>已提交字符偏移。</summary>
+    public int CommittedOffset => _committedOffset;
+
+    /// <summary>追加文本：先按稳定边界提交，再解析尾部窗口。</summary>
     public void Append(string delta)
     {
         _text.Append(delta);
-        Current = _pipeline.ParseDocument(_text.ToString(), (Current?.Version ?? 0) + 1);
+        var snapshot = _text.ToString();
+        var boundary = StreamingBlockScanner.FindStableBoundary(snapshot, _committedOffset);
+        if (boundary > _committedOffset)
+        {
+            Committed = _pipeline.ParseDocument(snapshot[..boundary], _version++, _options);
+            _committedOffset = boundary;
+        }
+
+        Tail = _pipeline.ParseDocument(snapshot[_committedOffset..], _version++, _options);
+        Current = _pipeline.ParseDocument(snapshot, _version++, _options);
     }
 
     /// <summary>完成并返回最终文档。</summary>
     public PuraDocument Complete()
     {
-        Current = _pipeline.ParseDocument(_text.ToString(), (Current?.Version ?? 0) + 1);
+        Current = _pipeline.ParseDocument(_text.ToString(), _version++, _options);
+        Committed = Current;
+        _committedOffset = _text.Length;
+        Tail = null;
         return Current;
     }
 }
+
+
+

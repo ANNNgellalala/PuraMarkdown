@@ -1,6 +1,7 @@
 using PuraMarkdown.Localization;
 using PuraMarkdown.Platform;
 using PuraMarkdown.Security;
+using PuraMarkdown.Syntax;
 
 namespace PuraMarkdown;
 
@@ -49,7 +50,11 @@ public sealed class PuraMarkdownOptions
     /// 启用后控件自带 ScrollViewer，宿主不要再外层再包一层滚动容器；默认 false（StackPanel）。
     /// </summary>
     public bool EnableBlockVirtualization { get; init; }
+
+    internal PuraSyntaxOptions CreateSyntaxOptions()
+        => Pipeline.Syntax.CreateOptions(Limits, UrlPolicy);
 }
+
 
 
 
