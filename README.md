@@ -2,7 +2,7 @@
 
 > 高性能 **Avalonia 只读 Markdown 渲染库**：Markdig 解析、Avalonia 原生渲染、增量流式、块级/消息级虚拟化、插件可替换。Agent 交互与聊天控件以独立插件包提供。
 >
-> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（101 个测试、6 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
+> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（105 个测试、7 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
 > 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**；JsonSchema.Net 仅由 `PuraMarkdown.Agent` 使用。
 
 ---
@@ -74,7 +74,8 @@ Markdig AST + 插件节点（围栏/行内/块）
 
 | 包 | 内容 |
 | --- | --- |
-| `PuraMarkdown` | 核心：控件、契约、Markdown 解析/渲染、流式、虚拟化、插件契约 |
+| `PuraMarkdown` | 渲染层：控件、默认渲染、流式、虚拟化、插件契约 |
+| `PuraMarkdown.Syntax` | 语法层：Markdig 解析、`PuraDocument`、诊断、大纲、扫描；无 Avalonia |
 | `PuraMarkdown.Agent` | `pura-agent` 围栏、JSON 组件、choice/confirm、Agent 本地化 |
 | `PuraMarkdown.Chat` | 聊天控件：消息级虚拟化、流式槽、自动滚动 |
 | `PuraMarkdown.Testing` | 无头渲染宿主、控件树 dump、golden 工具、交互/流式测试驱动 |
@@ -121,14 +122,16 @@ dotnet run --project samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj
 
 ```
 PuraMarkdown.slnx
-├─ src/PuraMarkdown/                     # 核心：控件、Markdown 解析/渲染、流式、虚拟化、插件契约
+├─ src/PuraMarkdown.Syntax/             # 语法层：Markdig 解析、PuraDocument、诊断/大纲/扫描（无 Avalonia）
+├─ src/PuraMarkdown/                     # 渲染层：控件、默认渲染、流式、虚拟化、插件契约
 ├─ src/PuraMarkdown.Agent/               # 官方 Agent 插件：pura-agent 围栏、JSON 组件、choice/confirm
 ├─ src/PuraMarkdown.Chat/                # 聊天控件：消息虚拟化、流式槽
 ├─ src/PuraMarkdown.Testing/             # 无头 dump / golden / 交互探针 / 流式驱动 / 插件一致性
 ├─ src/PuraMarkdown.Highlighting.ColorCode/  # 官方高亮插件（ColorCode.Core）
 ├─ src/PuraMarkdown.Diagrams.Mermaid/    # 官方 Mermaid 插件（Mermaider，纯 .NET）
 ├─ samples/PuraMarkdown.Plugins.Samples/ # 示例插件：rating 组件、示例图表
-├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 101 个测试 + golden
+├─ samples/PuraMarkdown.ArcSample/       # 仅引用 Syntax 的 Arc 风格语法树消费示例
+├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 105 个测试 + golden
 ├─ benchmarks/PuraMarkdown.Benchmarks/   # BenchmarkDotNet 基准
 └─ samples/PuraMarkdown.Spike/           # 离屏渲染示例（打印控件树）
 ```
@@ -172,6 +175,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [Agent 与 Chat 能力增强](docs/30-Agent与Chat能力增强.md) | 会话模型/快照/流式状态，Agent 状态持久化/组件目录，不含新 UI | 宿主/Arc.Avalonia |
 | [语法与渲染分离讨论](docs/31-语法与渲染分离讨论.md) | 类 IDE/LSP 的 Syntax/Renderer 拆分、语义文档模型与迁移路径 | 架构/Arc.Avalonia |
 | [技术演进路径 B→C](docs/32-技术演进路径-B到C.md) | B 阶段工作包/验收，B 完成后的 C 演进路径 | 架构/排期 |
+| [B 阶段实施记录](docs/33-B阶段实施记录.md) | B0–B5 落地内容、验证与剩余硬化项 | 实现者/验收 |
 | [需求方案（用户输入）](docs/PuraMarkdown需求方案.md) | 原始需求与边界定义 | 所有人 |
 | [需求对齐与设计复审](docs/00-需求对齐与设计复审.md) | v0.2 → v0.3 的差异、6 项已确认决策、IR/虚拟树/适配层讨论结论 | 决策者 |
 | [IR/虚拟树/多平台讨论](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md) | 三项架构取舍的分析、触发条件、回补成本 | 决策者/架构 |
@@ -232,6 +236,10 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
+
+
+
 
 
 

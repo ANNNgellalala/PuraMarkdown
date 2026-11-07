@@ -20,6 +20,7 @@
 | [ADR-0022](0022-no-platform-adapter-layer-in-1.0.md) | 跨平台由 Avalonia 承担，不建渲染适配层 | 已接受（2026-11-05，选项 A） |
 | [ADR-0023](0023-mermaid-engine-mermaider.md) | Mermaid 引擎选择 Mermaider（MIT，纯 .NET）；Naiad 因 EULA 排除 | 已接受（2026-11-06） |
 | [ADR-0024](0024-agent-as-plugin.md) | Agent 剥离为独立语法插件，核心只做 Markdown | 已接受（2026-11-07） |
+| [ADR-0025](0025-syntax-renderer-separation.md) | B 阶段语法/渲染分离：Markdig AST 作为语法契约 | 已接受（2026-11-08） |
 | [ADR-0017](0017-block-virtualization.md) | 块级虚拟化采用可选 ItemsRepeater 模式 | 已接受（2026-11-07） |
 
 ## 已取代（保留原文，便于追溯）
@@ -48,5 +49,6 @@
 - 一个 ADR 只回答一个问题；被推翻时保留原文并把状态改为「被取代」，另写新 ADR。
 - ADR 编号不复用；与需求编号（FR-xxx）、诊断码（PURA-xxx）分开。
 - 「用户决策」类 ADR 记录决策来源与日期；变更需新 ADR 显式取代。
+
 
 
