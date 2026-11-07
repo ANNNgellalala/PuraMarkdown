@@ -1,5 +1,7 @@
 # 插件通用接口与 Agent 插件化讨论（2026-11-07）
 
+> 状态：方案已确认并实现，见 [Agent 插件化与公共 API 收敛实现](25-Agent插件化与公共API收敛实现.md) 与 [ADR-0024](adr/0024-agent-as-plugin.md)。
+
 > 目标：回答两个问题：
 > 1. 插件如何**新增语法块/行内语法/组件**，核心应固定哪些通用接口？
 > 2. 把 `pura-agent` 从核心剥离为独立语法插件，是否合理？边界怎么划？
@@ -249,3 +251,4 @@ public sealed class PuraChatView : ContentControl
 3. **1.0 插件语法范围是否只承诺"围栏 + 行内"，任意 BlockParser 标为 experimental？**（建议：是）
 4. **Chat 包命名 `PuraMarkdown.Chat` 是否合适？**（建议：是）
 5. **Agent 组件扩展 API（`IAgentComponentParser/Renderer`）是否随 Agent 包一起移动、作为 Agent 插件作者的稳定 API？**（建议：是）
+

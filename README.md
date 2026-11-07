@@ -2,7 +2,7 @@
 
 > 面向 Agent 对话的 **Avalonia 只读 Markdown 控件**：Markdig 解析、Avalonia 原生渲染、Agent 交互组件、流式增量、插件可替换。
 >
-> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（91 个测试、4 个 NuGet 包、Native AOT/裁剪验证通过、API 文档完整、流式性能修复、CI 就绪）。
+> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（94 个测试、6 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
 > 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · JsonSchema.Net **9.6.0** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**。
 
 ---
@@ -61,9 +61,11 @@ Markdown 文本（全量 or Append 增量）
 | 契约 | 作用 |
 | --- | --- |
 | `IPuraRenderer` | `CanRender(node, ctx)` + `Render(node, ctx) → Control`；可选 `IIncrementalPuraRenderer` |
-| `IAgentComponentParser` | 按 `type` 解析 `pura-agent` JSON，`JsonSchema.Net` 校验 |
-| `IAgentComponentRenderer` | 组件渲染 + 交互事件 |
-| `IDiagramRenderer` | 图表围栏（mermaid/pura-chart）→ 控件；无插件回退代码块 |
+| `IFenceRenderer` | 接管 ```lang 围栏（mermaid/pura-agent/自定义）→ 控件；无插件回退代码块 |
+| `IAgentComponentParser` | `pura-agent` JSON 解析与 Schema 校验（`PuraMarkdown.Agent` 包） |
+| `IAgentComponentRenderer` | Agent 组件渲染 + 交互事件（`PuraMarkdown.Agent` 包） |
+| `IPuraInlineRenderer` | 自定义行内语法渲染 |
+| `IAstSanitizer` | AST 清洗/阻断（`UseSanitizer` 可替换） |
 | `ICodeHighlighter` | 代码 token 化；默认纯等宽 |
 | `IPuraPlugin` / `PuraPipelineBuilder` | 插件打包与注册（显式、AOT 友好） |
 | `PuraMarkdownView` / `PuraStreamingSession` | 控件与 append-only 流式 API |
@@ -72,29 +74,31 @@ Markdown 文本（全量 or Append 增量）
 
 | 包 | 内容 |
 | --- | --- |
-| `PuraMarkdown` | 控件、契约、解析路由、分发、默认渲染、Agent 组件、流式 |
+| `PuraMarkdown` | 核心：控件、契约、Markdown 解析/渲染、流式、虚拟化、插件契约 |
+| `PuraMarkdown.Agent` | `pura-agent` 围栏、JSON 组件、choice/confirm、Agent 本地化 |
+| `PuraMarkdown.Chat` | 聊天控件：消息级虚拟化、流式槽、自动滚动 |
 | `PuraMarkdown.Testing` | 无头渲染宿主、控件树 dump、golden 工具、交互/流式测试驱动 |
 | `PuraMarkdown.Highlighting.ColorCode`（可选） | `ICodeHighlighter` 实现 |
-| `PuraMarkdown.Diagrams.Mermaid`（可选，M2） | `IDiagramRenderer` 实现 |
-| `PuraMarkdown.Diagrams.ScottPlot`（可选，M3） | `pura-chart` 图表插件 |
-| `PuraMarkdown.Math.CSharpMath`（可选，1.1） | 公式插件 |
+| `PuraMarkdown.Diagrams.Mermaid`（可选） | `IFenceRenderer` 实现（Mermaider） |
 | `samples/PuraMarkdown.Demo` | 演示应用（流式 + 交互 + 主题 + 插件） |
 
-## 使用方式（目标 API）
+## 使用方式
 
 ```csharp
+using PuraMarkdown.Agent;
+
 // 启动时构建一次
 var pipeline = new PuraPipelineBuilder()
     .UseCommonMark()
     .UseGfm()
-    .UseAgentComponents()
+    .UseAgentComponents()                             // 需要 PuraMarkdown.Agent 包
     .UseCodeHighlighter(new ColorCodeHighlighter())   // 可选
     .UsePlugin(new MermaidPlugin())                   // 可选
     .Build();
 
 var view = new PuraMarkdownView
 {
-    Options = new PuraMarkdownOptions { Pipeline = pipeline, Theme = PuraTheme.FluentDark }
+    Options = new PuraMarkdownOptions { Pipeline = pipeline, Theme = PuraTheme.Light }
 };
 view.InteractionOccurred += (_, e) => host.HandleChoice(e);
 
@@ -107,7 +111,7 @@ session.Append(delta);
 await session.CompleteAsync();
 ```
 
-## 当前代码（M0 + M1 已跑通）
+## 当前代码（M0–M4 + 公共 API 收敛）
 
 ```bash
 dotnet build PuraMarkdown.slnx
@@ -117,7 +121,9 @@ dotnet run --project samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj
 
 ```
 PuraMarkdown.slnx
-├─ src/PuraMarkdown/                     # 控件、契约、解析、默认渲染、Agent 组件、流式
+├─ src/PuraMarkdown/                     # 核心：控件、Markdown 解析/渲染、流式、虚拟化、插件契约
+├─ src/PuraMarkdown.Agent/               # 官方 Agent 插件：pura-agent 围栏、JSON 组件、choice/confirm
+├─ src/PuraMarkdown.Chat/                # 聊天控件：消息虚拟化、流式槽
 ├─ src/PuraMarkdown.Testing/             # 无头 dump / golden / 交互探针 / 流式驱动 / 插件一致性
 ├─ src/PuraMarkdown.Highlighting.ColorCode/  # 官方高亮插件（ColorCode.Core）
 ├─ src/PuraMarkdown.Diagrams.Mermaid/    # 官方 Mermaid 插件（Mermaider，纯 .NET）
@@ -181,6 +187,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [公共 API 与功能扩展建议](docs/21-公共API与功能扩展建议.md) | API 一致性、宿主集成、扩展点与内容语法建议 | 架构/产品 |
 | [P1 功能与本地化实现](docs/22-P1功能与本地化实现.md) | 流式生命周期、选择/复制、大纲、事件、主题、中文默认本地化 | 实现者/验收 |
 | [公共 API 设计评审](docs/23-公共API设计评审.md) | API 分层、1.0 前收敛项、扩展点与开放问题 | 架构/决策 |
+| [Agent 插件化与公共 API 收敛实现](docs/25-Agent插件化与公共API收敛实现.md) | IFenceRenderer/行内/清洗器契约、Agent/Chat 独立包、迁移指南 | 实现者/验收 |
 | [插件通用接口与 Agent 插件化讨论](docs/24-插件通用接口与Agent插件化讨论.md) | IFenceRenderer/行内/块级插件契约、Agent 剥离、Chat 包边界 | 架构/决策 |
 | [示例 Agent 回复](samples/agent-conversation.md) | 新语法样例 | 实现者 |
 | [Markdig 调研](docs/research/markdig.md) / [生态调研](docs/research/ecosystem.md) | 技术事实与选型依据 | 实现者 |
@@ -214,6 +221,10 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
+
+
+
 
 
 
