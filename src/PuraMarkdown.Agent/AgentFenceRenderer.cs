@@ -50,9 +50,13 @@ public sealed class AgentPlugin : IPuraPlugin
     /// <inheritdoc/>
     public string? Description => "pura-agent 围栏与 JSON 交互组件（choice/confirm）";
 
+    /// <summary>已支持的组件类型（宿主可用于能力发现）。</summary>
+    public IReadOnlyList<string> ComponentTypes => _components.ComponentTypes;
+
     /// <inheritdoc/>
     public void Configure(PuraPipelineBuilder builder)
     {
+        _ = _components.CreateRegistry(); // 构建期校验重复组件
         builder.UseFenceRenderer(new AgentFenceRenderer(_components));
     }
 }
@@ -250,6 +254,7 @@ internal static class SchemaValidation
         return null;
     }
 }
+
 
 
 

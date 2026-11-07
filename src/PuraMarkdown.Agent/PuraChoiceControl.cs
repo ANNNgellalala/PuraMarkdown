@@ -11,7 +11,7 @@ using PuraMarkdown.Rendering;
 namespace PuraMarkdown.Agent;
 
 /// <summary>choice：单选（点击即上报）或多选（确认按钮上报）。</summary>
-internal sealed class PuraChoiceControl : Border
+internal sealed class PuraChoiceControl : Border, IPuraInteractionStateReceiver
 {
     private readonly PuraChoiceComponent _model;
     private readonly RenderContext _context;
@@ -271,6 +271,7 @@ internal sealed class PuraChoiceControl : Border
         });
     }
 }
+
 
 
 

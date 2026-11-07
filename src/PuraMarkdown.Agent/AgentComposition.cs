@@ -19,9 +19,24 @@ internal sealed class AgentComponentSet
 
     public void Add(IAgentComponentParser parser, IAgentComponentRenderer renderer)
     {
+        if (_parsers.Any(existing => string.Equals(existing.ComponentType, parser.ComponentType, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new PuraConfigurationException($"Agent 组件解析器重复注册：{parser.ComponentType}");
+        }
+
+        if (_renderers.Any(existing => string.Equals(existing.ComponentType, renderer.ComponentType, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new PuraConfigurationException($"Agent 组件渲染器重复注册：{renderer.ComponentType}");
+        }
+
         _parsers.Add(parser);
         _renderers.Add(renderer);
     }
+
+    public IReadOnlyList<string> ComponentTypes => _parsers
+        .Select(parser => parser.ComponentType)
+        .OrderBy(type => type, StringComparer.OrdinalIgnoreCase)
+        .ToArray();
 
     public PuraComponentRegistry CreateRegistry() => new(_parsers, _renderers);
 }
@@ -67,3 +82,4 @@ public static class AgentPipelineExtensions
         builder.UsePlugin(new AgentPlugin(set));
     }
 }
+

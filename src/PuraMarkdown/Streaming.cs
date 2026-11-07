@@ -115,6 +115,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private readonly HashSet<string> _definitionLabels = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _cts = new();
     private PuraStreamingState _state = PuraStreamingState.Created;
+    private readonly TaskCompletionSource _finished = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Task? _worker;
     private int _committedOffset;
     private int _version;
@@ -280,17 +281,26 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private async Task FinishAsync(PuraStreamingState finalState, string announcementKey, CancellationToken cancellationToken)
     {
         var announcement = _markdownOptions?.Localizer.Get(announcementKey) ?? announcementKey;
-        string text;
+        var text = string.Empty;
+        Task? alreadyFinished = null;
         lock (_gate)
         {
             if (_state is PuraStreamingState.Completed or PuraStreamingState.Aborted)
             {
-                return;
+                alreadyFinished = _finished.Task;
             }
+            else
+            {
+                _state = finalState;
+                _closed = true;
+                text = _full.ToString();
+            }
+        }
 
-            _state = finalState;
-            _closed = true;
-            text = _full.ToString();
+        if (alreadyFinished is not null)
+        {
+            await alreadyFinished.ConfigureAwait(false);
+            return;
         }
 
         CancelWorker();
@@ -333,13 +343,20 @@ public sealed class PuraStreamingSession : IAsyncDisposable
     private void RaiseFinished(PuraStreamingState finalState)
     {
         DrainFlushWaiters();
-        if (finalState == PuraStreamingState.Completed)
+        try
         {
-            Completed?.Invoke(this, EventArgs.Empty);
+            if (finalState == PuraStreamingState.Completed)
+            {
+                Completed?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                Aborted?.Invoke(this, EventArgs.Empty);
+            }
         }
-        else
+        finally
         {
-            Aborted?.Invoke(this, EventArgs.Empty);
+            _finished.TrySetResult();
         }
     }
 
@@ -786,6 +803,8 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             _tailParsedChars,
             _lastParsedChars);
 }
+
+
 
 
 

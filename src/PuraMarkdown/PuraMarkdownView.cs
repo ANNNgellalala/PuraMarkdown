@@ -105,6 +105,9 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
     /// <summary>已渲染块记录（流式嫁接锚点；只读）。</summary>
     public IReadOnlyList<BlockRecord> Blocks => _records;
 
+    /// <summary>已上报的交互状态（按 ComponentId），可用于会话持久化。</summary>
+    public IReadOnlyDictionary<string, PuraInteractionEventArgs> InteractionStates => _componentStates;
+
     /// <summary>当前活动流式会话（无则为 null）。</summary>
     public PuraStreamingSession? ActiveSession => _activeSession;
 
@@ -123,6 +126,53 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
 
         _activeSession = new PuraStreamingSession(this, options ?? new PuraStreamingOptions());
         return _activeSession;
+    }
+
+    /// <summary>写入单条交互状态（下次渲染/重渲染时恢复）。</summary>
+    /// <param name="state">交互状态。</param>
+    public void SetInteractionState(PuraInteractionEventArgs state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        if (string.IsNullOrEmpty(state.ComponentId))
+        {
+            throw new ArgumentException("交互状态必须带 ComponentId", nameof(state));
+        }
+
+        _componentStates[state.ComponentId] = state;
+    }
+
+    /// <summary>批量恢复交互状态（历史回放/持久化恢复）；已有内容会重渲染。</summary>
+    /// <param name="states">交互状态集合。</param>
+    public void ApplyInteractionStates(IEnumerable<PuraInteractionEventArgs> states)
+    {
+        ArgumentNullException.ThrowIfNull(states);
+        foreach (var state in states)
+        {
+            if (!string.IsNullOrEmpty(state.ComponentId))
+            {
+                _componentStates[state.ComponentId] = state;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(GetCurrentText()))
+        {
+            Render();
+        }
+    }
+
+    /// <summary>清空交互状态（新会话/重置时使用）。</summary>
+    public void ClearInteractionStates()
+    {
+        if (_componentStates.Count == 0)
+        {
+            return;
+        }
+
+        _componentStates.Clear();
+        if (!string.IsNullOrWhiteSpace(GetCurrentText()))
+        {
+            Render();
+        }
     }
 
     /// <summary>全量渲染当前 Markdown。</summary>
@@ -1059,6 +1109,7 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
 
 
 

@@ -96,6 +96,23 @@ public sealed class PluginTests
         Assert.True(colored, "应至少有一个 token 被着色");
     }
 
+    [Fact]
+    public void Agent_component_catalog_and_duplicate_validation()
+    {
+        var plugin = new AgentPlugin();
+        Assert.Contains("choice", plugin.ComponentTypes);
+        Assert.Contains("confirm", plugin.ComponentTypes);
+
+        var builder = new PuraPipelineBuilder()
+            .UseCommonMark()
+            .UseGfm()
+            .UseAgentComponents()
+            .UseAgentComponent(new PluginSamples.RatingParser(), new PluginSamples.RatingRenderer());
+
+        Assert.Throws<PuraConfigurationException>(() =>
+            builder.UseAgentComponent(new PluginSamples.RatingParser(), new PluginSamples.RatingRenderer()));
+    }
+
     [AvaloniaFact]
     public void Agent_components_can_be_composed()
     {
@@ -309,6 +326,7 @@ public sealed class PluginTests
             => throw new InvalidOperationException("diagram boom");
     }
 }
+
 
 
 

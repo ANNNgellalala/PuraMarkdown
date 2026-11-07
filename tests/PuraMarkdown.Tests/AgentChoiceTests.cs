@@ -54,6 +54,59 @@ public sealed class AgentChoiceTests
         Assert.Equal(["prod"], captured.SelectedIds);
     }
 
+    [Fact]
+    public void Interaction_states_serialize_round_trip()
+    {
+        var json = PuraInteractionStates.Serialize([
+            new PuraInteractionEventArgs
+            {
+                ComponentType = "choice",
+                ComponentId = "env",
+                SelectedIds = ["prod"],
+                Timestamp = DateTimeOffset.Parse("2026-11-07T12:00:00+08:00"),
+            },
+        ]);
+
+        var restored = PuraInteractionStates.Deserialize(json);
+
+        var state = Assert.Single(restored);
+        Assert.Equal("prod", state.SelectedIds.Single());
+        Assert.Equal("env", state.ComponentId);
+    }
+
+    [AvaloniaFact]
+    public void Interaction_state_can_be_restored_before_render()
+    {
+        var view = new PuraMarkdownView { Options = CreateOptions() };
+        view.ApplyInteractionStates([
+            new PuraInteractionEventArgs
+            {
+                ComponentType = "choice",
+                ComponentId = "env",
+                SelectedIds = ["prod"],
+            },
+        ]);
+
+        view.Markdown = """
+            ```pura-agent
+            {
+              "type": "choice",
+              "version": "1.0",
+              "id": "env",
+              "question": "选择环境",
+              "options": [
+                { "id": "dev", "label": "开发" },
+                { "id": "prod", "label": "生产" }
+              ]
+            }
+            ```
+            """;
+
+        var radios = ControlTreeDumper.Find<RadioButton>(view).ToList();
+        Assert.True(radios[1].IsChecked);
+        Assert.Equal("prod", view.InteractionStates["env"].SelectedIds.Single());
+    }
+
     [AvaloniaFact]
     public void Multi_choice_reports_only_after_confirm()
     {
@@ -152,6 +205,8 @@ public sealed class AgentChoiceTests
         Assert.True(captured.Confirmed);
     }
 }
+
+
 
 
 

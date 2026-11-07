@@ -128,6 +128,9 @@ public sealed class PuraComponentRegistry
             .ToDictionary(g => g.Key, g => g.Last(), StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>已注册组件类型。</summary>
+    public IReadOnlyList<string> ComponentTypes => _parsers.Keys.OrderBy(type => type, StringComparer.OrdinalIgnoreCase).ToArray();
+
     /// <summary>按组件类型解析载荷解析器。</summary>
     /// <param name="componentType">组件类型。</param>
     /// <returns>解析器；未注册时返回 <c>null</c>。</returns>
@@ -140,4 +143,6 @@ public sealed class PuraComponentRegistry
     public IAgentComponentRenderer? ResolveRenderer(string componentType)
         => _renderers.GetValueOrDefault(componentType);
 }
+
+
 

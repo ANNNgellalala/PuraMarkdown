@@ -9,7 +9,7 @@ using PuraMarkdown.Rendering;
 namespace PuraMarkdown.Agent;
 
 /// <summary>confirm：确认/取消二选一，点击后上报并禁用。</summary>
-internal sealed class PuraConfirmControl : Border
+internal sealed class PuraConfirmControl : Border, IPuraInteractionStateReceiver
 {
     private readonly RenderContext _context;
     private readonly string _componentId;
@@ -95,6 +95,21 @@ internal sealed class PuraConfirmControl : Border
     /// <summary>ComponentId。</summary>
     public string ComponentId => _componentId;
 
+    /// <summary>恢复已确认/已取消状态（不回传事件）。</summary>
+    public void ApplyInteractionState(PuraInteractionEventArgs state)
+    {
+        if (state.Confirmed is null)
+        {
+            return;
+        }
+
+        _done = true;
+        _confirmButton.IsEnabled = false;
+        _cancelButton.IsEnabled = false;
+        var active = state.Confirmed == true ? _confirmButton : _cancelButton;
+        active.FontWeight = Avalonia.Media.FontWeight.SemiBold;
+    }
+
     private void Complete(bool confirmed)
     {
         if (!_enabled || _done)
@@ -113,5 +128,6 @@ internal sealed class PuraConfirmControl : Border
         });
     }
 }
+
 
 
