@@ -97,39 +97,90 @@ public sealed class PuraSyntaxPipeline
     }
 
     /// <summary>
-    /// 增量解析：对“末尾追加且前缀已稳定”的常见流式场景复用旧 AST 前缀；其它编辑回退全量解析。
+    /// 增量解析：按顶层块定位受编辑影响的区间，只重解析该区间（前后各扩一块作为上下文），
+    /// 复用前后未受影响的 AST 块；引用定义/异常/边界不安全时回退全量解析。
     /// 注意：命中复用路径时 <paramref name="previous"/> 的 AST 会被消费，调用方不应继续使用旧文档。
     /// </summary>
     public PuraDocument ParseIncremental(PuraDocument previous, PuraTextChange change)
     {
         ArgumentNullException.ThrowIfNull(previous);
         ArgumentNullException.ThrowIfNull(change);
-        var text = string.Concat(
-            previous.Text.AsSpan(0, change.Offset),
-            change.InsertedText,
-            previous.Text.AsSpan(change.Offset + change.RemovedLength));
 
-        if (change.Offset == previous.Text.Length
-            && change.RemovedLength == 0
-            && previous.Text.Length > 0
-            && StreamingBlockScanner.FindStableBoundary(previous.Text, 0) == previous.Text.Length)
+        var oldText = previous.Text;
+        var offset = Math.Clamp(change.Offset, 0, oldText.Length);
+        var removed = Math.Clamp(change.RemovedLength, 0, oldText.Length - offset);
+        var text = string.Concat(
+            oldText.AsSpan(0, offset),
+            change.InsertedText,
+            oldText.AsSpan(offset + removed));
+
+        if (text.Length == 0 || previous.Markdown.Count == 0)
         {
-            var tail = Parse(change.InsertedText);
+            return ParseDocument(text, previous.Version + 1);
+        }
+
+        // 引用定义是文档级语义；局部重解析可能丢失定义，直接回退。
+        if (previous.Markdown.Descendants<LinkReferenceDefinition>().Any())
+        {
+            return ParseDocument(text, previous.Version + 1);
+        }
+
+        var blocks = previous.Markdown.ToArray();
+        var editEnd = offset + removed;
+        var first = Array.FindIndex(blocks, block => block.Span.End > offset);
+        if (first < 0)
+        {
+            first = blocks.Length - 1;
+        }
+
+        var last = Array.FindLastIndex(blocks, block => block.Span.Start < editEnd);
+        if (last < first)
+        {
+            last = first;
+        }
+
+        // 前后各扩一块，覆盖 Setext/表格/列表续接等上下文。
+        first = Math.Max(0, first - 1);
+        last = Math.Min(blocks.Length - 1, last + 1);
+
+        var segmentStart = Math.Clamp(blocks[first].Span.Start, 0, text.Length);
+        var oldSegmentEnd = Math.Clamp(blocks[last].Span.End, segmentStart, oldText.Length);
+        var delta = change.InsertedText.Length - removed;
+        var newSegmentEnd = Math.Clamp(oldSegmentEnd + delta, segmentStart, text.Length);
+        if (editEnd >= oldText.Length)
+        {
+            oldSegmentEnd = oldText.Length;
+            newSegmentEnd = text.Length;
+        }
+
+        try
+        {
+            var segmentText = text[segmentStart..newSegmentEnd];
+            var segment = Parse(segmentText);
             var merged = new MarkdownDocument();
-            var oldBlocks = previous.Markdown.ToArray();
-            foreach (var block in oldBlocks)
+
+            for (var i = 0; i < first; i++)
             {
-                previous.Markdown.Remove(block);
+                previous.Markdown.Remove(blocks[i]);
+                merged.Add(blocks[i]);
+            }
+
+            var segmentLineOffset = CountLines(text[..segmentStart]);
+            foreach (var block in segment.ToArray())
+            {
+                Shift(block, segmentStart, segmentLineOffset);
+                segment.Remove(block);
                 merged.Add(block);
             }
 
-            var charOffset = previous.Text.Length;
-            var lineOffset = CountLines(previous.Text);
-            foreach (var block in tail.ToArray())
+            var oldSuffixStart = oldSegmentEnd;
+            var newSuffixStart = newSegmentEnd;
+            var suffixLineOffset = CountLines(text[..newSuffixStart]) - CountLines(oldText[..oldSuffixStart]);
+            for (var i = last + 1; i < blocks.Length; i++)
             {
-                Shift(block, charOffset, lineOffset);
-                tail.Remove(block);
-                merged.Add(block);
+                previous.Markdown.Remove(blocks[i]);
+                Shift(blocks[i], delta, suffixLineOffset);
+                merged.Add(blocks[i]);
             }
 
             var sanitized = Options.Sanitizer.Sanitize(merged, Options);
@@ -141,8 +192,12 @@ public sealed class PuraSyntaxPipeline
                 BuildOutline(merged),
                 sanitized);
         }
-
-        return ParseDocument(text, previous.Version + 1);
+        catch
+        {
+            // 局部解析失败时回退到全量；previous 只能保证未被消费的部分仍可用，
+            // 因此调用方应把异常路径视为“旧文档已失效”。
+            return ParseDocument(text, previous.Version + 1);
+        }
     }
 
     private static int CountLines(string text)
@@ -414,6 +469,8 @@ public sealed class PuraSyntaxStreamingSession
         return Current;
     }
 }
+
+
 
 
 

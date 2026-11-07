@@ -57,6 +57,77 @@ public sealed class SyntaxRenderingSeparationTests
     }
 
     [Fact]
+    public void Syntax_incremental_handles_arbitrary_replace_and_reuses_blocks()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var text = "# A\n\nfirst\n\nsecond\n\nthird\n";
+        var first = syntax.ParseDocument(text);
+        var prefix = first.Markdown[0];
+        var offset = text.IndexOf("second", StringComparison.Ordinal);
+
+        var next = syntax.ParseIncremental(
+            first,
+            new PuraTextChange(offset, "second".Length, "second-long"));
+
+        Assert.Contains("second-long", next.Text, StringComparison.Ordinal);
+        Assert.Equal(4, next.Markdown.Count);
+        Assert.Same(prefix, next.Markdown[0]);
+        foreach (var block in next.Markdown)
+        {
+            Assert.InRange(block.Span.Start, 0, next.Text.Length);
+            Assert.InRange(block.Span.End, 0, next.Text.Length);
+        }
+    }
+
+    [Fact]
+    public void Syntax_incremental_falls_back_for_reference_definitions()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var text = "[ref]: https://example.com\n\n[x][ref]\n";
+        var first = syntax.ParseDocument(text);
+        var offset = text.IndexOf("[x]", StringComparison.Ordinal) + 1;
+
+        var next = syntax.ParseIncremental(first, new PuraTextChange(offset, 1, "y"));
+
+        Assert.Contains("[y][ref]", next.Text, StringComparison.Ordinal);
+        var link = next.Markdown.Descendants<Markdig.Syntax.Inlines.LinkInline>().Single();
+        Assert.Equal("https://example.com", link.Url);
+    }
+
+    [Fact]
+    public void Syntax_incremental_handles_middle_insert_and_delete()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var text = "# A\n\nfirst\n\nsecond\n\nthird\n";
+
+        var first = syntax.ParseDocument(text);
+        var insertAt = text.IndexOf("second", StringComparison.Ordinal);
+        var inserted = syntax.ParseIncremental(first, new PuraTextChange(insertAt, 0, "inserted\n\n"));
+        Assert.Equal(5, inserted.Markdown.Count);
+        Assert.Contains("inserted", inserted.Text, StringComparison.Ordinal);
+
+        var deleted = syntax.ParseIncremental(
+            inserted,
+            new PuraTextChange(inserted.Text.IndexOf("second", StringComparison.Ordinal), "second\n\n".Length, string.Empty));
+        Assert.Equal(4, deleted.Markdown.Count);
+        Assert.DoesNotContain("second", deleted.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Syntax_incremental_reparses_fenced_code_context()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var text = "# A\n\n```csharp\nvar x = 1;\n```\n";
+        var first = syntax.ParseDocument(text);
+        var offset = text.IndexOf("1", StringComparison.Ordinal);
+
+        var next = syntax.ParseIncremental(first, new PuraTextChange(offset, 1, "42"));
+
+        Assert.Contains("var x = 42;", next.Text, StringComparison.Ordinal);
+        Assert.Contains(next.Markdown, block => block is Markdig.Syntax.FencedCodeBlock);
+    }
+
+    [Fact]
     public void Markdig_version_matches_compatibility_matrix()
     {
         Assert.Equal("1.5.1", MarkdigCompatibility.TestedPackageVersion);
@@ -180,6 +251,9 @@ public sealed class SyntaxRenderingSeparationTests
             => new TextBlock { Text = "ARC" };
     }
 }
+
+
+
 
 
 
