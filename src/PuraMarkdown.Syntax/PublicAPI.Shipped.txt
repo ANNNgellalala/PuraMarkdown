@@ -1,0 +1,126 @@
+#nullable enable
+override PuraMarkdown.Syntax.PuraDiagnostic.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraDiagnostic.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraDiagnostic.ToString() -> string!
+override PuraMarkdown.Syntax.PuraDocument.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraDocument.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraDocument.ToString() -> string!
+override PuraMarkdown.Syntax.PuraFoldRange.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraFoldRange.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraFoldRange.ToString() -> string!
+override PuraMarkdown.Syntax.PuraHeading.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraHeading.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraHeading.ToString() -> string!
+override PuraMarkdown.Syntax.PuraOutline.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraOutline.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraOutline.ToString() -> string!
+override PuraMarkdown.Syntax.PuraTextChange.Equals(object? obj) -> bool
+override PuraMarkdown.Syntax.PuraTextChange.GetHashCode() -> int
+override PuraMarkdown.Syntax.PuraTextChange.ToString() -> string!
+PuraMarkdown.StreamingBlockScanner
+PuraMarkdown.Syntax.PuraDiagnostic
+PuraMarkdown.Syntax.PuraDiagnostic.<Clone>$() -> PuraMarkdown.Syntax.PuraDiagnostic!
+PuraMarkdown.Syntax.PuraDiagnostic.Code.get -> string!
+PuraMarkdown.Syntax.PuraDiagnostic.Code.init -> void
+PuraMarkdown.Syntax.PuraDiagnostic.Deconstruct(out string! Code, out PuraMarkdown.Syntax.PuraDiagnosticSeverity Severity, out string! Message, out Markdig.Syntax.SourceSpan Span, out string? NodeType) -> void
+PuraMarkdown.Syntax.PuraDiagnostic.Equals(PuraMarkdown.Syntax.PuraDiagnostic? other) -> bool
+PuraMarkdown.Syntax.PuraDiagnostic.Message.get -> string!
+PuraMarkdown.Syntax.PuraDiagnostic.Message.init -> void
+PuraMarkdown.Syntax.PuraDiagnostic.NodeType.get -> string?
+PuraMarkdown.Syntax.PuraDiagnostic.NodeType.init -> void
+PuraMarkdown.Syntax.PuraDiagnostic.PuraDiagnostic(string! Code, PuraMarkdown.Syntax.PuraDiagnosticSeverity Severity, string! Message, Markdig.Syntax.SourceSpan Span, string? NodeType = null) -> void
+PuraMarkdown.Syntax.PuraDiagnostic.Severity.get -> PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDiagnostic.Severity.init -> void
+PuraMarkdown.Syntax.PuraDiagnostic.Span.get -> Markdig.Syntax.SourceSpan
+PuraMarkdown.Syntax.PuraDiagnostic.Span.init -> void
+PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDiagnosticSeverity.Error = 0 -> PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDiagnosticSeverity.Hint = 3 -> PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDiagnosticSeverity.Information = 2 -> PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDiagnosticSeverity.Warning = 1 -> PuraMarkdown.Syntax.PuraDiagnosticSeverity
+PuraMarkdown.Syntax.PuraDocument
+PuraMarkdown.Syntax.PuraDocument.<Clone>$() -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.Syntax.PuraDocument.Deconstruct(out int Version, out string! Text, out Markdig.Syntax.MarkdownDocument! Markdown, out System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraDiagnostic!>! Diagnostics, out PuraMarkdown.Syntax.PuraOutline! Outline) -> void
+PuraMarkdown.Syntax.PuraDocument.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraDiagnostic!>!
+PuraMarkdown.Syntax.PuraDocument.Diagnostics.init -> void
+PuraMarkdown.Syntax.PuraDocument.Equals(PuraMarkdown.Syntax.PuraDocument? other) -> bool
+PuraMarkdown.Syntax.PuraDocument.Markdown.get -> Markdig.Syntax.MarkdownDocument!
+PuraMarkdown.Syntax.PuraDocument.Markdown.init -> void
+PuraMarkdown.Syntax.PuraDocument.Outline.get -> PuraMarkdown.Syntax.PuraOutline!
+PuraMarkdown.Syntax.PuraDocument.Outline.init -> void
+PuraMarkdown.Syntax.PuraDocument.PuraDocument(int Version, string! Text, Markdig.Syntax.MarkdownDocument! Markdown, System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraDiagnostic!>! Diagnostics, PuraMarkdown.Syntax.PuraOutline! Outline) -> void
+PuraMarkdown.Syntax.PuraDocument.Text.get -> string!
+PuraMarkdown.Syntax.PuraDocument.Text.init -> void
+PuraMarkdown.Syntax.PuraDocument.Version.get -> int
+PuraMarkdown.Syntax.PuraDocument.Version.init -> void
+PuraMarkdown.Syntax.PuraFoldRange
+PuraMarkdown.Syntax.PuraFoldRange.<Clone>$() -> PuraMarkdown.Syntax.PuraFoldRange!
+PuraMarkdown.Syntax.PuraFoldRange.Deconstruct(out int StartLine, out int EndLine, out string! Kind) -> void
+PuraMarkdown.Syntax.PuraFoldRange.EndLine.get -> int
+PuraMarkdown.Syntax.PuraFoldRange.EndLine.init -> void
+PuraMarkdown.Syntax.PuraFoldRange.Equals(PuraMarkdown.Syntax.PuraFoldRange? other) -> bool
+PuraMarkdown.Syntax.PuraFoldRange.Kind.get -> string!
+PuraMarkdown.Syntax.PuraFoldRange.Kind.init -> void
+PuraMarkdown.Syntax.PuraFoldRange.PuraFoldRange(int StartLine, int EndLine, string! Kind) -> void
+PuraMarkdown.Syntax.PuraFoldRange.StartLine.get -> int
+PuraMarkdown.Syntax.PuraFoldRange.StartLine.init -> void
+PuraMarkdown.Syntax.PuraHeading
+PuraMarkdown.Syntax.PuraHeading.<Clone>$() -> PuraMarkdown.Syntax.PuraHeading!
+PuraMarkdown.Syntax.PuraHeading.Anchor.get -> string!
+PuraMarkdown.Syntax.PuraHeading.Anchor.init -> void
+PuraMarkdown.Syntax.PuraHeading.Deconstruct(out int Level, out string! Text, out string! Anchor) -> void
+PuraMarkdown.Syntax.PuraHeading.Equals(PuraMarkdown.Syntax.PuraHeading? other) -> bool
+PuraMarkdown.Syntax.PuraHeading.Level.get -> int
+PuraMarkdown.Syntax.PuraHeading.Level.init -> void
+PuraMarkdown.Syntax.PuraHeading.PuraHeading(int Level, string! Text, string! Anchor) -> void
+PuraMarkdown.Syntax.PuraHeading.Text.get -> string!
+PuraMarkdown.Syntax.PuraHeading.Text.init -> void
+PuraMarkdown.Syntax.PuraOutline
+PuraMarkdown.Syntax.PuraOutline.<Clone>$() -> PuraMarkdown.Syntax.PuraOutline!
+PuraMarkdown.Syntax.PuraOutline.Deconstruct(out System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraHeading!>! Headings, out System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraFoldRange!>! Folds) -> void
+PuraMarkdown.Syntax.PuraOutline.Equals(PuraMarkdown.Syntax.PuraOutline? other) -> bool
+PuraMarkdown.Syntax.PuraOutline.Folds.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraFoldRange!>!
+PuraMarkdown.Syntax.PuraOutline.Folds.init -> void
+PuraMarkdown.Syntax.PuraOutline.Headings.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraHeading!>!
+PuraMarkdown.Syntax.PuraOutline.Headings.init -> void
+PuraMarkdown.Syntax.PuraOutline.PuraOutline(System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraHeading!>! Headings, System.Collections.Generic.IReadOnlyList<PuraMarkdown.Syntax.PuraFoldRange!>! Folds) -> void
+PuraMarkdown.Syntax.PuraSyntaxBuilder
+PuraMarkdown.Syntax.PuraSyntaxBuilder.Build() -> PuraMarkdown.Syntax.PuraSyntaxPipeline!
+PuraMarkdown.Syntax.PuraSyntaxBuilder.PuraSyntaxBuilder() -> void
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseCommonMark() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseGfm() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseMarkdownExtension(Markdig.IMarkdownExtension! extension) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxPipeline
+PuraMarkdown.Syntax.PuraSyntaxPipeline.MarkdownPipeline.get -> Markdig.MarkdownPipeline!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.Parse(string! markdown) -> Markdig.Syntax.MarkdownDocument!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.ParseDocument(string! markdown, int version = 0) -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.Syntax.PuraSyntaxPipeline.ParseIncremental(PuraMarkdown.Syntax.PuraDocument! previous, PuraMarkdown.Syntax.PuraTextChange! change) -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Append(string! delta) -> void
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Complete() -> PuraMarkdown.Syntax.PuraDocument!
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession.Current.get -> PuraMarkdown.Syntax.PuraDocument?
+PuraMarkdown.Syntax.PuraSyntaxStreamingSession.PuraSyntaxStreamingSession(PuraMarkdown.Syntax.PuraSyntaxPipeline! pipeline) -> void
+PuraMarkdown.Syntax.PuraTextChange
+PuraMarkdown.Syntax.PuraTextChange.<Clone>$() -> PuraMarkdown.Syntax.PuraTextChange!
+PuraMarkdown.Syntax.PuraTextChange.Deconstruct(out int Offset, out int RemovedLength, out string! InsertedText) -> void
+PuraMarkdown.Syntax.PuraTextChange.Equals(PuraMarkdown.Syntax.PuraTextChange? other) -> bool
+PuraMarkdown.Syntax.PuraTextChange.InsertedText.get -> string!
+PuraMarkdown.Syntax.PuraTextChange.InsertedText.init -> void
+PuraMarkdown.Syntax.PuraTextChange.Offset.get -> int
+PuraMarkdown.Syntax.PuraTextChange.Offset.init -> void
+PuraMarkdown.Syntax.PuraTextChange.PuraTextChange(int Offset, int RemovedLength, string! InsertedText) -> void
+PuraMarkdown.Syntax.PuraTextChange.RemovedLength.get -> int
+PuraMarkdown.Syntax.PuraTextChange.RemovedLength.init -> void
+static PuraMarkdown.StreamingBlockScanner.FindStableBoundary(string! text, int from) -> int
+static PuraMarkdown.Syntax.PuraDiagnostic.operator !=(PuraMarkdown.Syntax.PuraDiagnostic? left, PuraMarkdown.Syntax.PuraDiagnostic? right) -> bool
+static PuraMarkdown.Syntax.PuraDiagnostic.operator ==(PuraMarkdown.Syntax.PuraDiagnostic? left, PuraMarkdown.Syntax.PuraDiagnostic? right) -> bool
+static PuraMarkdown.Syntax.PuraDocument.operator !=(PuraMarkdown.Syntax.PuraDocument? left, PuraMarkdown.Syntax.PuraDocument? right) -> bool
+static PuraMarkdown.Syntax.PuraDocument.operator ==(PuraMarkdown.Syntax.PuraDocument? left, PuraMarkdown.Syntax.PuraDocument? right) -> bool
+static PuraMarkdown.Syntax.PuraFoldRange.operator !=(PuraMarkdown.Syntax.PuraFoldRange? left, PuraMarkdown.Syntax.PuraFoldRange? right) -> bool
+static PuraMarkdown.Syntax.PuraFoldRange.operator ==(PuraMarkdown.Syntax.PuraFoldRange? left, PuraMarkdown.Syntax.PuraFoldRange? right) -> bool
+static PuraMarkdown.Syntax.PuraHeading.operator !=(PuraMarkdown.Syntax.PuraHeading? left, PuraMarkdown.Syntax.PuraHeading? right) -> bool
+static PuraMarkdown.Syntax.PuraHeading.operator ==(PuraMarkdown.Syntax.PuraHeading? left, PuraMarkdown.Syntax.PuraHeading? right) -> bool
+static PuraMarkdown.Syntax.PuraOutline.operator !=(PuraMarkdown.Syntax.PuraOutline? left, PuraMarkdown.Syntax.PuraOutline? right) -> bool
+static PuraMarkdown.Syntax.PuraOutline.operator ==(PuraMarkdown.Syntax.PuraOutline? left, PuraMarkdown.Syntax.PuraOutline? right) -> bool
+static PuraMarkdown.Syntax.PuraTextChange.operator !=(PuraMarkdown.Syntax.PuraTextChange? left, PuraMarkdown.Syntax.PuraTextChange? right) -> bool
+static PuraMarkdown.Syntax.PuraTextChange.operator ==(PuraMarkdown.Syntax.PuraTextChange? left, PuraMarkdown.Syntax.PuraTextChange? right) -> bool

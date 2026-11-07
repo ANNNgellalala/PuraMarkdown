@@ -1,0 +1,135 @@
+#nullable enable
+abstract PuraMarkdown.Agent.PuraAgentComponent.<Clone>$() -> PuraMarkdown.Agent.PuraAgentComponent!
+override PuraMarkdown.Agent.PuraAgentComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraAgentComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraAgentComponent.ToString() -> string!
+override PuraMarkdown.Agent.PuraChoiceComponent.<Clone>$() -> PuraMarkdown.Agent.PuraChoiceComponent!
+override PuraMarkdown.Agent.PuraChoiceComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraChoiceComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraChoiceComponent.ToString() -> string!
+override PuraMarkdown.Agent.PuraChoiceOption.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraChoiceOption.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraChoiceOption.ToString() -> string!
+override PuraMarkdown.Agent.PuraComponentError.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraComponentError.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraComponentError.ToString() -> string!
+override PuraMarkdown.Agent.PuraConfirmComponent.<Clone>$() -> PuraMarkdown.Agent.PuraConfirmComponent!
+override PuraMarkdown.Agent.PuraConfirmComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraConfirmComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraConfirmComponent.ToString() -> string!
+override sealed PuraMarkdown.Agent.PuraChoiceComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
+override sealed PuraMarkdown.Agent.PuraConfirmComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
+PuraMarkdown.Agent.AgentFenceRenderer
+PuraMarkdown.Agent.AgentFenceRenderer.CanRender(string! language, string! source, bool isClosed, PuraMarkdown.Rendering.RenderContext! context) -> bool
+PuraMarkdown.Agent.AgentFenceRenderer.Name.get -> string!
+PuraMarkdown.Agent.AgentFenceRenderer.Render(string! language, string! source, bool isClosed, PuraMarkdown.Rendering.RenderContext! context) -> Avalonia.Controls.Control!
+PuraMarkdown.Agent.AgentPipelineExtensions
+PuraMarkdown.Agent.AgentPlugin
+PuraMarkdown.Agent.AgentPlugin.AgentPlugin() -> void
+PuraMarkdown.Agent.AgentPlugin.AgentPlugin(System.Collections.Generic.IEnumerable<PuraMarkdown.Agent.IAgentComponentParser!>? parsers, System.Collections.Generic.IEnumerable<PuraMarkdown.Agent.IAgentComponentRenderer!>? renderers) -> void
+PuraMarkdown.Agent.AgentPlugin.ComponentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.AgentPlugin.Configure(PuraMarkdown.PuraPipelineBuilder! builder) -> void
+PuraMarkdown.Agent.AgentPlugin.Description.get -> string?
+PuraMarkdown.Agent.AgentPlugin.Name.get -> string!
+PuraMarkdown.Agent.AgentPlugin.Version.get -> string!
+PuraMarkdown.Agent.ChoiceParser
+PuraMarkdown.Agent.ChoiceParser.ChoiceParser() -> void
+PuraMarkdown.Agent.ChoiceParser.ComponentType.get -> string!
+PuraMarkdown.Agent.ChoiceParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.ChoiceParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.ConfirmParser
+PuraMarkdown.Agent.ConfirmParser.ComponentType.get -> string!
+PuraMarkdown.Agent.ConfirmParser.ConfirmParser() -> void
+PuraMarkdown.Agent.ConfirmParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.ConfirmParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.IAgentComponentParser
+PuraMarkdown.Agent.IAgentComponentParser.ComponentType.get -> string!
+PuraMarkdown.Agent.IAgentComponentParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.IAgentComponentParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.IAgentComponentRenderer
+PuraMarkdown.Agent.IAgentComponentRenderer.ComponentType.get -> string!
+PuraMarkdown.Agent.IAgentComponentRenderer.RenderComponent(PuraMarkdown.Agent.PuraAgentComponent! component, PuraMarkdown.Rendering.RenderContext! context) -> Avalonia.Controls.Control!
+PuraMarkdown.Agent.PuraAgentComponent
+PuraMarkdown.Agent.PuraAgentComponent.Id.get -> string?
+PuraMarkdown.Agent.PuraAgentComponent.Id.init -> void
+PuraMarkdown.Agent.PuraAgentComponent.PuraAgentComponent() -> void
+PuraMarkdown.Agent.PuraAgentComponent.PuraAgentComponent(PuraMarkdown.Agent.PuraAgentComponent! original) -> void
+PuraMarkdown.Agent.PuraAgentComponent.Type.get -> string!
+PuraMarkdown.Agent.PuraAgentComponent.Type.init -> void
+PuraMarkdown.Agent.PuraAgentComponent.Version.get -> string!
+PuraMarkdown.Agent.PuraAgentComponent.Version.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent
+PuraMarkdown.Agent.PuraChoiceComponent.DefaultSelected.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.PuraChoiceComponent.DefaultSelected.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Description.get -> string?
+PuraMarkdown.Agent.PuraChoiceComponent.Description.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Disabled.get -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Disabled.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Equals(PuraMarkdown.Agent.PuraChoiceComponent? other) -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Max.get -> int?
+PuraMarkdown.Agent.PuraChoiceComponent.Max.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Min.get -> int
+PuraMarkdown.Agent.PuraChoiceComponent.Min.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Multi.get -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Multi.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Options.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Agent.PuraChoiceOption!>!
+PuraMarkdown.Agent.PuraChoiceComponent.Options.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.PuraChoiceComponent() -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Question.get -> string!
+PuraMarkdown.Agent.PuraChoiceComponent.Question.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.SubmitLabel.get -> string!
+PuraMarkdown.Agent.PuraChoiceComponent.SubmitLabel.init -> void
+PuraMarkdown.Agent.PuraChoiceOption
+PuraMarkdown.Agent.PuraChoiceOption.<Clone>$() -> PuraMarkdown.Agent.PuraChoiceOption!
+PuraMarkdown.Agent.PuraChoiceOption.Deconstruct(out string! Id, out string! Label, out string? Description, out bool Disabled) -> void
+PuraMarkdown.Agent.PuraChoiceOption.Description.get -> string?
+PuraMarkdown.Agent.PuraChoiceOption.Description.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Disabled.get -> bool
+PuraMarkdown.Agent.PuraChoiceOption.Disabled.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Equals(PuraMarkdown.Agent.PuraChoiceOption? other) -> bool
+PuraMarkdown.Agent.PuraChoiceOption.Id.get -> string!
+PuraMarkdown.Agent.PuraChoiceOption.Id.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Label.get -> string!
+PuraMarkdown.Agent.PuraChoiceOption.Label.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.PuraChoiceOption(string! Id, string! Label, string? Description = null, bool Disabled = false) -> void
+PuraMarkdown.Agent.PuraComponentError
+PuraMarkdown.Agent.PuraComponentError.<Clone>$() -> PuraMarkdown.Agent.PuraComponentError!
+PuraMarkdown.Agent.PuraComponentError.Deconstruct(out string! Message, out string? Path) -> void
+PuraMarkdown.Agent.PuraComponentError.Equals(PuraMarkdown.Agent.PuraComponentError? other) -> bool
+PuraMarkdown.Agent.PuraComponentError.Message.get -> string!
+PuraMarkdown.Agent.PuraComponentError.Message.init -> void
+PuraMarkdown.Agent.PuraComponentError.Path.get -> string?
+PuraMarkdown.Agent.PuraComponentError.Path.init -> void
+PuraMarkdown.Agent.PuraComponentError.PuraComponentError(string! Message, string? Path = null) -> void
+PuraMarkdown.Agent.PuraComponentRegistry
+PuraMarkdown.Agent.PuraComponentRegistry.ComponentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.PuraComponentRegistry.ResolveParser(string! componentType) -> PuraMarkdown.Agent.IAgentComponentParser?
+PuraMarkdown.Agent.PuraComponentRegistry.ResolveRenderer(string! componentType) -> PuraMarkdown.Agent.IAgentComponentRenderer?
+PuraMarkdown.Agent.PuraConfirmComponent
+PuraMarkdown.Agent.PuraConfirmComponent.CancelLabel.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.CancelLabel.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.ConfirmLabel.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.ConfirmLabel.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Danger.get -> bool
+PuraMarkdown.Agent.PuraConfirmComponent.Danger.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Description.get -> string?
+PuraMarkdown.Agent.PuraConfirmComponent.Description.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Equals(PuraMarkdown.Agent.PuraConfirmComponent? other) -> bool
+PuraMarkdown.Agent.PuraConfirmComponent.PuraConfirmComponent() -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Question.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.Question.init -> void
+static PuraMarkdown.Agent.AgentPipelineExtensions.UseAgentComponent(this PuraMarkdown.PuraPipelineBuilder! builder, PuraMarkdown.Agent.IAgentComponentParser! parser, PuraMarkdown.Agent.IAgentComponentRenderer! renderer) -> PuraMarkdown.PuraPipelineBuilder!
+static PuraMarkdown.Agent.AgentPipelineExtensions.UseAgentComponents(this PuraMarkdown.PuraPipelineBuilder! builder) -> PuraMarkdown.PuraPipelineBuilder!
+static PuraMarkdown.Agent.PuraAgentComponent.operator !=(PuraMarkdown.Agent.PuraAgentComponent? left, PuraMarkdown.Agent.PuraAgentComponent? right) -> bool
+static PuraMarkdown.Agent.PuraAgentComponent.operator ==(PuraMarkdown.Agent.PuraAgentComponent? left, PuraMarkdown.Agent.PuraAgentComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceComponent.operator !=(PuraMarkdown.Agent.PuraChoiceComponent? left, PuraMarkdown.Agent.PuraChoiceComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceComponent.operator ==(PuraMarkdown.Agent.PuraChoiceComponent? left, PuraMarkdown.Agent.PuraChoiceComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceOption.operator !=(PuraMarkdown.Agent.PuraChoiceOption? left, PuraMarkdown.Agent.PuraChoiceOption? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceOption.operator ==(PuraMarkdown.Agent.PuraChoiceOption? left, PuraMarkdown.Agent.PuraChoiceOption? right) -> bool
+static PuraMarkdown.Agent.PuraComponentError.operator !=(PuraMarkdown.Agent.PuraComponentError? left, PuraMarkdown.Agent.PuraComponentError? right) -> bool
+static PuraMarkdown.Agent.PuraComponentError.operator ==(PuraMarkdown.Agent.PuraComponentError? left, PuraMarkdown.Agent.PuraComponentError? right) -> bool
+static PuraMarkdown.Agent.PuraConfirmComponent.operator !=(PuraMarkdown.Agent.PuraConfirmComponent? left, PuraMarkdown.Agent.PuraConfirmComponent? right) -> bool
+static PuraMarkdown.Agent.PuraConfirmComponent.operator ==(PuraMarkdown.Agent.PuraConfirmComponent? left, PuraMarkdown.Agent.PuraConfirmComponent? right) -> bool
+virtual PuraMarkdown.Agent.PuraAgentComponent.EqualityContract.get -> System.Type!
+virtual PuraMarkdown.Agent.PuraAgentComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
+virtual PuraMarkdown.Agent.PuraAgentComponent.PrintMembers(System.Text.StringBuilder! builder) -> bool

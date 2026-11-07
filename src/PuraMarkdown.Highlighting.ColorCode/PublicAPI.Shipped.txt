@@ -1,0 +1,11 @@
+#nullable enable
+PuraMarkdown.Highlighting.ColorCode.ColorCodeHighlighter
+PuraMarkdown.Highlighting.ColorCode.ColorCodeHighlighter.CanHighlight(string? language) -> bool
+PuraMarkdown.Highlighting.ColorCode.ColorCodeHighlighter.ColorCodeHighlighter() -> void
+PuraMarkdown.Highlighting.ColorCode.ColorCodeHighlighter.Highlight(string! code, string? language) -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Rendering.HighlightSpan>!
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin.ColorCodePlugin() -> void
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin.Configure(PuraMarkdown.PuraPipelineBuilder! builder) -> void
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin.Description.get -> string?
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin.Name.get -> string!
+PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin.Version.get -> string!
