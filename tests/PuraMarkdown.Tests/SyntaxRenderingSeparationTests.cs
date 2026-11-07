@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Markdig.Extensions.Tables;
+using Markdig.Extensions.TaskLists;
 using Markdig.Syntax;
 using PuraMarkdown.Rendering;
 using PuraMarkdown.Syntax;
@@ -52,6 +54,51 @@ public sealed class SyntaxRenderingSeparationTests
         Assert.Equal(2, next.Outline.Headings.Count);
         Assert.Equal("B", next.Outline.Headings[1].Text);
         Assert.Equal(firstBlockCount + 1, next.Markdown.Count);
+    }
+
+    [Fact]
+    public void Markdig_version_matches_compatibility_matrix()
+    {
+        Assert.Equal("1.5.1", MarkdigCompatibility.TestedPackageVersion);
+        Assert.Equal(MarkdigCompatibility.TestedAssemblyVersion, MarkdigCompatibility.CurrentAssemblyVersion);
+    }
+
+    [Fact]
+    public void Comprehensive_document_only_uses_contract_nodes()
+    {
+        var syntax = new PuraSyntaxBuilder().UseCommonMark().UseGfm().Build();
+        var document = syntax.ParseDocument("""
+            # H1
+
+            > quote **bold** [link](https://example.com) ![img](https://example.com/a.png)
+
+            - [x] task
+            - [ ] todo
+
+            | A | B |
+            | --- | ---: |
+            | 1 | 2 |
+
+            ```csharp
+            var x = 1;
+            ```
+
+            https://example.com
+            """);
+
+        foreach (var node in document.Markdown.Descendants())
+        {
+            Assert.True(
+                MarkdigCompatibility.IsSupported(node),
+                $"节点 {node.GetType().Name} 不在 Markdig 支持矩阵中");
+        }
+
+        Assert.Contains(
+            MarkdigCompatibility.Nodes,
+            info => info.NodeType == typeof(Table) && info.Support == PuraNodeSupport.Rendered);
+        Assert.Contains(
+            MarkdigCompatibility.Nodes,
+            info => info.NodeType == typeof(TaskList) && info.Support == PuraNodeSupport.Rendered);
     }
 
     [Fact]
@@ -133,6 +180,8 @@ public sealed class SyntaxRenderingSeparationTests
             => new TextBlock { Text = "ARC" };
     }
 }
+
+
 
 
 
