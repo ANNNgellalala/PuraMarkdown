@@ -178,6 +178,7 @@ dotnet run --project samples/PuraMarkdown.Spike -- --screenshot docs/images/demo
 | [B 阶段实施记录](docs/33-B阶段实施记录.md) | B0–B5 落地内容、验证与剩余硬化项 | 实现者/验收 |
 | [B 阶段基线：API/Trim/性能](docs/34-B阶段基线-API-Trim-性能.md) | PublicAPI baseline、Trim/AOT 结果、性能对比表 | 发布/验收 |
 | [Markdig 支持节点子集与兼容矩阵](docs/35-Markdig支持节点子集与兼容矩阵.md) | 节点矩阵、版本契约、升级检查清单 | 宿主/插件作者 |
+| [Markdown 功能覆盖与缺口](docs/36-Markdown功能覆盖与缺口.md) | 已支持特性、未实现语法/渲染、优先级 | 产品/插件作者 |
 | [需求方案（用户输入）](docs/PuraMarkdown需求方案.md) | 原始需求与边界定义 | 所有人 |
 | [需求对齐与设计复审](docs/00-需求对齐与设计复审.md) | v0.2 → v0.3 的差异、6 项已确认决策、IR/虚拟树/适配层讨论结论 | 决策者 |
 | [IR/虚拟树/多平台讨论](docs/07-IR-虚拟渲染树-多平台-讨论与决策.md) | 三项架构取舍的分析、触发条件、回补成本 | 决策者/架构 |
@@ -238,6 +239,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 
