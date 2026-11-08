@@ -149,7 +149,10 @@ PuraMarkdown.Syntax.PuraSyntaxBuilder
 PuraMarkdown.Syntax.PuraSyntaxBuilder.Build() -> PuraMarkdown.Syntax.PuraSyntaxPipeline!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.ConfigureLimits(System.Action<PuraMarkdown.Security.PuraLimits!>! configure) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.PuraSyntaxBuilder() -> void
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseAlertBlocks() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseCommonMark() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseDefinitionLists() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
+PuraMarkdown.Syntax.PuraSyntaxBuilder.UseFootnotes() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseGfm() -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseMarkdownExtension(Markdig.IMarkdownExtension! extension) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!
 PuraMarkdown.Syntax.PuraSyntaxBuilder.UseSanitizer(PuraMarkdown.Security.IAstSanitizer! sanitizer) -> PuraMarkdown.Syntax.PuraSyntaxBuilder!

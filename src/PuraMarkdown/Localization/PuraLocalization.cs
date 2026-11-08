@@ -45,6 +45,12 @@ public sealed class ChinesePuraLocalizer : IPuraLocalizer
         [PuraStringKeys.ChoiceSelectAtMost] = "最多选择 {0} 项",
         [PuraStringKeys.StreamingCompleted] = "消息内容生成完成",
         [PuraStringKeys.StreamingAborted] = "消息生成已中断",
+        [PuraStringKeys.AlertNote] = "注意",
+        [PuraStringKeys.AlertTip] = "提示",
+        [PuraStringKeys.AlertImportant] = "重要",
+        [PuraStringKeys.AlertWarning] = "警告",
+        [PuraStringKeys.AlertCaution] = "小心",
+        [PuraStringKeys.FootnoteBacklink] = "返回引用",
     };
 
     /// <inheritdoc/>
@@ -121,7 +127,20 @@ public static class PuraStringKeys
     public const string StreamingCompleted = "streaming-completed";
     /// <summary>文案键：StreamingAborted。</summary>
     public const string StreamingAborted = "streaming-aborted";
+    /// <summary>文案键：AlertNote。</summary>
+    public const string AlertNote = "alert-note";
+    /// <summary>文案键：AlertTip。</summary>
+    public const string AlertTip = "alert-tip";
+    /// <summary>文案键：AlertImportant。</summary>
+    public const string AlertImportant = "alert-important";
+    /// <summary>文案键：AlertWarning。</summary>
+    public const string AlertWarning = "alert-warning";
+    /// <summary>文案键：AlertCaution。</summary>
+    public const string AlertCaution = "alert-caution";
+    /// <summary>文案键：FootnoteBacklink。</summary>
+    public const string FootnoteBacklink = "footnote-backlink";
 }
+
 
 
 

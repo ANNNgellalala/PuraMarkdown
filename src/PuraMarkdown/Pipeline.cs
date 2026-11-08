@@ -140,6 +140,27 @@ public sealed class PuraPipelineBuilder
         return this;
     }
 
+    /// <summary>启用脚注。</summary>
+    public PuraPipelineBuilder UseFootnotes()
+    {
+        _syntax.UseFootnotes();
+        return this;
+    }
+
+    /// <summary>启用定义列表。</summary>
+    public PuraPipelineBuilder UseDefinitionLists()
+    {
+        _syntax.UseDefinitionLists();
+        return this;
+    }
+
+    /// <summary>启用 GitHub Alerts。</summary>
+    public PuraPipelineBuilder UseAlertBlocks()
+    {
+        _syntax.UseAlertBlocks();
+        return this;
+    }
+
     /// <summary>注册插件。</summary>
     /// <param name="plugin">插件。</param>
     public PuraPipelineBuilder UsePlugin(IPuraPlugin plugin)
@@ -185,6 +206,9 @@ public sealed class PuraPipelineBuilder
             new(new ParagraphRenderer(), 0),
             new(new HeadingRenderer(), 0),
             new(new ListRenderer(), 0),
+            new(new AlertBlockRenderer(), 10),
+            new(new DefinitionListRenderer(), 0),
+            new(new FootnoteGroupRenderer(), 0),
             new(new QuoteRenderer(), 0),
             new(new CodeBlockRenderer(), 0),
             new(new TableRenderer(), 0),
@@ -229,6 +253,8 @@ public sealed class PuraPipelineBuilder
         }
     }
 }
+
+
 
 
 

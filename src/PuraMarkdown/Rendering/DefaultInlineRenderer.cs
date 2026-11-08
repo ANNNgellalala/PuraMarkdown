@@ -1,9 +1,11 @@
 using System.Text;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Markdig.Extensions.Footnotes;
 using Markdig.Extensions.TaskLists;
 using Markdig.Syntax.Inlines;
 using PuraMarkdown.Localization;
@@ -99,6 +101,10 @@ internal static class DefaultInlineRenderer
                 target.Add(new Run(taskList.Checked ? "☑ " : "☐ "));
                 return;
 
+            case FootnoteLink footnoteLink:
+                RenderFootnoteLink(footnoteLink, target, context);
+                return;
+
             default:
                 var text = inline.ToString();
                 if (!string.IsNullOrEmpty(text))
@@ -114,9 +120,15 @@ internal static class DefaultInlineRenderer
         var temp = new InlineCollection();
         RenderChildren(emphasis, temp, context);
 
-        var isStrike = emphasis.DelimiterChar == '~';
-        var isStrong = emphasis.DelimiterCount >= 2;
-        var isItalic = !isStrike && emphasis.DelimiterCount % 2 == 1;
+        var delimiter = emphasis.DelimiterChar;
+        var count = emphasis.DelimiterCount;
+        var isStrike = delimiter == '~' && count >= 2;
+        var isSubscript = delimiter == '~' && count == 1;
+        var isSuperscript = delimiter == '^';
+        var isInserted = delimiter == '+';
+        var isMarked = delimiter == '=';
+        var isStrong = !isStrike && !isSubscript && !isSuperscript && !isInserted && !isMarked && count >= 2;
+        var isItalic = !isStrike && !isSubscript && !isSuperscript && !isInserted && !isMarked && count % 2 == 1;
 
         foreach (var child in temp.ToList())
         {
@@ -125,6 +137,24 @@ internal static class DefaultInlineRenderer
                 if (isStrike)
                 {
                     run.TextDecorations = TextDecorations.Strikethrough;
+                }
+                else if (isSubscript)
+                {
+                    run.BaselineAlignment = BaselineAlignment.Subscript;
+                    run.FontSize = Math.Max(8, run.FontSize - 2);
+                }
+                else if (isSuperscript)
+                {
+                    run.BaselineAlignment = BaselineAlignment.Superscript;
+                    run.FontSize = Math.Max(8, run.FontSize - 2);
+                }
+                else if (isInserted)
+                {
+                    run.TextDecorations = TextDecorations.Underline;
+                }
+                else if (isMarked)
+                {
+                    run.Background = new SolidColorBrush(context.Theme.Colors.CodeBackground);
                 }
                 else
                 {
@@ -141,6 +171,43 @@ internal static class DefaultInlineRenderer
 
             target.Add(child);
         }
+    }
+
+    private static void RenderFootnoteLink(FootnoteLink link, InlineCollection target, RenderContext context)
+    {
+        var order = link.Footnote?.Order ?? 0;
+        var isBack = link.IsBackLink;
+        var content = new TextBlock
+        {
+            Inlines = new InlineCollection
+            {
+                new Run(isBack ? "↩" : order.ToString())
+                {
+                    FontSize = isBack ? context.Theme.Typography.BodySize : context.Theme.Typography.BodySize - 3,
+                    BaselineAlignment = isBack ? BaselineAlignment.Baseline : BaselineAlignment.Superscript,
+                },
+            },
+        };
+        var linkButton = new HyperlinkButton
+        {
+            Content = content,
+            Padding = new Thickness(0, 0, isBack ? 6 : 2, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        AutomationProperties.SetName(linkButton, isBack
+            ? context.Options.Localizer.Get(PuraStringKeys.FootnoteBacklink)
+            : order.ToString());
+        if (isBack)
+        {
+            linkButton.Click += (_, _) => context.NavigateSink?.Invoke($"footnote-ref-{order}");
+        }
+        else
+        {
+            context.AnchorSink?.Invoke($"footnote-ref-{order}", linkButton);
+            linkButton.Click += (_, _) => context.NavigateSink?.Invoke($"footnote-{order}");
+        }
+
+        target.Add(new InlineUIContainer(linkButton));
     }
 
     private static void RenderLink(LinkInline link, InlineCollection target, RenderContext context)
@@ -300,6 +367,7 @@ internal static class DefaultInlineRenderer
         }
     }
 }
+
 
 
 

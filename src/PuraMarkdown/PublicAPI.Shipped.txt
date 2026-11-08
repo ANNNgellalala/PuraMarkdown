@@ -2,6 +2,11 @@
 ~override PuraMarkdown.Rendering.HighlightSpan.Equals(object obj) -> bool
 ~override PuraMarkdown.Rendering.HighlightSpan.ToString() -> string
 abstract PuraMarkdown.Platform.IImageResult.<Clone>$() -> PuraMarkdown.Platform.IImageResult!
+const PuraMarkdown.Localization.PuraStringKeys.AlertCaution = "alert-caution" -> string!
+const PuraMarkdown.Localization.PuraStringKeys.AlertImportant = "alert-important" -> string!
+const PuraMarkdown.Localization.PuraStringKeys.AlertNote = "alert-note" -> string!
+const PuraMarkdown.Localization.PuraStringKeys.AlertTip = "alert-tip" -> string!
+const PuraMarkdown.Localization.PuraStringKeys.AlertWarning = "alert-warning" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.ChoiceSelectAtLeast = "choice-select-at-least" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.ChoiceSelectAtMost = "choice-select-at-most" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.CodeLanguageFallback = "code-language-fallback" -> string!
@@ -22,6 +27,7 @@ const PuraMarkdown.Localization.PuraStringKeys.Copied = "copied" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.Copy = "copy" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.CopyCodeAutomation = "copy-code-automation" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.CopyFailed = "copy-failed" -> string!
+const PuraMarkdown.Localization.PuraStringKeys.FootnoteBacklink = "footnote-backlink" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.Image = "image" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.ImageBlocked = "image-blocked" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.ImageLoadException = "image-load-exception" -> string!
@@ -320,9 +326,12 @@ PuraMarkdown.PuraPipeline.Syntax.get -> PuraMarkdown.Syntax.PuraSyntaxPipeline!
 PuraMarkdown.PuraPipelineBuilder
 PuraMarkdown.PuraPipelineBuilder.Build() -> PuraMarkdown.PuraPipeline!
 PuraMarkdown.PuraPipelineBuilder.PuraPipelineBuilder() -> void
+PuraMarkdown.PuraPipelineBuilder.UseAlertBlocks() -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseCodeHighlighter(PuraMarkdown.Rendering.ICodeHighlighter! highlighter) -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseCommonMark() -> PuraMarkdown.PuraPipelineBuilder!
+PuraMarkdown.PuraPipelineBuilder.UseDefinitionLists() -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseFenceRenderer(PuraMarkdown.Rendering.IFenceRenderer! renderer, int priority = 100) -> PuraMarkdown.PuraPipelineBuilder!
+PuraMarkdown.PuraPipelineBuilder.UseFootnotes() -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseGfm() -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseInlineRenderer(PuraMarkdown.Rendering.IPuraInlineRenderer! renderer, int priority = 100) -> PuraMarkdown.PuraPipelineBuilder!
 PuraMarkdown.PuraPipelineBuilder.UseMarkdownExtension(Markdig.IMarkdownExtension! extension) -> PuraMarkdown.PuraPipelineBuilder!
@@ -494,6 +503,8 @@ PuraMarkdown.Rendering.PuraWarningEventArgs
 PuraMarkdown.Rendering.PuraWarningEventArgs.PuraWarningEventArgs(PuraMarkdown.Rendering.PuraWarning! warning) -> void
 PuraMarkdown.Rendering.PuraWarningEventArgs.Warning.get -> PuraMarkdown.Rendering.PuraWarning!
 PuraMarkdown.Rendering.RenderContext
+PuraMarkdown.Rendering.RenderContext.AnchorSink.get -> System.Action<string!, Avalonia.Controls.Control!>?
+PuraMarkdown.Rendering.RenderContext.AnchorSink.init -> void
 PuraMarkdown.Rendering.RenderContext.ComponentStates.get -> System.Collections.Generic.IReadOnlyDictionary<string!, PuraMarkdown.PuraInteractionEventArgs!>?
 PuraMarkdown.Rendering.RenderContext.ComponentStates.init -> void
 PuraMarkdown.Rendering.RenderContext.Dispatcher.get -> Avalonia.Threading.IDispatcher!
@@ -512,6 +523,8 @@ PuraMarkdown.Rendering.RenderContext.IsTail.get -> bool
 PuraMarkdown.Rendering.RenderContext.IsTail.init -> void
 PuraMarkdown.Rendering.RenderContext.LinkClickSink.get -> System.Action<PuraMarkdown.PuraLinkClickedEventArgs!>?
 PuraMarkdown.Rendering.RenderContext.LinkClickSink.init -> void
+PuraMarkdown.Rendering.RenderContext.NavigateSink.get -> System.Action<string!>?
+PuraMarkdown.Rendering.RenderContext.NavigateSink.init -> void
 PuraMarkdown.Rendering.RenderContext.Options.get -> PuraMarkdown.PuraMarkdownOptions!
 PuraMarkdown.Rendering.RenderContext.Options.init -> void
 PuraMarkdown.Rendering.RenderContext.PrecomputedHighlights.get -> System.Collections.Generic.IReadOnlyDictionary<Markdig.Syntax.MarkdownObject!, System.Collections.Generic.IReadOnlyList<PuraMarkdown.Rendering.HighlightSpan>!>?
@@ -574,4 +587,3 @@ static readonly PuraMarkdown.PuraMarkdownView.OptionsProperty -> Avalonia.Styled
 virtual PuraMarkdown.Platform.IImageResult.EqualityContract.get -> System.Type!
 virtual PuraMarkdown.Platform.IImageResult.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
 virtual PuraMarkdown.Platform.IImageResult.PrintMembers(System.Text.StringBuilder! builder) -> bool
-

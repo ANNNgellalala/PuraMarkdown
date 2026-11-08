@@ -36,6 +36,7 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
     private readonly ObservableCollection<VirtualBlock> _virtualBlocks = [];
     private readonly HashSet<string> _warnedKeys = [];
     private readonly Dictionary<string, PuraInteractionEventArgs> _componentStates = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Control> _anchors = new(StringComparer.Ordinal);
     private bool _virtualized;
     private bool _lastRenderWasStreaming;
     private int _tailRecordCount;
@@ -293,6 +294,12 @@ public sealed class PuraMarkdownView : ContentControl, IDisposable
         }
 
         var target = anchor.TrimStart('#');
+        if (_anchors.TryGetValue(target, out var anchored))
+        {
+            anchored.BringIntoView();
+            return true;
+        }
+
         for (var i = 0; i < _records.Count; i++)
         {
             if (_records[i].Node is not HeadingBlock heading)
@@ -1115,6 +1122,7 @@ internal sealed class VirtualBlock(
     public int End { get; } = end;
     public RenderContext Context { get; } = context;
 }
+
 
 
 

@@ -362,6 +362,27 @@ public sealed class PuraSyntaxBuilder
         return this;
     }
 
+    /// <summary>启用脚注（Footnote）。</summary>
+    public PuraSyntaxBuilder UseFootnotes()
+    {
+        _markdown.UseFootnotes();
+        return this;
+    }
+
+    /// <summary>启用定义列表（Definition List）。</summary>
+    public PuraSyntaxBuilder UseDefinitionLists()
+    {
+        _markdown.UseDefinitionLists();
+        return this;
+    }
+
+    /// <summary>启用 GitHub Alerts（> [!NOTE] 等）。</summary>
+    public PuraSyntaxBuilder UseAlertBlocks()
+    {
+        _markdown.UseAlertBlocks(static (_, _) => { });
+        return this;
+    }
+
     /// <summary>注册 Markdig 扩展（自定义语法高级入口）。</summary>
     public PuraSyntaxBuilder UseMarkdownExtension(IMarkdownExtension extension)
     {
@@ -469,6 +490,7 @@ public sealed class PuraSyntaxStreamingSession
         return Current;
     }
 }
+
 
 
 

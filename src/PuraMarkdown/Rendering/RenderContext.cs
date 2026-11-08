@@ -39,6 +39,10 @@ public sealed class RenderContext
     public IReadOnlyDictionary<string, PuraInteractionEventArgs>? ComponentStates { get; init; }
     /// <summary>InteractionSink。</summary>
     public Action<PuraInteractionEventArgs>? InteractionSink { get; init; }
+    /// <summary>文档内锚点跳转（脚注/回链）。</summary>
+    public Action<string>? NavigateSink { get; init; }
+    /// <summary>注册锚点控件（文档内跳转目标）。</summary>
+    public Action<string, Control>? AnchorSink { get; init; }
     /// <summary>WarningSink。</summary>
     public Action<PuraWarningEventArgs>? WarningSink { get; init; }
 
