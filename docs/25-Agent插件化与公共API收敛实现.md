@@ -146,7 +146,7 @@ await session.CompleteAsync(); // 自动加入历史并滚动到底部
 
 ```
 dotnet build PuraMarkdown.slnx        → 0 警告 / 0 错误
-dotnet test tests/PuraMarkdown.Tests  → 114 通过 / 0 失败
+dotnet test tests/PuraMarkdown.Tests  → 119 通过 / 0 失败
 dotnet pack -c Release               → 7 个 nupkg（核心/Agent/Chat/Testing/ColorCode/Mermaid）
 ```
 
@@ -156,7 +156,7 @@ dotnet pack -c Release               → 7 个 nupkg（核心/Agent/Chat/Testing
 - `Chat_view_virtualizes_messages` / `Chat_streaming_completion_adds_history_message`；
 - `Custom_sanitizer_can_block_nodes`；
 - `View_exposes_streaming_state_and_can_abort`；
-- 既有测试全部通过（当前共 114 个）。
+- 既有测试全部通过（当前共 119 个）。
 
 ---
 
@@ -166,6 +166,7 @@ dotnet pack -c Release               → 7 个 nupkg（核心/Agent/Chat/Testing
 2. Agent 自定义组件的组合式注册（多个插件共同向同一 Agent 围栏添加组件）；
 3. Chat 包接入 Demo；
 4. 文档/ADR 的旧接口引用清理。
+
 
 
 

@@ -46,21 +46,21 @@
 
 ## 2. 未实现/部分实现
 
-### 2.1 语法扩展（未启用）
+### 2.1 语法扩展（按需启用/未实现）
 
 | 功能 | 状态 | 说明 |
 | --- | --- | --- |
-| 脚注 `[^1]` | ❌ 未启用 | Markdig `UseFootnotes` 未加入管道；无 footnote 节点渲染 |
-| 定义列表 | ❌ 未启用 | `UseDefinitionLists` 未加入 |
+| 脚注 `[^1]` | ✅ 已支持 | `UseFootnotes()`；FootnoteGroup 渲染 + 引用/回链锚点 |
+| 定义列表 | ✅ 已支持 | `UseDefinitionLists()`；Term/Definition 渲染 |
 | 缩写 `*[HTML]: ...` | ❌ 未启用 | `UseAbbreviations` 未加入 |
 | Emoji/Smiley `:smile:` | ❌ 未启用 | `UseEmojiAndSmiley` 未加入 |
 | 自定义容器 `::: note` | ❌ 未启用 | `UseCustomContainers` 未加入；当前 Agent 只支持围栏 |
-| YAML front matter | ❌ 未启用 | `UseYamlFrontMatter` 未加入；`---` 会按普通 Markdown 解析 |
+| YAML front matter | ❌ 按需求不支持 | 不添加识别机制；YAML 请放在代码块中 |
 | 数学公式 `$...$`/`$$...$$` | ❌ 未启用 | 无 Markdig 数学扩展 + 无官方渲染器插件 |
 | 引用/文献 `[@key]` | ❌ 未启用 | `UseCitations` 未加入 |
 | 自动标题 ID | ❌ 未启用 | 有 `PuraOutline` 锚点，但控件没有 HTML id/permalink |
 | 通用属性 `{#id .class}` | ❌ 未启用 | `UseGenericAttributes` 未加入 |
-| GitHub Alerts `> [!NOTE]` | ❌ 未启用 | 无对应扩展/渲染器；目前显示为普通引用 |
+| GitHub Alerts `> [!NOTE]` | ✅ 已支持 | `UseAlertBlocks()`；Note/Tip/Important/Warning/Caution 中文标题 |
 
 ### 2.2 Emphasis Extras（部分）
 
@@ -69,10 +69,10 @@
 | 语法 | 期望 | 当前 |
 | --- | --- | --- |
 | `~~strike~~` | 删除线 | ✅ |
-| `~sub~` | 下标 | ❌ 按删除线处理 |
-| `^sup^` | 上标 | ❌ 按斜体处理 |
-| `++insert++` | 插入（下划线） | ❌ 按加粗处理 |
-| `==mark==` | 高亮 | ❌ 按加粗处理 |
+| `~sub~` | 下标 | ✅ `BaselineAlignment.Subscript` |
+| `^sup^` | 上标 | ✅ `BaselineAlignment.Superscript` |
+| `++insert++` | 插入（下划线） | ✅ `TextDecorations.Underline` |
+| `==mark==` | 高亮 | ✅ 背景色 |
 
 > 建议：要么关闭未实现的 EmphasisExtras 选项，要么补齐 `EmphasisInline.DelimiterChar` 语义。
 
@@ -81,7 +81,7 @@
 | 功能 | 状态 | 说明 |
 | --- | --- | --- |
 | 渲染 TOC / 标题永久链接 | ❌ | 只有 `GetOutline()`/`ScrollToAnchor()` API，无 TOC 控件或标题锚链接 |
-| 脚注 UI/回链 | ❌ | 语法未启用 |
+| 脚注 UI/回链 | ✅ | FootnoteGroup + 引用/回链锚点 |
 | 自定义容器样式 | ❌ | 语法未启用 |
 | 代码行号 | ❌ | 有语言标签/复制，无行号 |
 | 代码行高亮/diff | ❌ | 无对应语法或渲染 |
@@ -116,13 +116,13 @@
 
 ## 4. 建议优先级
 
-### P1：低成本、常见 Markdown 兼容
+### P1：已完成
 
-1. 修正 EmphasisExtras 语义（`^`/单`~`/`++`/`==`），或关闭未支持选项；
-2. 脚注（`UseFootnotes` + Footnote 节点渲染 + 回链）；
-3. 定义列表（`UseDefinitionLists` + 渲染器）；
-4. GitHub Alerts（`> [!NOTE]`）识别为引用扩展；
-5. YAML front matter（`UseYamlFrontMatter`，默认不渲染或折叠）。
+- ~~修正 EmphasisExtras 语义~~
+- ~~脚注 + 回链~~
+- ~~定义列表~~
+- ~~GitHub Alerts~~
+- YAML front matter：**按需求不做**，YAML 放代码块即可。
 
 ### P2：内容生态
 
@@ -169,5 +169,10 @@ var pipeline = new PuraPipelineBuilder()
 
 ```
 dotnet build PuraMarkdown.slnx        → 0 警告 / 0 错误
-dotnet test tests/PuraMarkdown.Tests  → 114 通过 / 0 失败
+dotnet test tests/PuraMarkdown.Tests  → 119 通过 / 0 失败
 ```
+
+
+
+
+

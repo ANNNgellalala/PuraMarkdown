@@ -39,6 +39,7 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | `ParagraphBlock` | 渲染 | 段落 TextBlock | 支持增量更新 |
 | `HeadingBlock` | 渲染 | 标题 TextBlock | 支持增量更新；进入大纲 |
 | `ThematicBreakBlock` | 渲染 | 分隔线 | — |
+| `AlertBlock` | 渲染 | Alert 容器 | 需要 `UseAlertBlocks()` |
 | `QuoteBlock` | 渲染 | 引用容器 | 子块递归渲染 |
 | `ListBlock` | 渲染 | 列表容器 | 处理有序/无序/任务列表 |
 | `ListItemBlock` | 结构 | 由 `ListBlock` 渲染 | 不单独出控件 |
@@ -46,6 +47,11 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | `CodeBlock` | 渲染 | 代码块 | 缩进代码 |
 | `Table` | 渲染 | 表格控件 | 需要 `UseGfm()` |
 | `TableRow` / `TableCell` | 结构 | 由 `Table` 渲染 | 不单独出控件 |
+| `DefinitionList` | 渲染 | 定义列表 | 需要 `UseDefinitionLists()` |
+| `DefinitionItem` / `DefinitionTerm` | 结构 | 由 `DefinitionList` 渲染 | 不单独出控件 |
+| `FootnoteGroup` | 渲染 | 脚注区 | 需要 `UseFootnotes()` |
+| `Footnote` | 结构 | 由 `FootnoteGroup` 渲染 | 不单独出控件 |
+| `FootnoteLinkReferenceDefinition` | 解析不渲染 | — | 引用定义组内 |
 | `HtmlBlock` | 回退 | 纯文本 | HTML 已禁用 |
 | `LinkReferenceDefinitionGroup` | 解析不渲染 | — | 流式期间过滤 |
 | `LinkReferenceDefinition` | 解析不渲染 | — | 引用定义参与解析，不显示 |
@@ -59,10 +65,11 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | `LiteralInline` | 渲染 | Run | 普通文本 |
 | `CodeInline` | 渲染 | Run | 行内代码 |
 | `LineBreakInline` | 渲染 | 空格/换行 | 软/硬换行按 CommonMark |
-| `EmphasisInline` | 渲染 | Run | 强调/加粗/删除线 |
+| `EmphasisInline` | 渲染 | Run | 强调/加粗/删除线/上标/下标/插入/高亮 |
 | `LinkInline` | 渲染 | Hyperlink/图片 | 链接走 URL 策略与 `LinkClicked` |
 | `AutolinkInline` | 渲染 | Hyperlink | 需要 `UseGfm()` |
 | `TaskList` | 渲染 | 前缀 Run | 需要 `UseGfm()`；列表项内 |
+| `FootnoteLink` | 渲染 | 上标引用/回链 | 需要 `UseFootnotes()` |
 | `ContainerInline` | 结构 | 递归子节点 | 强调/链接容器 |
 | `HtmlInline` | 回退 | 纯文本 | HTML 已禁用 |
 
@@ -76,6 +83,9 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | 任务列表 | `TaskList` | `UseGfm()` | 核心 |
 | 自动链接 | `AutolinkInline` | `UseGfm()` | 核心 |
 | Agent 围栏 | `FencedCodeBlock`（language=`pura-agent`） | 安装 `PuraMarkdown.Agent` | Agent 插件 |
+| 脚注 | `FootnoteGroup`/`Footnote`/`FootnoteLink` | `UseFootnotes()` | 核心 |
+| 定义列表 | `DefinitionList`/`DefinitionItem`/`DefinitionTerm` | `UseDefinitionLists()` | 核心 |
+| GitHub Alerts | `AlertBlock` | `UseAlertBlocks()` | 核心 |
 | Mermaid | `FencedCodeBlock` | 安装 Mermaid 插件 | 插件 |
 | 自定义 Markdig 扩展 | 插件自定义节点 | 插件注册 | **不在 B 契约** |
 
@@ -143,3 +153,6 @@ public static class MarkdigCompatibility
 
 C 阶段的语义模型**只覆盖本矩阵的节点**，不会先承诺 Markdig 全量 AST。  
 B 的矩阵是 C 的迁移清单：每个 `Rendered` 节点对应一个语义节点/渲染器迁移项。
+
+
+

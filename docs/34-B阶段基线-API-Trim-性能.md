@@ -17,10 +17,10 @@
 
 | 包 | Shipped 条目数（含 header） |
 | --- | ---: |
-| `PuraMarkdown` | 576 |
+| `PuraMarkdown` | 589 |
 | `PuraMarkdown.Agent` | 135 |
 | `PuraMarkdown.Chat` | 103 |
-| `PuraMarkdown.Syntax` | 211 |
+| `PuraMarkdown.Syntax` | 214 |
 | `PuraMarkdown.Testing` | 21 |
 | `PuraMarkdown.Diagrams.Mermaid` | 12 |
 | `PuraMarkdown.Highlighting.ColorCode` | 11 |
@@ -126,5 +126,6 @@ dotnet publish ... -p:PublishTrimmed=true -p:TrimMode=partial
 dotnet publish ... -p:PublishAot=true
 dotnet run --project samples/PuraMarkdown.Spike -- --conversation-perf
 ```
+
 
 

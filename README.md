@@ -2,7 +2,7 @@
 
 > 高性能 **Avalonia 只读 Markdown 渲染库**：Markdig 解析、Avalonia 原生渲染、增量流式、块级/消息级虚拟化、插件可替换。Agent 交互与聊天控件以独立插件包提供。
 >
-> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（114 个测试、7 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
+> 状态：**设计定稿（v0.4）+ M0–M4 已跑通 + 1.0-alpha 就绪**（119 个测试、7 个 NuGet 包、Agent 已插件化、Chat 独立包、Native AOT/裁剪验证通过、CI 就绪）。
 > 框架：**.NET 10（net10.0，本机 SDK 10.0.114）** · Avalonia **12.1.5** · Markdig **1.5.1** · ColorCode.Core **2.0.15** · Mermaider **0.15.1**；JsonSchema.Net 仅由 `PuraMarkdown.Agent` 使用。
 
 ---
@@ -131,7 +131,7 @@ PuraMarkdown.slnx
 ├─ src/PuraMarkdown.Diagrams.Mermaid/    # 官方 Mermaid 插件（Mermaider，纯 .NET）
 ├─ samples/PuraMarkdown.Plugins.Samples/ # 示例插件：rating 组件、示例图表
 ├─ samples/PuraMarkdown.ArcSample/       # 仅引用 Syntax 的 Arc 风格语法树消费示例
-├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 114 个测试 + golden
+├─ tests/PuraMarkdown.Tests/             # 无头 Avalonia + 119 个测试 + golden
 ├─ benchmarks/PuraMarkdown.Benchmarks/   # BenchmarkDotNet 基准
 └─ samples/PuraMarkdown.Spike/           # 离屏渲染示例（打印控件树）
 ```
@@ -239,6 +239,7 @@ dotnet test
 ## 许可证
 
 待定（建议 MIT）。第三方依赖须 MIT/BSD/Apache-2.0；详见需求 §8 约束 C-4。
+
 
 
 

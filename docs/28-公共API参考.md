@@ -66,6 +66,7 @@ new PuraMarkdownOptions
 | 方法 | 说明 |
 | --- | --- |
 | `UseCommonMark()` / `UseGfm()` | CommonMark / GFM |
+| `UseFootnotes()` / `UseDefinitionLists()` / `UseAlertBlocks()` | 脚注 / 定义列表 / GitHub Alerts |
 | `UseRenderer(IPuraNodeRenderer, int priority = 100)` | 块/节点渲染器 |
 | `UseInlineRenderer(IPuraInlineRenderer, int priority = 100)` | 行内渲染器 |
 | `UseFenceRenderer(IFenceRenderer, int priority = 100)` | 围栏渲染器 |
@@ -141,6 +142,9 @@ public sealed class PuraSyntaxBuilder
 {
     PuraSyntaxBuilder UseCommonMark();
     PuraSyntaxBuilder UseGfm();
+    PuraSyntaxBuilder UseFootnotes();
+    PuraSyntaxBuilder UseDefinitionLists();
+    PuraSyntaxBuilder UseAlertBlocks();
     PuraSyntaxBuilder UseMarkdownExtension(IMarkdownExtension extension);
     PuraSyntaxBuilder UseSanitizer(IAstSanitizer sanitizer);
     PuraSyntaxBuilder ConfigureLimits(Action<PuraLimits> configure);
@@ -433,6 +437,7 @@ public interface IPuraClipboard
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
 > `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+
 
 
 
