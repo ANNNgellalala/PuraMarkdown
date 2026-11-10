@@ -35,6 +35,12 @@ public static class Program
         | Markdig | ok |
         | Avalonia | ok |
 
+        Emoji 与行内公式：:smile: :fire: 质能方程 $E=mc^2$。
+
+        $$
+        \int_0^1 x^2 \, dx = \frac{1}{3}
+        $$
+
         ```csharp
         var pipeline = new PuraPipelineBuilder().UseGfm().Build();
         ```
@@ -121,9 +127,12 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
+            .UseEmoji()
+            .UseMathematics()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 
         var view = new PuraMarkdownView
@@ -161,9 +170,12 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
+            .UseEmoji()
+            .UseMathematics()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 
         var view = new PuraMarkdownView
@@ -492,9 +504,12 @@ public static class Program
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
+            .UseEmoji()
+            .UseMathematics()
             .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
             .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 
         var view = new PuraMarkdownView

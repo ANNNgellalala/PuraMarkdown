@@ -1,1 +1,4 @@
 #nullable enable
+const PuraMarkdown.Localization.PuraStringKeys.CopyMathAutomation = "copy-math-automation" -> string!
+PuraMarkdown.PuraPipelineBuilder.UseEmoji(bool enableSmileys = false) -> PuraMarkdown.PuraPipelineBuilder!
+PuraMarkdown.PuraPipelineBuilder.UseMathematics() -> PuraMarkdown.PuraPipelineBuilder!

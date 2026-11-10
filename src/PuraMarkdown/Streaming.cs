@@ -557,7 +557,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             committed = _committedOffset;
         }
 
-        var cut = StreamingBlockScanner.FindStableBoundary(snapshot, 0);
+        var cut = StreamingBlockScanner.FindStableBoundary(snapshot, 0, options.Pipeline.Syntax.MathEnabled);
 
         if (cut == 0 && snapshot.Length > _options.MaxTailChars)
         {
@@ -590,7 +590,7 @@ public sealed class PuraStreamingSession : IAsyncDisposable
             if (forced >= 0)
             {
                 var candidate = forced + 2;
-                if (StreamingBlockScanner.FindStableBoundary(snapshot[..candidate], 0) == candidate)
+                if (StreamingBlockScanner.FindStableBoundary(snapshot[..candidate], 0, options.Pipeline.Syntax.MathEnabled) == candidate)
                 {
                     cut = candidate;
                 }

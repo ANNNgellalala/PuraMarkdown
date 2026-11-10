@@ -5,7 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Markdig.Extensions.Emoji;
 using Markdig.Extensions.Footnotes;
+using Markdig.Extensions.Mathematics;
 using Markdig.Extensions.TaskLists;
 using Markdig.Syntax.Inlines;
 using PuraMarkdown.Localization;
@@ -56,6 +58,18 @@ internal static class DefaultInlineRenderer
 
         switch (inline)
         {
+            case EmojiInline emoji:
+                target.Add(EmojiRun.Create(emoji.Content.ToString(), context));
+                return;
+
+            case MathInline math:
+                if (!TryRenderInlinePlugin(math, target, context))
+                {
+                    PuraMathRenderer.AppendInline(math.Content.ToString(), target, context);
+                }
+
+                return;
+
             case LiteralInline literal:
                 target.Add(new Run(literal.Content.ToString()));
                 return;
@@ -106,12 +120,42 @@ internal static class DefaultInlineRenderer
                 return;
 
             default:
+                if (TryRenderInlinePlugin(inline, target, context))
+                {
+                    return;
+                }
+
                 var text = inline.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
                     target.Add(new Run(text));
                 }
                 return;
+        }
+    }
+
+    /// <summary>优先询问插件行内渲染器（MathInline/未知行内节点）；失败时回退核心默认。</summary>
+    private static bool TryRenderInlinePlugin(MdInline inline, InlineCollection target, RenderContext context)
+    {
+        var renderer = context.Renderers.ResolveInline(inline, context);
+        if (renderer is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            target.Add(renderer.RenderInline(inline, context));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            context.Warn(
+                "PURA-RENDER-011",
+                $"行内渲染器 {renderer.GetType().Name} 渲染失败，回退默认：{ex.Message}",
+                inline.GetType().Name,
+                renderer.GetType().Name);
+            return false;
         }
     }
 
@@ -132,6 +176,13 @@ internal static class DefaultInlineRenderer
 
         foreach (var child in temp.ToList())
         {
+            // Emoji 不参与粗体/斜体等强调格式：Avalonia 的彩色 emoji 在非 Regular 字重下会退化为黑白。
+            if (child is EmojiRun)
+            {
+                target.Add(child);
+                continue;
+            }
+
             if (child is Run run)
             {
                 if (isStrike)

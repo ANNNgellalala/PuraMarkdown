@@ -51,11 +51,22 @@ internal sealed class DemoWindow : Window
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
+            .UseEmoji()
+            .UseMathematics()
             .UseAgentComponents()
             .UsePlugin(new ColorCodePlugin())
             .UsePlugin(new MermaidPlugin())
+            .UsePlugin(new CSharpMathMathPlugin())
             .Build();
         ```
+
+        ## Emoji 与数学
+
+        短代码：:smile: :fire:；行内公式：$E=mc^2$。
+
+        $$
+        \int_0^1 x^2 dx = \frac{1}{3}
+        $$
 
         ## 图表
 
@@ -132,8 +143,11 @@ internal sealed class DemoWindow : Window
         var pipeline = new PuraPipelineBuilder()
             .UseCommonMark()
             .UseGfm()
+            .UseEmoji()
+            .UseMathematics()
             .UsePlugin(new ColorCodePlugin())
             .UsePlugin(new MermaidPlugin())
+            .UsePlugin(new CSharpMathMathPlugin())
             .UsePlugin(new RatingPlugin())
             .Build();
 

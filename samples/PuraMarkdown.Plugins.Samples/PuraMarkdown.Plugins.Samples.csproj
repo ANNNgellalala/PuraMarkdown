@@ -5,8 +5,8 @@
     <Description>PuraMarkdown 插件示例：rating 组件与示例图表渲染器。</Description>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CSharpMath.Avalonia" />
     <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
-    <ProjectReference Include="..\..\src\PuraMarkdown.Agent\PuraMarkdown.Agent.csproj" />
   </ItemGroup>
 </Project>
 

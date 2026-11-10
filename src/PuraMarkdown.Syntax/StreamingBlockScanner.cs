@@ -8,6 +8,13 @@ public static class StreamingBlockScanner
 {
     /// <summary>返回从 <paramref name="from"/> 起可安全提交的前缀结束偏移（不含未闭合围栏内容）。</summary>
     public static int FindStableBoundary(string text, int from)
+        => FindStableBoundary(text, from, trackMathBlocks: false);
+
+    /// <summary>
+    /// 返回稳定边界；<paramref name="trackMathBlocks"/> 为 true 时把行首 <c>$$</c> 数学块也视为围栏
+    /// （块内空行不能提交，否则尾部窗口会从公式中间开始解析）。
+    /// </summary>
+    public static int FindStableBoundary(string text, int from, bool trackMathBlocks)
     {
         if (string.IsNullOrEmpty(text) || from >= text.Length)
         {
@@ -19,6 +26,8 @@ public static class StreamingBlockScanner
         var inFence = false;
         var fenceChar = '\0';
         var fenceCount = 0;
+        var inMath = false;
+        var mathFenceCount = 0;
         var lastNonBlankLine = string.Empty;
 
         while (lineStart < text.Length)
@@ -27,6 +36,27 @@ public static class StreamingBlockScanner
             var lineEnd = newline >= 0 ? newline : text.Length;
             var line = text.AsSpan(lineStart, lineEnd - lineStart).TrimEnd('\r');
             var nextLineStart = newline >= 0 ? newline + 1 : text.Length;
+
+            if (inMath)
+            {
+                if (trackMathBlocks && IsClosingMathFence(line, mathFenceCount))
+                {
+                    inMath = false;
+                }
+
+                lastNonBlankLine = line.ToString();
+                lineStart = nextLineStart;
+                continue;
+            }
+
+            if (!inFence && trackMathBlocks && TryReadMathFence(line, out var mathCount))
+            {
+                inMath = true;
+                mathFenceCount = mathCount;
+                lastNonBlankLine = line.ToString();
+                lineStart = nextLineStart;
+                continue;
+            }
 
             if (!inFence && TryReadFence(line, out var openChar, out var openCount))
             {
@@ -111,6 +141,68 @@ public static class StreamingBlockScanner
         }
 
         if (closing < fenceCount)
+        {
+            return false;
+        }
+
+        while (i < line.Length)
+        {
+            if (!char.IsWhiteSpace(line[i]))
+            {
+                return false;
+            }
+
+            i++;
+        }
+
+        return true;
+    }
+
+    private static bool TryReadMathFence(ReadOnlySpan<char> line, out int fenceCount)
+    {
+        fenceCount = 0;
+        var i = 0;
+        while (i < line.Length && i < 3 && line[i] == ' ')
+        {
+            i++;
+        }
+
+        if (i + 1 >= line.Length || line[i] != '$' || line[i + 1] != '$')
+        {
+            return false;
+        }
+
+        i += 2;
+        while (i < line.Length)
+        {
+            if (!char.IsWhiteSpace(line[i]))
+            {
+                return false;
+            }
+
+            i++;
+        }
+
+        fenceCount = 2;
+        return true;
+    }
+
+    private static bool IsClosingMathFence(ReadOnlySpan<char> line, int openingCount)
+    {
+        var i = 0;
+        while (i < line.Length && i < 3 && line[i] == ' ')
+        {
+            i++;
+        }
+
+        var count = 0;
+        while (i < line.Length && line[i] == '$')
+        {
+            count++;
+            i++;
+        }
+
+        if (count < openingCount)
         {
             return false;
         }

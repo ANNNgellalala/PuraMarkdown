@@ -56,14 +56,18 @@ public sealed record PuraTextChange(int Offset, int RemovedLength, string Insert
 /// <summary>冻结后的 Markdig 解析管道；进程级复用。</summary>
 public sealed class PuraSyntaxPipeline
 {
-    internal PuraSyntaxPipeline(MarkdownPipeline markdownPipeline, PuraSyntaxOptions options)
+    internal PuraSyntaxPipeline(MarkdownPipeline markdownPipeline, PuraSyntaxOptions options, bool mathEnabled = false)
     {
         MarkdownPipeline = markdownPipeline;
         Options = options;
+        MathEnabled = mathEnabled;
     }
 
     /// <summary>Markdig 管道（高级用户可直接使用）。</summary>
     public MarkdownPipeline MarkdownPipeline { get; }
+
+    /// <summary>是否启用了 <c>UseMathematics()</c>（$$ 数学块需要流式扫描器识别）。</summary>
+    public bool MathEnabled { get; }
 
     /// <summary>默认语法选项（sanitizer/limits/url policy）。</summary>
     public PuraSyntaxOptions Options { get; }
@@ -296,6 +300,9 @@ public sealed class PuraSyntaxPipeline
             case AutolinkInline autolink:
                 builder.Append(autolink.Url);
                 break;
+            case Markdig.Extensions.Mathematics.MathInline math:
+                builder.Append(math.Content.ToString());
+                break;
             case LinkInline link:
                 builder.Append(GetInlineText(link));
                 break;
@@ -340,6 +347,7 @@ public sealed class PuraSyntaxBuilder
 {
     private readonly MarkdownPipelineBuilder _markdown = new();
     private readonly List<IMarkdownExtension> _extensions = [];
+    private bool _mathEnabled;
     private IAstSanitizer _sanitizer = new DefaultAstSanitizer();
     private PuraLimits _limits = new();
     private IUrlPolicy _urlPolicy = DefaultUrlPolicy.Instance;
@@ -380,6 +388,25 @@ public sealed class PuraSyntaxBuilder
     public PuraSyntaxBuilder UseAlertBlocks()
     {
         _markdown.UseAlertBlocks(static (_, _) => { });
+        return this;
+    }
+
+    /// <summary>
+    /// 启用 Emoji/Smiley：<c>:smile:</c> 等短代码转换为 Unicode emoji。
+    /// 默认只启用短代码；<paramref name="enableSmileys"/> 开启后 <c>:)</c>、<c>-&gt;</c> 等文本表情也会被替换。
+    /// </summary>
+    /// <param name="enableSmileys">是否同时启用文本表情（smiley）。</param>
+    public PuraSyntaxBuilder UseEmoji(bool enableSmileys = false)
+    {
+        _markdown.UseEmojiAndSmiley(enableSmileys);
+        return this;
+    }
+
+    /// <summary>启用数学公式：Markdig <c>$...$</c> 行内与 <c>$$...$$</c> 块级。</summary>
+    public PuraSyntaxBuilder UseMathematics()
+    {
+        _mathEnabled = true;
+        _markdown.UseMathematics();
         return this;
     }
 
@@ -432,7 +459,7 @@ public sealed class PuraSyntaxBuilder
             Sanitizer = _sanitizer,
             Limits = _limits,
             UrlPolicy = _urlPolicy,
-        });
+        }, _mathEnabled);
     }
 }
 
@@ -469,7 +496,7 @@ public sealed class PuraSyntaxStreamingSession
     {
         _text.Append(delta);
         var snapshot = _text.ToString();
-        var boundary = StreamingBlockScanner.FindStableBoundary(snapshot, _committedOffset);
+        var boundary = StreamingBlockScanner.FindStableBoundary(snapshot, _committedOffset, _pipeline.MathEnabled);
         if (boundary > _committedOffset)
         {
             Committed = _pipeline.ParseDocument(snapshot[..boundary], _version++, _options);

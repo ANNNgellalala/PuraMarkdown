@@ -21,6 +21,7 @@ public sealed class ChinesePuraLocalizer : IPuraLocalizer
         [PuraStringKeys.Copied] = "已复制",
         [PuraStringKeys.CopyFailed] = "复制失败",
         [PuraStringKeys.CopyCodeAutomation] = "复制代码",
+        [PuraStringKeys.CopyMathAutomation] = "复制公式",
         [PuraStringKeys.CodeLanguageFallback] = "text",
         [PuraStringKeys.Image] = "图片",
         [PuraStringKeys.ImageBlocked] = "图片被拒绝：{0}",
@@ -76,6 +77,8 @@ public static class PuraStringKeys
     public const string CopyFailed = "copy-failed";
     /// <summary>文案键：CopyCodeAutomation。</summary>
     public const string CopyCodeAutomation = "copy-code-automation";
+    /// <summary>文案键：CopyMathAutomation。</summary>
+    public const string CopyMathAutomation = "copy-math-automation";
     /// <summary>文案键：CodeLanguageFallback。</summary>
     public const string CodeLanguageFallback = "code-language-fallback";
     /// <summary>文案键：Image。</summary>

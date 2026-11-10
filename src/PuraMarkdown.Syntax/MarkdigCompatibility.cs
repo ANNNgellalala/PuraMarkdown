@@ -1,7 +1,9 @@
 using Markdig;
 using Markdig.Extensions.Alerts;
 using Markdig.Extensions.DefinitionLists;
+using Markdig.Extensions.Emoji;
 using Markdig.Extensions.Footnotes;
+using Markdig.Extensions.Mathematics;
 using Markdig.Extensions.Tables;
 using Markdig.Extensions.TaskLists;
 using Markdig.Syntax;
@@ -61,6 +63,7 @@ public static class MarkdigCompatibility
         new(typeof(QuoteBlock), PuraNodeSupport.Rendered, "引用"),
         new(typeof(ListBlock), PuraNodeSupport.Rendered, "有序/无序列表"),
         new(typeof(ListItemBlock), PuraNodeSupport.Structural, "列表项；由 ListBlock 渲染"),
+        new(typeof(MathBlock), PuraNodeSupport.Rendered, "数学块（UseMathematics）"),
         new(typeof(FencedCodeBlock), PuraNodeSupport.Rendered, "围栏代码块（含 pura-agent）"),
         new(typeof(CodeBlock), PuraNodeSupport.Rendered, "缩进代码块"),
         new(typeof(Table), PuraNodeSupport.Rendered, "GFM 表格（UseGfm）"),
@@ -75,7 +78,6 @@ public static class MarkdigCompatibility
         new(typeof(HtmlBlock), PuraNodeSupport.Fallback, "HTML 已禁用；按文本回退"),
         new(typeof(LinkReferenceDefinitionGroup), PuraNodeSupport.ParsedNotRendered, "引用定义组；不渲染"),
         new(typeof(LinkReferenceDefinition), PuraNodeSupport.ParsedNotRendered, "引用定义；不渲染"),
-        new(typeof(LiteralInline), PuraNodeSupport.Rendered, "普通文本"),
         new(typeof(CodeInline), PuraNodeSupport.Rendered, "行内代码"),
         new(typeof(LineBreakInline), PuraNodeSupport.Rendered, "软/硬换行"),
         new(typeof(EmphasisInline), PuraNodeSupport.Rendered, "强调/加粗/删除线/上下标等"),
@@ -83,6 +85,9 @@ public static class MarkdigCompatibility
         new(typeof(AutolinkInline), PuraNodeSupport.Rendered, "自动链接（UseGfm）"),
         new(typeof(TaskList), PuraNodeSupport.Rendered, "任务列表（UseGfm）"),
         new(typeof(FootnoteLink), PuraNodeSupport.Rendered, "脚注引用/回链（UseFootnotes）"),
+        new(typeof(MathInline), PuraNodeSupport.Rendered, "行内数学（UseMathematics）"),
+        new(typeof(EmojiInline), PuraNodeSupport.Rendered, "Emoji/Smiley（UseEmoji）"),
+        new(typeof(LiteralInline), PuraNodeSupport.Rendered, "普通文本"),
         new(typeof(ContainerInline), PuraNodeSupport.Structural, "行内容器（强调/链接等）"),
         new(typeof(HtmlInline), PuraNodeSupport.Fallback, "HTML 已禁用；按文本回退"),
     ];

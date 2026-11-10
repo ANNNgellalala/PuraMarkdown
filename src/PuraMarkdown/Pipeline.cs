@@ -161,6 +161,29 @@ public sealed class PuraPipelineBuilder
         return this;
     }
 
+    /// <summary>
+    /// 启用 Emoji/Smiley：<c>:smile:</c> 等短代码转换为 Unicode emoji。
+    /// 默认只启用短代码；<paramref name="enableSmileys"/> 开启后 <c>:)</c>、<c>-&gt;</c> 等文本表情也会被替换。
+    /// </summary>
+    /// <param name="enableSmileys">是否同时启用文本表情（smiley）。</param>
+    public PuraPipelineBuilder UseEmoji(bool enableSmileys = false)
+    {
+        _syntax.UseEmoji(enableSmileys);
+        return this;
+    }
+
+    /// <summary>
+    /// 启用数学公式语法（Markdig <c>$...$</c> / <c>$$...$$</c>）。
+    /// 核心只提供 TeX 文本回退；真正排版由宿主/插件通过 <see cref="UseInlineRenderer"/>/
+    /// <see cref="UseRenderer"/> 接管 MathInline/MathBlock（示例见 samples/PuraMarkdown.Plugins.Samples）。
+    /// 只支持 <c>$</c> 分隔符；<c>\(...\)</c> / <c>\[...\]</c> 需要宿主先归一化。
+    /// </summary>
+    public PuraPipelineBuilder UseMathematics()
+    {
+        _syntax.UseMathematics();
+        return this;
+    }
+
     /// <summary>注册插件。</summary>
     /// <param name="plugin">插件。</param>
     public PuraPipelineBuilder UsePlugin(IPuraPlugin plugin)
@@ -210,6 +233,7 @@ public sealed class PuraPipelineBuilder
             new(new DefinitionListRenderer(), 0),
             new(new FootnoteGroupRenderer(), 0),
             new(new QuoteRenderer(), 0),
+            new(new MathBlockRenderer(), 5),
             new(new CodeBlockRenderer(), 0),
             new(new TableRenderer(), 0),
             new(new ThematicBreakRenderer(), 0),

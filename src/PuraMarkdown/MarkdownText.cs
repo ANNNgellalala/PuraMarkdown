@@ -83,6 +83,9 @@ internal static class MarkdownText
             case AutolinkInline autolink:
                 builder.Append(autolink.Url);
                 break;
+            case Markdig.Extensions.Mathematics.MathInline math:
+                builder.Append(math.Content.ToString());
+                break;
             case LinkInline link:
                 builder.Append(GetInlineText(link));
                 break;
