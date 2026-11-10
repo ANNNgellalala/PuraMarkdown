@@ -291,4 +291,67 @@ public sealed class ConfirmParser : IAgentComponentParser
     }
 }
 
+/// <summary>`pura-agent` 围栏中的 <c>tool-call</c> 组件解析器（与选择/确认组件共用同一注册表）。</summary>
+internal sealed class ToolCallParser : IAgentComponentParser
+{
+    /// <inheritdoc/>
+    public string ComponentType => "tool-call";
+
+    /// <inheritdoc/>
+    public JsonSchema PayloadSchema => ComponentSchemas.ToolCall;
+
+    /// <inheritdoc/>
+    public bool TryParse(string json, out PuraAgentComponent? component, out PuraComponentError? error)
+    {
+        component = null;
+        error = null;
+
+        if (!PuraToolCall.TryParse(json, out var call, out var message) || call is null)
+        {
+            error = new PuraComponentError(message ?? "工具调用载荷无效", "name");
+            return false;
+        }
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(json);
+        }
+        catch (JsonException ex)
+        {
+            error = new PuraComponentError($"JSON 语法错误：{ex.Message}");
+            return false;
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+            if (!AgentJson.TryReadString(root, "type", required: true, out var type, out error)
+                || !string.Equals(type, "tool-call", StringComparison.OrdinalIgnoreCase))
+            {
+                error ??= new PuraComponentError("type 必须为 tool-call", "type");
+                return false;
+            }
+
+            if (!AgentJson.TryReadString(root, "version", required: true, out var version, out error)
+                || string.IsNullOrWhiteSpace(version))
+            {
+                error ??= new PuraComponentError("缺少 version", "version");
+                return false;
+            }
+
+            AgentJson.TryReadString(root, "id", required: false, out var id, out _);
+
+            component = new PuraToolCallComponent
+            {
+                Type = "tool-call",
+                Version = version,
+                Id = id,
+                Call = call,
+            };
+            return true;
+        }
+    }
+}
+
 

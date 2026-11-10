@@ -48,7 +48,7 @@ public sealed class AgentPlugin : IPuraPlugin
     public string Version => "1.0.0";
 
     /// <inheritdoc/>
-    public string? Description => "pura-agent 围栏与 JSON 交互组件（choice/confirm）";
+    public string? Description => "pura-agent 围栏与 JSON 交互组件（choice/confirm/tool-call），并接管 pura-tool 工具调用围栏";
 
     /// <summary>已支持的组件类型（宿主可用于能力发现）。</summary>
     public IReadOnlyList<string> ComponentTypes => _components.ComponentTypes;
@@ -58,6 +58,7 @@ public sealed class AgentPlugin : IPuraPlugin
     {
         _ = _components.CreateRegistry(); // 构建期校验重复组件
         builder.UseFenceRenderer(new AgentFenceRenderer(_components));
+        builder.UseFenceRenderer(new ToolCallFenceRenderer());
     }
 }
 

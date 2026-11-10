@@ -10,6 +10,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using PuraMarkdown.Agent.Localization;
+using PuraMarkdown.Agent.Platform;
 using PuraMarkdown.Agent.Rendering;
 
 namespace PuraMarkdown.Agent.Chat;
@@ -23,6 +25,8 @@ public enum PuraChatRole
     Assistant,
     /// <summary>系统消息。</summary>
     System,
+    /// <summary>工具消息（内容为工具执行结果，通常与 <see cref="PuraChatMessage.ToolCallId"/> 配对）。</summary>
+    Tool,
 }
 
 /// <summary>消息状态。</summary>
@@ -55,6 +59,8 @@ public sealed class PuraChatMessage : INotifyPropertyChanged
     private string _markdown = string.Empty;
     private PuraChatMessageStatus _status;
     private string? _error;
+    private IReadOnlyList<PuraToolCall> _toolCalls = [];
+    private string? _toolCallId;
 
     /// <summary>消息 ID。</summary>
     public string Id { get; init; } = Guid.NewGuid().ToString("N");
@@ -96,6 +102,39 @@ public sealed class PuraChatMessage : INotifyPropertyChanged
         set => Set(ref _error, value);
     }
 
+    /// <summary>
+    /// 消息关联的工具调用（在消息内容上方渲染为工具调用卡片）。
+    /// 变更会使 <see cref="ContentVersion"/> 递增，便于宿主做增量同步。
+    /// </summary>
+    public IReadOnlyList<PuraToolCall> ToolCalls
+    {
+        get => _toolCalls;
+        set
+        {
+            if (Set(ref _toolCalls, value ?? []))
+            {
+                ContentVersion++;
+                UpdatedAt = DateTimeOffset.Now;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 工具消息（<see cref="PuraChatRole.Tool"/>）配对的工具调用 ID；
+    /// 用于把工具结果消息与发起它的 <see cref="PuraToolCall.Id"/> 关联起来。
+    /// </summary>
+    public string? ToolCallId
+    {
+        get => _toolCallId;
+        set
+        {
+            if (Set(ref _toolCallId, value))
+            {
+                UpdatedAt = DateTimeOffset.Now;
+            }
+        }
+    }
+
     /// <summary>创建时间。</summary>
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.Now;
 
@@ -133,7 +172,14 @@ public sealed record PuraChatMessageSnapshot(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     string? Error,
-    Dictionary<string, string>? Metadata);
+    Dictionary<string, string>? Metadata)
+{
+    /// <summary>工具调用列表（旧快照缺省为空）。</summary>
+    public IReadOnlyList<PuraToolCall> ToolCalls { get; init; } = [];
+
+    /// <summary>工具消息配对的工具调用 ID（旧快照缺省为 <c>null</c>）。</summary>
+    public string? ToolCallId { get; init; }
+}
 
 /// <summary>整段会话快照。</summary>
 public sealed record PuraChatSnapshot(int Version, IReadOnlyList<PuraChatMessageSnapshot> Messages);
@@ -432,7 +478,11 @@ public sealed class PuraChatView : ContentControl
                 message.CreatedAt,
                 message.UpdatedAt,
                 message.Error,
-                new Dictionary<string, string>(message.Metadata))).ToArray());
+                new Dictionary<string, string>(message.Metadata))
+            {
+                ToolCalls = message.ToolCalls,
+                ToolCallId = message.ToolCallId,
+            }).ToArray());
 
     /// <summary>从快照恢复消息（当前流式会话会保持）。</summary>
     public void RestoreSnapshot(PuraChatSnapshot snapshot)
@@ -449,6 +499,8 @@ public sealed class PuraChatView : ContentControl
                 Status = item.Status,
                 Error = item.Error,
                 CreatedAt = item.CreatedAt,
+                ToolCalls = item.ToolCalls,
+                ToolCallId = item.ToolCallId,
             };
             message.UpdatedAt = item.UpdatedAt;
             if (item.Metadata is not null)
@@ -463,7 +515,7 @@ public sealed class PuraChatView : ContentControl
         }
     }
 
-    private PuraMarkdownView CreateMessageView(PuraChatMessage message)
+    private Control CreateMessageView(PuraChatMessage message)
     {
         var view = new PuraMarkdownView
         {
@@ -475,14 +527,27 @@ public sealed class PuraChatView : ContentControl
         view.InteractionOccurred += (_, args) => InteractionOccurred?.Invoke(this, args);
         view.Warning += (_, args) => Warning?.Invoke(this, args);
 
+        var toolHost = new StackPanel
+        {
+            Spacing = 6,
+            Margin = new Thickness(16, 8, 16, 0),
+        };
+        RefreshToolCards(toolHost, message);
+
+        var container = new StackPanel();
+        container.Children.Add(toolHost);
+        container.Children.Add(view);
+
         void OnMessageChanged(object? sender, PropertyChangedEventArgs args)
         {
-            if (args.PropertyName != nameof(PuraChatMessage.Markdown))
+            if (args.PropertyName == nameof(PuraChatMessage.Markdown))
             {
-                return;
+                Dispatcher.UIThread.Post(() => view.Markdown = message.Markdown, DispatcherPriority.Background);
             }
-
-            Dispatcher.UIThread.Post(() => view.Markdown = message.Markdown, DispatcherPriority.Background);
+            else if (args.PropertyName == nameof(PuraChatMessage.ToolCalls))
+            {
+                Dispatcher.UIThread.Post(() => RefreshToolCards(toolHost, message), DispatcherPriority.Background);
+            }
         }
 
         void Attach()
@@ -495,7 +560,28 @@ public sealed class PuraChatView : ContentControl
         view.AttachedToVisualTree += (_, _) => Attach();
         view.DetachedFromVisualTree += (_, _) => Detach();
         Attach();
-        return view;
+        return container;
+    }
+
+    /// <summary>按消息的 <see cref="PuraChatMessage.ToolCalls"/> 重建工具调用卡片。</summary>
+    private void RefreshToolCards(StackPanel host, PuraChatMessage message)
+    {
+        host.Children.Clear();
+        var calls = message.ToolCalls;
+        host.IsVisible = calls.Count > 0;
+        if (calls.Count == 0)
+        {
+            return;
+        }
+
+        var options = Options;
+        var theme = options?.Theme ?? PuraTheme.Light;
+        var localizer = options?.Localizer ?? ChinesePuraLocalizer.Instance;
+        var clipboard = options?.Clipboard ?? NullClipboard.Instance;
+        foreach (var call in calls)
+        {
+            host.Children.Add(new PuraToolCallCard(call, theme, localizer, clipboard));
+        }
     }
 
     private void Upsert(PuraChatMessage message)

@@ -1,4 +1,55 @@
 #nullable enable
 const PuraMarkdown.Agent.Localization.PuraStringKeys.CopyMathAutomation = "copy-math-automation" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallArguments = "tool-call-arguments" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallAutomation = "tool-call-automation" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallCancelled = "tool-call-cancelled" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallCopyArguments = "tool-call-copy-arguments" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallCopyResult = "tool-call-copy-result" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallDurationMs = "tool-call-duration-ms" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallDurationSeconds = "tool-call-duration-seconds" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallError = "tool-call-error" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallFailed = "tool-call-failed" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallPending = "tool-call-pending" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallResult = "tool-call-result" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallRunning = "tool-call-running" -> string!
+const PuraMarkdown.Agent.Localization.PuraStringKeys.ToolCallSucceeded = "tool-call-succeeded" -> string!
+PuraMarkdown.Agent.Chat.PuraChatMessage.ToolCallId.get -> string?
+PuraMarkdown.Agent.Chat.PuraChatMessage.ToolCallId.set -> void
+PuraMarkdown.Agent.Chat.PuraChatMessage.ToolCalls.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Agent.PuraToolCall!>!
+PuraMarkdown.Agent.Chat.PuraChatMessage.ToolCalls.set -> void
+PuraMarkdown.Agent.Chat.PuraChatMessageSnapshot.ToolCallId.get -> string?
+PuraMarkdown.Agent.Chat.PuraChatMessageSnapshot.ToolCallId.init -> void
+PuraMarkdown.Agent.Chat.PuraChatMessageSnapshot.ToolCalls.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Agent.PuraToolCall!>!
+PuraMarkdown.Agent.Chat.PuraChatMessageSnapshot.ToolCalls.init -> void
+PuraMarkdown.Agent.Chat.PuraChatRole.Tool = 3 -> PuraMarkdown.Agent.Chat.PuraChatRole
 PuraMarkdown.Agent.PuraPipelineBuilder.UseEmoji(bool enableSmileys = false) -> PuraMarkdown.Agent.PuraPipelineBuilder!
 PuraMarkdown.Agent.PuraPipelineBuilder.UseMathematics() -> PuraMarkdown.Agent.PuraPipelineBuilder!
+PuraMarkdown.Agent.PuraToolCall
+PuraMarkdown.Agent.PuraToolCall.<Clone>$() -> PuraMarkdown.Agent.PuraToolCall!
+PuraMarkdown.Agent.PuraToolCall.Arguments.get -> string?
+PuraMarkdown.Agent.PuraToolCall.Arguments.init -> void
+PuraMarkdown.Agent.PuraToolCall.Duration.get -> System.TimeSpan?
+PuraMarkdown.Agent.PuraToolCall.Duration.init -> void
+PuraMarkdown.Agent.PuraToolCall.Error.get -> string?
+PuraMarkdown.Agent.PuraToolCall.Error.init -> void
+PuraMarkdown.Agent.PuraToolCall.Id.get -> string!
+PuraMarkdown.Agent.PuraToolCall.Id.init -> void
+PuraMarkdown.Agent.PuraToolCall.Name.get -> string!
+PuraMarkdown.Agent.PuraToolCall.Name.init -> void
+PuraMarkdown.Agent.PuraToolCall.PuraToolCall() -> void
+PuraMarkdown.Agent.PuraToolCall.Result.get -> string?
+PuraMarkdown.Agent.PuraToolCall.Result.init -> void
+PuraMarkdown.Agent.PuraToolCall.Status.get -> PuraMarkdown.Agent.PuraToolCallStatus
+PuraMarkdown.Agent.PuraToolCall.Status.init -> void
+PuraMarkdown.Agent.PuraToolCallStatus
+PuraMarkdown.Agent.PuraToolCallStatus.Cancelled = 3 -> PuraMarkdown.Agent.PuraToolCallStatus
+PuraMarkdown.Agent.PuraToolCallStatus.Failed = 2 -> PuraMarkdown.Agent.PuraToolCallStatus
+PuraMarkdown.Agent.PuraToolCallStatus.Running = 0 -> PuraMarkdown.Agent.PuraToolCallStatus
+PuraMarkdown.Agent.PuraToolCallStatus.Succeeded = 1 -> PuraMarkdown.Agent.PuraToolCallStatus
+override PuraMarkdown.Agent.PuraToolCall.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraToolCall.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraToolCall.ToString() -> string!
+static PuraMarkdown.Agent.PuraToolCall.TryParse(string! json, out PuraMarkdown.Agent.PuraToolCall? call, out string? error) -> bool
+static PuraMarkdown.Agent.PuraToolCall.operator !=(PuraMarkdown.Agent.PuraToolCall? left, PuraMarkdown.Agent.PuraToolCall? right) -> bool
+static PuraMarkdown.Agent.PuraToolCall.operator ==(PuraMarkdown.Agent.PuraToolCall? left, PuraMarkdown.Agent.PuraToolCall? right) -> bool
+PuraMarkdown.Agent.PuraToolCall.Equals(PuraMarkdown.Agent.PuraToolCall? other) -> bool

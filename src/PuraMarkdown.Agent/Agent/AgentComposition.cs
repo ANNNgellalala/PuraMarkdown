@@ -13,6 +13,7 @@ internal sealed class AgentComponentSet
     {
         Add(new ChoiceParser(), new ChoiceComponentRenderer());
         Add(new ConfirmParser(), new ConfirmComponentRenderer());
+        Add(new ToolCallParser(), new ToolCallComponentRenderer());
     }
 
     public bool PluginRegistered { get; set; }

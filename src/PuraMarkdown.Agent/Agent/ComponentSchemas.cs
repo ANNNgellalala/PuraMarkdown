@@ -11,6 +11,9 @@ internal static class ComponentSchemas
     /// <summary>Confirm。</summary>
     public static readonly JsonSchema Confirm = JsonSchema.FromText(ConfirmSchema);
 
+    /// <summary>ToolCall。</summary>
+    public static readonly JsonSchema ToolCall = JsonSchema.FromText(ToolCallSchema);
+
     private const string ChoiceSchema = """
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -67,6 +70,28 @@ internal static class ComponentSchemas
             "confirmLabel": { "type": "string", "minLength": 1, "maxLength": 64 },
             "cancelLabel": { "type": "string", "minLength": 1, "maxLength": 64 },
             "danger": { "type": "boolean" }
+          },
+          "additionalProperties": true
+        }
+        """;
+
+    private const string ToolCallSchema = """
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "required": ["type", "version", "name"],
+          "properties": {
+            "type": { "const": "tool-call" },
+            "version": { "type": "string", "minLength": 1, "maxLength": 16 },
+            "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+            "status": {
+              "enum": ["running", "success", "succeeded", "error", "failed", "cancelled", "canceled"]
+            },
+            "arguments": true,
+            "result": true,
+            "error": true,
+            "durationMs": { "type": "number", "minimum": 0 }
           },
           "additionalProperties": true
         }

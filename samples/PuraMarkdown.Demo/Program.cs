@@ -43,7 +43,7 @@ internal sealed class DemoWindow : Window
     private const string Sample = """
         # PuraMarkdown Demo
 
-        这是 **Avalonia 只读 Markdown 控件**的示例：流式追加、交互组件、插件（高亮 / Mermaid / rating）。
+        这是 **Avalonia 只读 Markdown 控件**的示例：流式追加、交互组件、工具调用、插件（高亮 / Mermaid / rating）。
 
         ## 代码
 
@@ -94,6 +94,37 @@ internal sealed class DemoWindow : Window
 
         ```pura-agent
         { "type": "rating", "version": "1.0", "id": "quality", "label": "本次输出质量", "max": 5, "value": 4 }
+        ```
+
+        ## 工具调用
+
+        ```pura-tool
+        { "id": "call_1", "name": "web_search", "status": "success",
+          "arguments": { "q": "avalonia markdown" },
+          "result": { "hits": 12, "top": "PuraMarkdown" },
+          "durationMs": 1200 }
+        ```
+
+        ```pura-tool
+        { "id": "call_2", "name": "db_query", "status": "running",
+          "arguments": { "sql": "select * from invoices" } }
+        ```
+
+        ```pura-tool-call
+        { "id": "call_3", "name": "send_email", "status": "error",
+          "arguments": { "to": "ops@example.com" }, "error": "SMTP 超时" }
+        ```
+
+        ```pura-agent
+        {
+          "type": "tool-call",
+          "version": "1.0",
+          "id": "tool-1",
+          "name": "file_read",
+          "status": "success",
+          "arguments": { "path": "/etc/hosts" },
+          "result": "127.0.0.1 localhost"
+        }
         ```
 
         感谢使用 PuraMarkdown。

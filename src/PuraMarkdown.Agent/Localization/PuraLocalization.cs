@@ -44,6 +44,19 @@ public sealed class ChinesePuraLocalizer : IPuraLocalizer
         [PuraStringKeys.ComponentUnknownValidation] = "未知校验错误",
         [PuraStringKeys.ChoiceSelectAtLeast] = "至少选择 {0} 项",
         [PuraStringKeys.ChoiceSelectAtMost] = "最多选择 {0} 项",
+        [PuraStringKeys.ToolCallPending] = "工具调用",
+        [PuraStringKeys.ToolCallRunning] = "运行中",
+        [PuraStringKeys.ToolCallSucceeded] = "成功",
+        [PuraStringKeys.ToolCallFailed] = "失败",
+        [PuraStringKeys.ToolCallCancelled] = "已取消",
+        [PuraStringKeys.ToolCallArguments] = "参数",
+        [PuraStringKeys.ToolCallResult] = "结果",
+        [PuraStringKeys.ToolCallError] = "错误",
+        [PuraStringKeys.ToolCallDurationMs] = "{0} ms",
+        [PuraStringKeys.ToolCallDurationSeconds] = "{0} 秒",
+        [PuraStringKeys.ToolCallCopyArguments] = "复制工具参数",
+        [PuraStringKeys.ToolCallCopyResult] = "复制工具结果",
+        [PuraStringKeys.ToolCallAutomation] = "工具调用 {0}",
         [PuraStringKeys.StreamingCompleted] = "消息内容生成完成",
         [PuraStringKeys.StreamingAborted] = "消息生成已中断",
         [PuraStringKeys.AlertNote] = "注意",
@@ -126,6 +139,32 @@ public static class PuraStringKeys
     public const string ChoiceSelectAtLeast = "choice-select-at-least";
     /// <summary>文案键：ChoiceSelectAtMost。</summary>
     public const string ChoiceSelectAtMost = "choice-select-at-most";
+    /// <summary>文案键：ToolCallPending（工具名缺失时的占位名）。</summary>
+    public const string ToolCallPending = "tool-call-pending";
+    /// <summary>文案键：ToolCallRunning。</summary>
+    public const string ToolCallRunning = "tool-call-running";
+    /// <summary>文案键：ToolCallSucceeded。</summary>
+    public const string ToolCallSucceeded = "tool-call-succeeded";
+    /// <summary>文案键：ToolCallFailed。</summary>
+    public const string ToolCallFailed = "tool-call-failed";
+    /// <summary>文案键：ToolCallCancelled。</summary>
+    public const string ToolCallCancelled = "tool-call-cancelled";
+    /// <summary>文案键：ToolCallArguments。</summary>
+    public const string ToolCallArguments = "tool-call-arguments";
+    /// <summary>文案键：ToolCallResult。</summary>
+    public const string ToolCallResult = "tool-call-result";
+    /// <summary>文案键：ToolCallError。</summary>
+    public const string ToolCallError = "tool-call-error";
+    /// <summary>文案键：ToolCallDurationMs。</summary>
+    public const string ToolCallDurationMs = "tool-call-duration-ms";
+    /// <summary>文案键：ToolCallDurationSeconds。</summary>
+    public const string ToolCallDurationSeconds = "tool-call-duration-seconds";
+    /// <summary>文案键：ToolCallCopyArguments。</summary>
+    public const string ToolCallCopyArguments = "tool-call-copy-arguments";
+    /// <summary>文案键：ToolCallCopyResult。</summary>
+    public const string ToolCallCopyResult = "tool-call-copy-result";
+    /// <summary>文案键：ToolCallAutomation。</summary>
+    public const string ToolCallAutomation = "tool-call-automation";
     /// <summary>文案键：StreamingCompleted。</summary>
     public const string StreamingCompleted = "streaming-completed";
     /// <summary>文案键：StreamingAborted。</summary>
