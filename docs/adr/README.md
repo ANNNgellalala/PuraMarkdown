@@ -12,7 +12,7 @@
 | [ADR-0011](0011-markdig-ast-direct-to-avalonia.md) | 渲染直接消费 Markdig AST、产出 Avalonia 控件（无 IR） | 已接受（2026-11-05） |
 | [ADR-0012](0012-pura-agent-fence.md) | `pura-agent` 围栏 + JSON 作为扩展语法主路径 | 已接受（2026-11-05） |
 | [ADR-0013](0013-net10-target.md) | 目标框架升级为 net10.0 | 已接受（2026-11-05） |
-| [ADR-0014](0014-plugins-for-diagrams-and-highlighting.md) | 图表/高亮/公式外置为插件契约 | 已接受（2026-11-05） |
+| [ADR-0014](0014-plugins-for-diagrams-and-highlighting.md) | 图表/高亮/公式外置为插件契约 | 有效（公式部分由 ADR-0026 补充） |
 | [ADR-0015](0015-streaming-block-dirty-grafting.md) | 流式采用「块级脏检查 + 尾部窗口 + 视觉树嫁接」 | 已接受（2026-11-05） |
 | [ADR-0016](0016-avalonia-native-no-platform-abstraction.md) | 1.0 只交付 Avalonia 原生控件，多平台后置 | 已接受（2026-11-05） |
 | [ADR-0020](0020-no-ir-in-1.0.md) | 1.0 不引入 IR（保留 Markdig AST） | 已接受（2026-11-05，选项 A） |
@@ -21,6 +21,8 @@
 | [ADR-0023](0023-mermaid-engine-mermaider.md) | Mermaid 引擎选择 Mermaider（MIT，纯 .NET）；Naiad 因 EULA 排除 | 已接受（2026-11-06） |
 | [ADR-0024](0024-agent-as-plugin.md) | Agent 剥离为独立语法插件，核心只做 Markdown | 已接受（2026-11-07） |
 | [ADR-0025](0025-syntax-renderer-separation.md) | B 阶段语法/渲染分离：Markdig AST 作为语法契约 | 已接受（2026-11-08） |
+| [ADR-0026](0026-math-renderer-contract.md) | 数学公式：核心语法/TeX 回退 + 渲染器契约，CSharpMath 仅示例插件 | 已接受（2026-11-09） |
+| [ADR-0027](0027-package-consolidation.md) | 包整合：7 个 NuGet 包收敛为 3 个（核心内置 Agent/Chat/Testing，新增 `PuraMarkdown.Plugins`） | 已接受（2026-11-10） |
 | [ADR-0017](0017-block-virtualization.md) | 块级虚拟化采用可选 ItemsRepeater 模式 | 已接受（2026-11-07） |
 
 ## 已取代（保留原文，便于追溯）
@@ -39,7 +41,7 @@
 
 | 编号 | 主题 | 阻塞于 |
 | --- | --- | --- |
-| ADR-0018 | 数学公式插件（CSharpMath vs 预渲染 SVG） | 1.1 需求确认 |
+| ADR-0018 | 数学公式插件（CSharpMath vs 预渲染 SVG） | 已由 ADR-0026 决策（CSharpMath 作为示例插件，核心不依赖） |
 | ADR-0019 | 容器指令插件（`:::choice`）是否官方提供 | M3 社区反馈 |
 
 > 2026-11-05 设计阶段收官：全部架构决策已接受（共 13 项有效决策），不再有"提议"状态的 ADR。

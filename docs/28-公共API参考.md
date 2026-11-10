@@ -1,6 +1,14 @@
 # 公共 API 参考（0.1.0-alpha.1）
 
-> 以当前实现为准。命名空间：核心 `PuraMarkdown`、插件契约 `PuraMarkdown.Rendering`、Agent `PuraMarkdown.Agent`、Chat `PuraMarkdown.Chat`、测试 `PuraMarkdown.Testing`。
+> 以当前实现为准。**包与命名空间不一一对应**（当前共 3 个 NuGet 包）：
+>
+> | 包 | 命名空间 |
+> | --- | --- |
+> | `PuraMarkdown.Syntax` | `PuraMarkdown.Syntax`（部分类型在 `PuraMarkdown`，如 `StreamingBlockScanner`） |
+> | `PuraMarkdown` | `PuraMarkdown`、`PuraMarkdown.Rendering`、`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing`、`PuraMarkdown.Localization`、`PuraMarkdown.Platform`、`PuraMarkdown.Security` |
+> | `PuraMarkdown.Plugins`（可选） | `PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid` |
+>
+> 下文小节标题用括号标注历史包名，只为定位功能；Agent/Chat/Testing 的类型实际都在 `PuraMarkdown` 程序集中，`using` 不用改。
 
 ---
 
@@ -67,6 +75,8 @@ new PuraMarkdownOptions
 | --- | --- |
 | `UseCommonMark()` / `UseGfm()` | CommonMark / GFM |
 | `UseFootnotes()` / `UseDefinitionLists()` / `UseAlertBlocks()` | 脚注 / 定义列表 / GitHub Alerts |
+| `UseEmoji(bool enableSmileys = false)` | Emoji 短代码；smiley 需显式开启 |
+| `UseMathematics()` | 数学公式语法（`$...$` / `$$...$$`）；核心默认 TeX 文本回退，排版由插件接管 |
 | `UseRenderer(IPuraNodeRenderer, int priority = 100)` | 块/节点渲染器 |
 | `UseInlineRenderer(IPuraInlineRenderer, int priority = 100)` | 行内渲染器 |
 | `UseFenceRenderer(IFenceRenderer, int priority = 100)` | 围栏渲染器 |
@@ -77,6 +87,8 @@ new PuraMarkdownOptions
 | `PuraPipeline Build()` | 冻结环境 |
 
 `PuraPipeline.Parse(string) → MarkdownDocument`；`Environment` 暴露 `Renderers/Sanitizer/Highlighter/PluginNames`。
+
+> 数学公式：`UseMathematics()` 只启用语法与 TeX 文本回退。需要排版时用 `UseInlineRenderer` 接管 `MathInline`、用 `UseRenderer`（priority > 5）接管 `MathBlock`；参考 `samples/PuraMarkdown.Plugins.Samples/CSharpMathMathPlugin.cs`（CSharpMath 仅示例项目引用，核心包不依赖）。
 
 ### 1.4 流式
 
@@ -145,6 +157,8 @@ public sealed class PuraSyntaxBuilder
     PuraSyntaxBuilder UseFootnotes();
     PuraSyntaxBuilder UseDefinitionLists();
     PuraSyntaxBuilder UseAlertBlocks();
+    PuraSyntaxBuilder UseEmoji(bool enableSmileys = false);
+    PuraSyntaxBuilder UseMathematics();
     PuraSyntaxBuilder UseMarkdownExtension(IMarkdownExtension extension);
     PuraSyntaxBuilder UseSanitizer(IAstSanitizer sanitizer);
     PuraSyntaxBuilder ConfigureLimits(Action<PuraLimits> configure);
@@ -156,6 +170,7 @@ public sealed class PuraSyntaxPipeline
 {
     MarkdownPipeline MarkdownPipeline { get; }
     PuraSyntaxOptions Options { get; }
+    bool MathEnabled { get; }
     PuraSyntaxOptions CreateOptions(PuraLimits limits, IUrlPolicy urlPolicy);
 
     MarkdownDocument Parse(string markdown);
@@ -296,7 +311,7 @@ public sealed class SanitizeResult
 
 ---
 
-## 4. Agent 包（`PuraMarkdown.Agent`）
+## 4. Agent 组件（命名空间 `PuraMarkdown.Agent`，随 `PuraMarkdown` 包发布）
 
 ```csharp
 using PuraMarkdown.Agent;
@@ -328,11 +343,11 @@ public interface IAgentComponentRenderer
 ```
 
 模型：`PuraAgentComponent`、`PuraChoiceComponent/Option`、`PuraConfirmComponent`、`PuraComponentError`。
-未安装 Agent 包：`pura-agent` = 普通代码块。
+未启用 Agent 扩展（未调用 `UseAgentComponents()` / `UsePlugin(new AgentPlugin())`）时：`pura-agent` = 普通代码块。
 
 ---
 
-## 5. Chat 包（`PuraMarkdown.Chat`）
+## 5. Chat 控件（命名空间 `PuraMarkdown.Chat`，随 `PuraMarkdown` 包发布）
 
 ```csharp
 public enum PuraChatRole { User, Assistant, System }
@@ -417,7 +432,7 @@ public interface IPuraClipboard
 
 ---
 
-## 7. 测试包（`PuraMarkdown.Testing`）
+## 7. 测试工具（命名空间 `PuraMarkdown.Testing`，随 `PuraMarkdown` 包发布）
 
 - `ControlTreeDumper.Dump/Find<T>`；
 - `GoldenFile.AssertMatches`；
@@ -427,7 +442,32 @@ public interface IPuraClipboard
 
 ---
 
-## 8. 稳定性说明
+## 8. 官方插件包（`PuraMarkdown.Plugins`，可选）
+
+该包合并了原 `PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid`，命名空间保持不变：
+
+```csharp
+using PuraMarkdown.Highlighting.ColorCode;   // ColorCodeHighlighter、ColorCodePlugin
+using PuraMarkdown.Diagrams.Mermaid;          // MermaidDiagramRenderer、MermaidPlugin
+```
+
+- `ColorCodeHighlighter : ICodeHighlighter`、`ColorCodePlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Highlighting.ColorCode`）；
+- `MermaidDiagramRenderer : IFenceRenderer`、`MermaidPlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Diagrams.Mermaid`）。
+
+```csharp
+var pipeline = new PuraPipelineBuilder()
+    .UseCommonMark()
+    .UseGfm()
+    .UsePlugin(new ColorCodePlugin())   // 或 .UseCodeHighlighter(new ColorCodeHighlighter())
+    .UsePlugin(new MermaidPlugin())     // 或 .UseFenceRenderer(new MermaidDiagramRenderer())
+    .Build();
+```
+
+引擎依赖（ColorCode.Core 2.0.15、Mermaider 0.15.1）只在此包；未引用 `PuraMarkdown.Plugins` 时，代码高亮回退纯等宽文本、Mermaid 围栏回退代码块。决策见 [ADR-0014](adr/0014-plugins-for-diagrams-and-highlighting.md) / [ADR-0027](adr/0027-package-consolidation.md)。
+
+---
+
+## 9. 稳定性说明
 
 | 级别 | 内容 |
 | --- | --- |
@@ -436,7 +476,7 @@ public interface IPuraClipboard
 | 高级 | RenderContext、PuraRendererRegistry、BlockRecord、Markdig 扩展 |
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
-> `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。
+> `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。包整合（7 → 3）不改任何公共类型签名，只改 `PackageReference`（ADR-0027）。
 
 
 

@@ -2,6 +2,28 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### Added
+
+- **Emoji/Smiley**：`PuraPipelineBuilder.UseEmoji(bool enableSmileys = false)` / `PuraSyntaxBuilder.UseEmoji(...)`；`EmojiInline` 渲染为 Unicode emoji，smiley 默认关闭（避免 `->`/`<=` 等文本被替换）；节点矩阵与文档更新。
+- **数学公式（核心语法 + TeX 回退）**：`PuraPipelineBuilder.UseMathematics()` / `PuraSyntaxBuilder.UseMathematics()`；核心不引用排版引擎，默认显示 TeX 源码（块级带复制按钮）；流式尾部使用文本回退，扫描器识别 `$$` 块（ADR-0026）。
+- **行内插件分发修复**：`DefaultInlineRenderer` 现在会在 `MathInline`/未知行内节点上询问 `IPuraInlineRenderer`，插件可接管（此前该契约从未被调用）。
+- **CSharpMath 示例插件**：`samples/PuraMarkdown.Plugins.Samples/CSharpMathMathPlugin.cs` 展示行内/块级 `MathView` 排版；Demo/Spike 引用它。`CSharpMath.Avalonia` 只存在于示例项目，**核心包不依赖**。
+- 新增 `EmojiMathTests`（10 个测试）：短代码/smiley 开关、代码块内不转换、强调内不粗体、数学节点/矩阵、默认 TeX 回退、示例插件排版、货币误判、`$$` 块流式等价、尾部文本回退。
+
+### Changed
+
+- **打包整合：7 个 NuGet 包 → 3 个**（ADR-0027）。`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing` 三个包并入核心包 `PuraMarkdown`；`PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid` 合并为新的可选插件包 `PuraMarkdown.Plugins`（含 `ColorCodeHighlighter`/`ColorCodePlugin` 与 `MermaidDiagramRenderer`/`MermaidPlugin`）。**C# 命名空间未改名**：`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing`、`PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid` 均保留在新程序集中，宿主源码无需改动，只改 `PackageReference`。包版本仍为 `0.1.0-alpha.1`（这些包只做过本地 `dotnet pack` 验证，**未发布到 nuget.org**）。ADR-0014「核心零引擎依赖」规则保持有效，全部引擎依赖（ColorCode.Core、Mermaider）集中在 `PuraMarkdown.Plugins`。
+- `MarkdigCompatibility` 增加 `EmojiInline`、`MathInline`、`MathBlock`；`StreamingBlockScanner` 增加 `trackMathBlocks` 重载。
+- 数学排版引擎不再进核心：`PuraMarkdown.nupkg` 依赖仍为 Syntax/Avalonia/ItemsRepeater/Markdig（另含内置 `pura-agent` 组件所需的 JsonSchema.Net）；需要排版的宿主自行注册渲染器或使用示例插件（ADR-0026）。
+- 测试总数 119 → 129；README/文档 27/28/29/35/36 与 ADR 索引同步更新。
+
+### Known limitations
+
+- 数学只支持 Markdig 的 `$...$` / `$$...$$`；`\(...\)` / `\[...\]` 需宿主或 Agent 侧先归一化。
+- 官方不发布数学引擎包；示例项目使用 `CSharpMath.Avalonia` 1.0.0-pre.2（prerelease），Trim/AOT 冒烟在示例插件路径上验证。
+
 ## [0.1.0-alpha.1] - 2026-11-07
 
 首个 alpha 版本：设计定稿（v0.4）+ M0–M4 + 公共 API 收敛。

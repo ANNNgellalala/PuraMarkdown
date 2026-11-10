@@ -53,14 +53,16 @@
 | 脚注 `[^1]` | ✅ 已支持 | `UseFootnotes()`；FootnoteGroup 渲染 + 引用/回链锚点 |
 | 定义列表 | ✅ 已支持 | `UseDefinitionLists()`；Term/Definition 渲染 |
 | 缩写 `*[HTML]: ...` | ❌ 未启用 | `UseAbbreviations` 未加入 |
-| Emoji/Smiley `:smile:` | ❌ 未启用 | `UseEmojiAndSmiley` 未加入 |
+| Emoji/Smiley `:smile:` | ✅ 已支持 | `UseEmoji()`（默认短代码，smiley 需显式开启）；`EmojiInline` 渲染为 Unicode |
 | 自定义容器 `::: note` | ❌ 未启用 | `UseCustomContainers` 未加入；当前 Agent 只支持围栏 |
 | YAML front matter | ❌ 按需求不支持 | 不添加识别机制；YAML 请放在代码块中 |
-| 数学公式 `$...$`/`$$...$$` | ❌ 未启用 | 无 Markdig 数学扩展 + 无官方渲染器插件 |
+| 数学公式 `$...$`/`$$...$$` | ✅ 语法 + 回退 | `UseMathematics()`；核心默认显示 TeX 源码，真正排版由插件接管（示例：`samples/PuraMarkdown.Plugins.Samples` 的 `CSharpMathMathPlugin`）；只支持 `$` 分隔符 |
 | 引用/文献 `[@key]` | ❌ 未启用 | `UseCitations` 未加入 |
 | 自动标题 ID | ❌ 未启用 | 有 `PuraOutline` 锚点，但控件没有 HTML id/permalink |
 | 通用属性 `{#id .class}` | ❌ 未启用 | `UseGenericAttributes` 未加入 |
 | GitHub Alerts `> [!NOTE]` | ✅ 已支持 | `UseAlertBlocks()`；Note/Tip/Important/Warning/Caution 中文标题 |
+
+> Emoji、自定义容器、数学公式三项的效果、实现面与工作量评估见 [37-Emoji-自定义容器-数学公式支持评估](37-Emoji-自定义容器-数学公式支持评估.md)。
 
 ### 2.2 Emphasis Extras（部分）
 
@@ -109,7 +111,7 @@
 | --- | --- |
 | HTML 渲染 | 安全策略（ADR-0009），按文本回退 |
 | 交互式任务列表 | Markdown 控件只读；交互由宿主/Agent 组件负责 |
-| 图表/数学引擎内置 | 插件化（ADR-0014）；核心不引入引擎依赖 |
+| 图表/数学引擎内置 | 图表与数学排版引擎均不做（插件化）：数学核心只提供语法 + TeX 文本回退，CSharpMath 仅作 Demo/示例插件（ADR-0026） |
 | 完整 CommonMark spec 套件 | 目前以测试/golden 覆盖主要路径，后续可作为质量增强 |
 
 ---
@@ -126,11 +128,11 @@
 
 ### P2：内容生态
 
-6. 数学公式插件（Markdig 数学扩展 + 渲染器，如 CSharpMath）；
-7. 自定义容器（`::: note`）+ 样式；
+6. ~~数学公式语法 + TeX 文本回退~~（已完成；CSharpMath 排版见示例插件，核心不依赖）
+7. 自定义容器（`::: note`）+ 样式（暂不做）；
 8. 自动标题 ID + TOC/permalink；
 9. 代码行号/行高亮/diff；
-10. Emoji/缩写/引用等扩展。
+10. ~~Emoji/缩写/引用等扩展~~（Emoji 已完成；缩写/引用仍可后续）。
 
 ### P3：质量
 
@@ -169,7 +171,7 @@ var pipeline = new PuraPipelineBuilder()
 
 ```
 dotnet build PuraMarkdown.slnx        → 0 警告 / 0 错误
-dotnet test tests/PuraMarkdown.Tests  → 119 通过 / 0 失败
+dotnet test tests/PuraMarkdown.Tests  → 129 通过 / 0 失败
 ```
 
 

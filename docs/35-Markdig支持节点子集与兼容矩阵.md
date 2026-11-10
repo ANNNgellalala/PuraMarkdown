@@ -43,6 +43,7 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | `QuoteBlock` | 渲染 | 引用容器 | 子块递归渲染 |
 | `ListBlock` | 渲染 | 列表容器 | 处理有序/无序/任务列表 |
 | `ListItemBlock` | 结构 | 由 `ListBlock` 渲染 | 不单独出控件 |
+| `MathBlock` | 渲染 | 数学块（默认 TeX 回退） | 需要 `UseMathematics()`；插件可接管排版 |
 | `FencedCodeBlock` | 渲染 | 代码块 | `pura-agent` 由 Agent 插件接管 |
 | `CodeBlock` | 渲染 | 代码块 | 缩进代码 |
 | `Table` | 渲染 | 表格控件 | 需要 `UseGfm()` |
@@ -71,6 +72,8 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | `TaskList` | 渲染 | 前缀 Run | 需要 `UseGfm()`；列表项内 |
 | `FootnoteLink` | 渲染 | 上标引用/回链 | 需要 `UseFootnotes()` |
 | `ContainerInline` | 结构 | 递归子节点 | 强调/链接容器 |
+| `MathInline` | 渲染 | 行内公式（默认 TeX 回退） | 需要 `UseMathematics()`；插件可接管 |
+| `EmojiInline` | 渲染 | Emoji 文本 | 需要 `UseEmoji()`；继承 `LiteralInline` |
 | `HtmlInline` | 回退 | 纯文本 | HTML 已禁用 |
 
 ---
@@ -82,11 +85,13 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | GFM 表格 | `Table`/`TableRow`/`TableCell` | `UseGfm()` | 核心 |
 | 任务列表 | `TaskList` | `UseGfm()` | 核心 |
 | 自动链接 | `AutolinkInline` | `UseGfm()` | 核心 |
-| Agent 围栏 | `FencedCodeBlock`（language=`pura-agent`） | 安装 `PuraMarkdown.Agent` | Agent 插件 |
+| Agent 围栏 | `FencedCodeBlock`（language=`pura-agent`） | 内置 `PuraMarkdown` 包（命名空间 `PuraMarkdown.Agent`） | Agent 组件 |
 | 脚注 | `FootnoteGroup`/`Footnote`/`FootnoteLink` | `UseFootnotes()` | 核心 |
 | 定义列表 | `DefinitionList`/`DefinitionItem`/`DefinitionTerm` | `UseDefinitionLists()` | 核心 |
 | GitHub Alerts | `AlertBlock` | `UseAlertBlocks()` | 核心 |
-| Mermaid | `FencedCodeBlock` | 安装 Mermaid 插件 | 插件 |
+| Emoji/Smiley | `EmojiInline` | `UseEmoji()` | 核心 |
+| 数学公式 | `MathInline`/`MathBlock` | `UseMathematics()` | 核心语法 + TeX 回退；排版示例见 `samples/PuraMarkdown.Plugins.Samples` |
+| Mermaid | `FencedCodeBlock` | 安装 `PuraMarkdown.Plugins`（命名空间 `PuraMarkdown.Diagrams.Mermaid`） | 插件 |
 | 自定义 Markdig 扩展 | 插件自定义节点 | 插件注册 | **不在 B 契约** |
 
 自定义扩展节点必须由插件提供 `IPuraNodeRenderer`；否则走 `FallbackTextRenderer`/行内文本回退。

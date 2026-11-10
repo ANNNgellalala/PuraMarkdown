@@ -15,15 +15,13 @@
   - `PublicAPI.Unshipped.txt`（已发布 API 之外的新增项放这里）。
 - 当前 B 版 API 已全部写入 `PublicAPI.Shipped.txt`，`Unshipped` 仅保留 `#nullable enable`。
 
+> 2026-11-10 更新：按 ADR-0027，7 个包已合并为 3 个；下表为**合并后**基线（原 Agent/Chat/Testing 条目并入 `PuraMarkdown`，原高亮/Mermaid 条目并入 `PuraMarkdown.Plugins`）。
+
 | 包 | Shipped 条目数（含 header） |
 | --- | ---: |
-| `PuraMarkdown` | 589 |
-| `PuraMarkdown.Agent` | 135 |
-| `PuraMarkdown.Chat` | 103 |
+| `PuraMarkdown` | 845 |
 | `PuraMarkdown.Syntax` | 214 |
-| `PuraMarkdown.Testing` | 21 |
-| `PuraMarkdown.Diagrams.Mermaid` | 12 |
-| `PuraMarkdown.Highlighting.ColorCode` | 11 |
+| `PuraMarkdown.Plugins` | 22 |
 
 ### 1.2 规则与更新方式
 
@@ -71,6 +69,7 @@ dotnet publish samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj \
 
 - B 拆分没有破坏 Avalonia 渲染、Agent 组件、Mermaid/ColorCode 插件的 Trim/AOT 运行；
 - Native AOT 当前可用；后续 C 语义模型上线后需重新执行本表。
+- **2026-11-09 追加（Emoji/数学）**：核心不依赖 CSharpMath；Spike 通过示例插件 `CSharpMathMathPlugin` 使用 CSharpMath。重新执行 Trim（partial）与 Native AOT，均成功；两种产物运行 `--screenshot` 均正常输出 Emoji 与数学公式。包体积/启动耗时尚未重新测，发布前应补测。
 
 ---
 
