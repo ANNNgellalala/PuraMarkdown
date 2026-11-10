@@ -15,7 +15,7 @@
 | 运行时检查 | `MarkdigCompatibility.TestedAssemblyVersion` / `CurrentAssemblyVersion` |
 | HTML | `DisableHtml()`，不渲染 HTML（ADR-0009） |
 
-`PuraMarkdown.Syntax` 只承诺上表版本；升级 Markdig 必须更新矩阵与基线。
+`PuraMarkdown.Core` 只承诺上表版本；升级 Markdig 必须更新矩阵与基线。
 
 ---
 
@@ -85,13 +85,13 @@ B 阶段的语法契约是 **Markdig `MarkdownDocument`**，但只包括下表�
 | GFM 表格 | `Table`/`TableRow`/`TableCell` | `UseGfm()` | 核心 |
 | 任务列表 | `TaskList` | `UseGfm()` | 核心 |
 | 自动链接 | `AutolinkInline` | `UseGfm()` | 核心 |
-| Agent 围栏 | `FencedCodeBlock`（language=`pura-agent`） | 内置 `PuraMarkdown` 包（命名空间 `PuraMarkdown.Agent`） | Agent 组件 |
+| Agent 围栏 | `FencedCodeBlock`（language=`pura-agent`） | `PuraMarkdown.Agent` 包（命名空间 `PuraMarkdown.Agent`） | Agent 组件 |
 | 脚注 | `FootnoteGroup`/`Footnote`/`FootnoteLink` | `UseFootnotes()` | 核心 |
 | 定义列表 | `DefinitionList`/`DefinitionItem`/`DefinitionTerm` | `UseDefinitionLists()` | 核心 |
 | GitHub Alerts | `AlertBlock` | `UseAlertBlocks()` | 核心 |
 | Emoji/Smiley | `EmojiInline` | `UseEmoji()` | 核心 |
-| 数学公式 | `MathInline`/`MathBlock` | `UseMathematics()` | 核心语法 + TeX 回退；排版示例见 `samples/PuraMarkdown.Plugins.Samples` |
-| Mermaid | `FencedCodeBlock` | 安装 `PuraMarkdown.Plugins`（命名空间 `PuraMarkdown.Diagrams.Mermaid`） | 插件 |
+| 数学公式 | `MathInline`/`MathBlock` | `UseMathematics()` | `PuraMarkdown.Core` 提供语法、`PuraMarkdown.Agent` 提供 TeX 回退；排版示例见 `samples/PuraMarkdown.Plugins.Samples` |
+| Mermaid | `FencedCodeBlock` | 安装 `PuraMarkdown.Extension`（命名空间 `PuraMarkdown.Extension.Diagrams.Mermaid`） | 插件 |
 | 自定义 Markdig 扩展 | 插件自定义节点 | 插件注册 | **不在 B 契约** |
 
 自定义扩展节点必须由插件提供 `IPuraNodeRenderer`；否则走 `FallbackTextRenderer`/行内文本回退。

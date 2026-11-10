@@ -5,6 +5,8 @@
 > 目标：在 1.0 前收敛公共 API：**稳定面尽量小、扩展面清晰、内部实现不外溢**，并为插件作者/宿主分别定义契约。
 > 结论：建议先做一轮 **API 收敛 + 一致性修复**（允许 0.1 alpha 阶段破坏性调整），再冻结 1.0 公共面。
 
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`，命名空间随包同步变更；本文为当时记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
+
 ---
 
 ## 1. 设计原则

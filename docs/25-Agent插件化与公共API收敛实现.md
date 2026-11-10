@@ -2,6 +2,8 @@
 
 > 对应 [插件通用接口与 Agent 插件化讨论](24-插件通用接口与Agent插件化讨论.md) 的推荐方案，已完成核心契约重构、Agent 剥离、Mermaid 迁移与 Chat 包。
 
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`，命名空间随包同步变更（Agent 组件现为 `PuraMarkdown.Agent`、Chat 现为 `PuraMarkdown.Agent.Chat`）；本文为当时实现记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
+
 ---
 
 ## 1. 核心插件契约（PuraMarkdown）

@@ -1,20 +1,20 @@
 # 公共 API 参考（0.1.0-alpha.1）
 
-> 以当前实现为准。**包与命名空间不一一对应**（当前共 3 个 NuGet 包）：
+> 以当前实现为准。**包与命名空间一一对应**（当前共 3 个 NuGet 包，2026-11-10 改名，见 [ADR-0028](adr/0028-package-identity-rename.md)）：
 >
 > | 包 | 命名空间 |
 > | --- | --- |
-> | `PuraMarkdown.Syntax` | `PuraMarkdown.Syntax`（部分类型在 `PuraMarkdown`，如 `StreamingBlockScanner`） |
-> | `PuraMarkdown` | `PuraMarkdown`、`PuraMarkdown.Rendering`、`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing`、`PuraMarkdown.Localization`、`PuraMarkdown.Platform`、`PuraMarkdown.Security` |
-> | `PuraMarkdown.Plugins`（可选） | `PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid` |
+> | `PuraMarkdown.Core` | `PuraMarkdown.Core`、`PuraMarkdown.Core.Security` |
+> | `PuraMarkdown.Agent` | `PuraMarkdown.Agent`、`PuraMarkdown.Agent.Rendering`、`PuraMarkdown.Agent.Chat`、`PuraMarkdown.Agent.Testing`、`PuraMarkdown.Agent.Localization`、`PuraMarkdown.Agent.Platform` |
+> | `PuraMarkdown.Extension`（可选） | `PuraMarkdown.Extension.Highlighting.ColorCode`、`PuraMarkdown.Extension.Diagrams.Mermaid` |
 >
-> 下文小节标题用括号标注历史包名，只为定位功能；Agent/Chat/Testing 的类型实际都在 `PuraMarkdown` 程序集中，`using` 不用改。
+> 下文小节标题用括号标注所属包；旧包名与旧命名空间（`PuraMarkdown.Syntax`、`PuraMarkdown.Plugins`、`PuraMarkdown`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing`、`PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid`）**不再保留**，宿主升级时 `PackageReference` 与 `using` 需一起改。
 
 ---
 
-## 1. 宿主 API
+## 1. 宿主 API（`PuraMarkdown.Agent` 包）
 
-### 1.1 `PuraMarkdown.View`（`PuraMarkdownView : ContentControl, IDisposable`）
+### 1.1 `PuraMarkdown.Agent.PuraMarkdownView`（`PuraMarkdownView : ContentControl, IDisposable`）
 
 | 成员 | 说明 |
 | --- | --- |
@@ -69,6 +69,8 @@ new PuraMarkdownOptions
 };
 ```
 
+> `PuraMarkdownOptions`/`PuraTheme`/`ChinesePuraLocalizer` 在 `PuraMarkdown.Agent` 包；`PuraLimits`、`DefaultUrlPolicy`、`IAstSanitizer` 在 `PuraMarkdown.Core` 包（命名空间 `PuraMarkdown.Core.Security`），需要时补 `using PuraMarkdown.Core.Security;`。
+
 ### 1.3 `PuraPipelineBuilder`
 
 | 方法 | 说明 |
@@ -88,7 +90,7 @@ new PuraMarkdownOptions
 
 `PuraPipeline.Parse(string) → MarkdownDocument`；`Environment` 暴露 `Renderers/Sanitizer/Highlighter/PluginNames`。
 
-> 数学公式：`UseMathematics()` 只启用语法与 TeX 文本回退。需要排版时用 `UseInlineRenderer` 接管 `MathInline`、用 `UseRenderer`（priority > 5）接管 `MathBlock`；参考 `samples/PuraMarkdown.Plugins.Samples/CSharpMathMathPlugin.cs`（CSharpMath 仅示例项目引用，核心包不依赖）。
+> 数学公式：`UseMathematics()` 只启用语法与 TeX 文本回退。需要排版时用 `UseInlineRenderer` 接管 `MathInline`、用 `UseRenderer`（priority > 5）接管 `MathBlock`；参考 `samples/PuraMarkdown.Plugins.Samples/CSharpMathMathPlugin.cs`（CSharpMath 仅示例项目引用，`PuraMarkdown.Core`/`PuraMarkdown.Agent` 均不依赖）。
 
 ### 1.4 流式
 
@@ -145,10 +147,10 @@ var restored = PuraInteractionStates.Deserialize(json);
 
 ---
 
-## 2. 语法层（`PuraMarkdown.Syntax`，无 Avalonia）
+## 2. 语法层（`PuraMarkdown.Core` 包，无 Avalonia）
 
 ```csharp
-namespace PuraMarkdown.Syntax;
+namespace PuraMarkdown.Core;
 
 public sealed class PuraSyntaxBuilder
 {
@@ -203,7 +205,7 @@ public sealed class PuraSyntaxStreamingSession
 
 - `PuraDocument.Diagnostics` 由 sanitizer/limits 生成（`PURA-SEC-*`/`PURA-LIM-*`）；
 - `PuraDocument.Sanitized` 包含阻断节点集合，渲染层直接复用，避免二次清洗；
-- `PuraDocumentView` 接受已解析文档直接渲染；
+- `PuraDocumentView` 接受已解析文档直接渲染（该类型在 `PuraMarkdown.Agent` 包，命名空间 `PuraMarkdown.Agent`，见 §2.2）；
 - `IPuraNodeRenderer` 输入 `MarkdownObject`，Arc 可实现自定义渲染器；
 - `ParseIncremental` 按顶层块定位受影响区间（前后扩一块）只重解析该段，复用其余 AST；引用定义/异常回退全量；命中时 `previous` 被消费。
 
@@ -227,7 +229,7 @@ public static class MarkdigCompatibility
 `PuraNodeSupport`：`Rendered / Structural / ParsedNotRendered / Fallback / NotContract`。  
 完整节点表与升级检查清单见 [Markdig 支持节点子集与兼容矩阵](35-Markdig支持节点子集与兼容矩阵.md)。
 
-### 2.2 文档渲染宿主
+### 2.2 文档渲染宿主（`PuraMarkdown.Agent` 包，命名空间 `PuraMarkdown.Agent`）
 
 ```csharp
 public sealed class PuraDocumentView : ContentControl
@@ -247,7 +249,7 @@ public sealed class PuraDocumentView : ContentControl
 
 ---
 
-## 3. 插件契约
+## 3. 插件契约（主要在 `PuraMarkdown.Agent` 包；`IAstSanitizer`/`SanitizeResult` 在 `PuraMarkdown.Core` 包）
 
 ```csharp
 public interface IPuraPlugin
@@ -309,9 +311,11 @@ public sealed class SanitizeResult
 
 `RenderContext`（只读）：`Theme/Options/Renderers/Highlighter/Sanitized/Dispatcher/IsStreaming/IsTail/PrecomputedHighlights/InteractionSink/WarningSink/LinkClickSink/Image*`。
 
+> 包归属：`IPuraPlugin`/`PuraPipelineBuilder`/`RenderContext` 及渲染器契约在 `PuraMarkdown.Agent`（命名空间 `PuraMarkdown.Agent` / `PuraMarkdown.Agent.Rendering`）；`IAstSanitizer`/`SanitizeResult`/`PuraLimits`/`IUrlPolicy` 在 `PuraMarkdown.Core`（命名空间 `PuraMarkdown.Core.Security`），使用后两者时需 `using PuraMarkdown.Core.Security;`。
+
 ---
 
-## 4. Agent 组件（命名空间 `PuraMarkdown.Agent`，随 `PuraMarkdown` 包发布）
+## 4. Agent 组件（命名空间 `PuraMarkdown.Agent`，随 `PuraMarkdown.Agent` 包发布）
 
 ```csharp
 using PuraMarkdown.Agent;
@@ -343,14 +347,15 @@ public interface IAgentComponentRenderer
 ```
 
 模型：`PuraAgentComponent`、`PuraChoiceComponent/Option`、`PuraConfirmComponent`、`PuraComponentError`。
+工具调用（tool call）：`pura-agent` 组件支持 `"type":"tool-call"` 类型，另有独立的 `pura-tool`（别名 `pura-tool-call`）围栏，均由 `PuraMarkdown.Agent` 包提供。
 未启用 Agent 扩展（未调用 `UseAgentComponents()` / `UsePlugin(new AgentPlugin())`）时：`pura-agent` = 普通代码块。
 
 ---
 
-## 5. Chat 控件（命名空间 `PuraMarkdown.Chat`，随 `PuraMarkdown` 包发布）
+## 5. Chat 控件（命名空间 `PuraMarkdown.Agent.Chat`，随 `PuraMarkdown.Agent` 包发布）
 
 ```csharp
-public enum PuraChatRole { User, Assistant, System }
+public enum PuraChatRole { User, Assistant, System, Tool }
 public enum PuraChatMessageStatus { Complete, Streaming, Failed, Aborted }
 public enum PuraChatAutoScrollMode { Never, NearBottom, Always }
 
@@ -365,6 +370,23 @@ public sealed class PuraChatMessage
     DateTimeOffset UpdatedAt { get; }
     int ContentVersion { get; }
     IDictionary<string, string> Metadata { get; }
+    IReadOnlyList<PuraToolCall> ToolCalls { get; set; }  // 工具调用（tool call）列表
+    string? ToolCallId { get; set; }                     // 工具结果消息（Role=Tool）配对的调用 Id
+}
+
+// 工具调用模型（`PuraMarkdown.Agent` 命名空间，随 `PuraMarkdown.Agent` 包发布）
+public enum PuraToolCallStatus { Running, Succeeded, Failed, Cancelled }
+public sealed record PuraToolCall
+{
+    string Id { get; init; }
+    string Name { get; init; }
+    PuraToolCallStatus Status { get; init; }
+    string? Arguments { get; init; }
+    string? Result { get; init; }
+    string? Error { get; init; }
+    TimeSpan? Duration { get; init; }
+
+    static bool TryParse(string json, out PuraToolCall? call, out string? error);
 }
 
 public sealed class PuraChatView : ContentControl
@@ -406,9 +428,11 @@ public static class PuraChatSnapshotSerializer
 }
 ```
 
+- `PuraChatRole.Tool` 用于工具结果消息；消息上另有工具调用（tool calls）字段，与 `pura-tool` 围栏配合展示工具调用与结果。
+
 ---
 
-## 6. 平台契约（`PuraMarkdown.Platform`）
+## 6. 平台契约（`PuraMarkdown.Agent.Platform`）
 
 ```csharp
 public interface IImageLoader
@@ -432,7 +456,7 @@ public interface IPuraClipboard
 
 ---
 
-## 7. 测试工具（命名空间 `PuraMarkdown.Testing`，随 `PuraMarkdown` 包发布）
+## 7. 测试工具（命名空间 `PuraMarkdown.Agent.Testing`，随 `PuraMarkdown.Agent` 包发布）
 
 - `ControlTreeDumper.Dump/Find<T>`；
 - `GoldenFile.AssertMatches`；
@@ -442,17 +466,17 @@ public interface IPuraClipboard
 
 ---
 
-## 8. 官方插件包（`PuraMarkdown.Plugins`，可选）
+## 8. 官方扩展包（`PuraMarkdown.Extension`，可选）
 
-该包合并了原 `PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid`，命名空间保持不变：
+该包合并了原 `PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid`，命名空间随包迁到 `PuraMarkdown.Extension.*`：
 
 ```csharp
-using PuraMarkdown.Highlighting.ColorCode;   // ColorCodeHighlighter、ColorCodePlugin
-using PuraMarkdown.Diagrams.Mermaid;          // MermaidDiagramRenderer、MermaidPlugin
+using PuraMarkdown.Extension.Highlighting.ColorCode;   // ColorCodeHighlighter、ColorCodePlugin
+using PuraMarkdown.Extension.Diagrams.Mermaid;          // MermaidDiagramRenderer、MermaidPlugin
 ```
 
-- `ColorCodeHighlighter : ICodeHighlighter`、`ColorCodePlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Highlighting.ColorCode`）；
-- `MermaidDiagramRenderer : IFenceRenderer`、`MermaidPlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Diagrams.Mermaid`）。
+- `ColorCodeHighlighter : ICodeHighlighter`、`ColorCodePlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Extension.Highlighting.ColorCode`）；
+- `MermaidDiagramRenderer : IFenceRenderer`、`MermaidPlugin : IPuraPlugin`（命名空间 `PuraMarkdown.Extension.Diagrams.Mermaid`）。
 
 ```csharp
 var pipeline = new PuraPipelineBuilder()
@@ -463,7 +487,7 @@ var pipeline = new PuraPipelineBuilder()
     .Build();
 ```
 
-引擎依赖（ColorCode.Core 2.0.15、Mermaider 0.15.1）只在此包；未引用 `PuraMarkdown.Plugins` 时，代码高亮回退纯等宽文本、Mermaid 围栏回退代码块。决策见 [ADR-0014](adr/0014-plugins-for-diagrams-and-highlighting.md) / [ADR-0027](adr/0027-package-consolidation.md)。
+引擎依赖（ColorCode.Core 2.0.15、Mermaider 0.15.1）只在此包；未引用 `PuraMarkdown.Extension` 时，代码高亮回退纯等宽文本、Mermaid 围栏回退代码块。决策见 [ADR-0014](adr/0014-plugins-for-diagrams-and-highlighting.md) / [ADR-0027](adr/0027-package-consolidation.md) / [ADR-0028](adr/0028-package-identity-rename.md)。
 
 ---
 
@@ -476,7 +500,7 @@ var pipeline = new PuraPipelineBuilder()
 | 高级 | RenderContext、PuraRendererRegistry、BlockRecord、Markdig 扩展 |
 | 内部 | 默认渲染器、流式扫描器、Agent Block 解析等 |
 
-> `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。包整合（7 → 3）不改任何公共类型签名，只改 `PackageReference`（ADR-0027）。
+> `0.1.0-alpha.1` 仍允许破坏性调整；1.0 前会加入 PublicAPI baseline 与分析器。包整合（7 → 3，ADR-0027）不改公共类型签名，只改 `PackageReference`；包改名（ADR-0028）同时改包 id 与命名空间，属 BREAKING。
 
 
 

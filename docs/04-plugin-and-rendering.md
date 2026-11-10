@@ -261,6 +261,8 @@ services.AddPuraMarkdown(b => b.UseCommonMark().UseGfm().UseAgentComponents());
 | `PuraMarkdown.Highlighting.TextMate` | `ICodeHighlighter`（AvaloniaEdit/TextMateSharp，重） | Avalonia.AvaloniaEdit 12.0.0、TextMateSharp 2.0.5 |
 | `PuraMarkdown.Diagrams.ScottPlot` | `IDiagramRenderer`（`pura-chart` JSON schema 由本包定义） | ScottPlot.Avalonia 5.1.59 |
 
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`（官方高亮与 Mermaid 现同属 `PuraMarkdown.Extension`），命名空间随包同步变更；本表为当时设计记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
+
 ### 6.3 信任边界
 
 - 插件 = 代码 = 完全信任；不做沙箱，不动态加载不受信程序集。

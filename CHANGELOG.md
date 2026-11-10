@@ -6,6 +6,7 @@
 
 ### Added
 
+- **工具调用（tool call）语法**：新增 `pura-tool` 围栏（别名 `pura-tool-call`）、`pura-agent` 组件中的 `"type":"tool-call"` 类型，以及 Chat 侧的 tool 角色（`PuraChatRole.Tool`）与消息上的工具调用（tool calls）字段；全部由 `PuraMarkdown.Agent` 包提供，未启用时围栏回退为普通代码块。
 - **Emoji/Smiley**：`PuraPipelineBuilder.UseEmoji(bool enableSmileys = false)` / `PuraSyntaxBuilder.UseEmoji(...)`；`EmojiInline` 渲染为 Unicode emoji，smiley 默认关闭（避免 `->`/`<=` 等文本被替换）；节点矩阵与文档更新。
 - **数学公式（核心语法 + TeX 回退）**：`PuraPipelineBuilder.UseMathematics()` / `PuraSyntaxBuilder.UseMathematics()`；核心不引用排版引擎，默认显示 TeX 源码（块级带复制按钮）；流式尾部使用文本回退，扫描器识别 `$$` 块（ADR-0026）。
 - **行内插件分发修复**：`DefaultInlineRenderer` 现在会在 `MathInline`/未知行内节点上询问 `IPuraInlineRenderer`，插件可接管（此前该契约从未被调用）。
@@ -14,10 +15,19 @@
 
 ### Changed
 
-- **打包整合：7 个 NuGet 包 → 3 个**（ADR-0027）。`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing` 三个包并入核心包 `PuraMarkdown`；`PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid` 合并为新的可选插件包 `PuraMarkdown.Plugins`（含 `ColorCodeHighlighter`/`ColorCodePlugin` 与 `MermaidDiagramRenderer`/`MermaidPlugin`）。**C# 命名空间未改名**：`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing`、`PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid` 均保留在新程序集中，宿主源码无需改动，只改 `PackageReference`。包版本仍为 `0.1.0-alpha.1`（这些包只做过本地 `dotnet pack` 验证，**未发布到 nuget.org**）。ADR-0014「核心零引擎依赖」规则保持有效，全部引擎依赖（ColorCode.Core、Mermaider）集中在 `PuraMarkdown.Plugins`。
+- **包身份改名（BREAKING）**：2026-11-10 起包 id 与 C# 命名空间同步改名，包名与职责一一对齐（ADR-0028）：
+
+  | 旧 | 新 | 定位 |
+  | --- | --- | --- |
+  | `PuraMarkdown`（含 UI 控件 + 内置 Agent/Chat/Testing） | `PuraMarkdown.Agent` | Avalonia 渲染控件 + Agent 交互 + Chat 消息 + 工具调用（tool call）语法 |
+  | `PuraMarkdown.Syntax` | `PuraMarkdown.Core` | 基础语法层：Markdig 解析、`PuraDocument`、大纲、诊断、流式扫描；无 Avalonia 依赖 |
+  | `PuraMarkdown.Plugins` | `PuraMarkdown.Extension` | ColorCode 代码高亮 + Mermaid 图表；渲染引擎依赖只在此包 |
+
+  依赖方向不变（`PuraMarkdown.Extension` → `PuraMarkdown.Agent` → `PuraMarkdown.Core`）。**不再保留旧包 id 与旧命名空间**，宿主必须同时修改 `PackageReference` 与 `using`；现在没有裸 `PuraMarkdown` 包（UI 控件全部归 `PuraMarkdown.Agent`）。命名空间映射：`PuraMarkdown.Syntax` 与原根命名空间 → `PuraMarkdown.Core`；`PuraMarkdown.Security` → `PuraMarkdown.Core.Security`；`PuraMarkdown(.Rendering/.Localization/.Platform/.Chat/.Testing)` → `PuraMarkdown.Agent.*`；`PuraMarkdown.Highlighting.ColorCode`、`PuraMarkdown.Diagrams.Mermaid` → `PuraMarkdown.Extension.*`。版本仍为 `0.1.0-alpha.1`（只做过本地 `dotnet pack` 验证，**从未发布到 nuget.org**）。
+- **打包整合：7 个 NuGet 包 → 3 个**（ADR-0027）。`PuraMarkdown.Agent`、`PuraMarkdown.Chat`、`PuraMarkdown.Testing` 三个包并入当时的渲染核心包（现为 `PuraMarkdown.Agent`）；`PuraMarkdown.Highlighting.ColorCode` 与 `PuraMarkdown.Diagrams.Mermaid` 合并为当时的新可选插件包（现为 `PuraMarkdown.Extension`，含 `ColorCodeHighlighter`/`ColorCodePlugin` 与 `MermaidDiagramRenderer`/`MermaidPlugin`）。包名与命名空间以本节的「包身份改名」条目为准。包版本仍为 `0.1.0-alpha.1`（这些包只做过本地 `dotnet pack` 验证，**未发布到 nuget.org**）。ADR-0014「核心零引擎依赖」规则保持有效，全部引擎依赖（ColorCode.Core、Mermaider）集中在 `PuraMarkdown.Extension`。
 - `MarkdigCompatibility` 增加 `EmojiInline`、`MathInline`、`MathBlock`；`StreamingBlockScanner` 增加 `trackMathBlocks` 重载。
-- 数学排版引擎不再进核心：`PuraMarkdown.nupkg` 依赖仍为 Syntax/Avalonia/ItemsRepeater/Markdig（另含内置 `pura-agent` 组件所需的 JsonSchema.Net）；需要排版的宿主自行注册渲染器或使用示例插件（ADR-0026）。
-- 测试总数 119 → 129；README/文档 27/28/29/35/36 与 ADR 索引同步更新。
+- 数学排版引擎不进核心：`PuraMarkdown.Agent` 包依赖仍为 `PuraMarkdown.Core`、Avalonia、ItemsRepeater、Markdig（另含内置 `pura-agent` 组件所需的 JsonSchema.Net）；需要排版的宿主自行注册渲染器或使用示例插件（ADR-0026）。
+- 测试总数 119 → 158（新增 `ToolCallTests` 29 个用例，覆盖解析/状态映射/超限与非法载荷降级/流式未闭合围栏/`pura-agent` 的 `tool-call` 组件/Chat 渲染与快照回填）；README 与文档 26/27/28/29/30/34/35/36、docs 索引与 ADR 索引同步更新（旧包名/旧命名空间改为新名，历史文档只加改名脚注）。
 
 ### Known limitations
 

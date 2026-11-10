@@ -1,4 +1,6 @@
 > 历史文档：记录当时的设计/实现，API 可能已过时。当前接入请阅读 [应用集成指南](26-应用集成指南.md) / [迁移指南](27-迁移指南-0.1.0-alpha.1.md) / [公共 API 参考](28-公共API参考.md)。
+>
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`，命名空间随包同步变更；本文为当时记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
 
 # 路线图、版本基线与风险（v0.4）
 

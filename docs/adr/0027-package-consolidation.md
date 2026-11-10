@@ -1,6 +1,6 @@
 # ADR-0027：包整合——7 个 NuGet 包收敛为 3 个
 
-- 状态：已接受（2026-11-10）
+- 状态：已接受（2026-11-10）。其包 id 与命名空间命名由 [ADR-0028](0028-package-identity-rename.md) 更新（`PuraMarkdown.Syntax` → `PuraMarkdown.Core`、`PuraMarkdown` → `PuraMarkdown.Agent`、`PuraMarkdown.Plugins` → `PuraMarkdown.Extension`）；本文的包整合结论与依赖边界不变。
 - 关联：ADR-0014（图表/高亮插件契约；本 ADR **保持其有效**，并给出"插件仍外置、但集中到单一插件包"的落地形态）、ADR-0024（Agent 独立包；其"独立包"部分由本 ADR 调整，语法解耦结论不变）、ADR-0023（Mermaider 选型）、ADR-0026（数学公式仍不进官方包）
 - 影响文档：[README](../../README.md)、[迁移指南](../27-迁移指南-0.1.0-alpha.1.md)、[公共 API 参考](../28-公共API参考.md)、[版本与升级策略](../29-版本与升级策略.md)、[文档索引](../README.md)、[CHANGELOG](../../CHANGELOG.md)
 

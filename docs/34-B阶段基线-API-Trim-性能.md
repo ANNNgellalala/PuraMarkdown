@@ -15,13 +15,13 @@
   - `PublicAPI.Unshipped.txt`（已发布 API 之外的新增项放这里）。
 - 当前 B 版 API 已全部写入 `PublicAPI.Shipped.txt`，`Unshipped` 仅保留 `#nullable enable`。
 
-> 2026-11-10 更新：按 ADR-0027，7 个包已合并为 3 个；下表为**合并后**基线（原 Agent/Chat/Testing 条目并入 `PuraMarkdown`，原高亮/Mermaid 条目并入 `PuraMarkdown.Plugins`）。
+> 2026-11-10 更新：按 ADR-0027，7 个包已合并为 3 个；下表为**合并后**基线（原 Agent/Chat/Testing 条目并入 `PuraMarkdown.Agent`，原高亮/Mermaid 条目并入 `PuraMarkdown.Extension`）。同日按 ADR-0028 改名：`PuraMarkdown` → `PuraMarkdown.Agent`、`PuraMarkdown.Syntax` → `PuraMarkdown.Core`、`PuraMarkdown.Plugins` → `PuraMarkdown.Extension`（各程序集条目数不变）。
 
 | 包 | Shipped 条目数（含 header） |
 | --- | ---: |
-| `PuraMarkdown` | 845 |
-| `PuraMarkdown.Syntax` | 214 |
-| `PuraMarkdown.Plugins` | 22 |
+| `PuraMarkdown.Core` | 214 |
+| `PuraMarkdown.Agent` | 845 |
+| `PuraMarkdown.Extension` | 22 |
 
 ### 1.2 规则与更新方式
 
@@ -29,7 +29,7 @@
 - 声明了不存在的 API → `RS0017`；
 - 生成/补齐声明：
   ```bash
-  dotnet format analyzers src/PuraMarkdown/PuraMarkdown.csproj --diagnostics RS0016
+  dotnet format analyzers src/PuraMarkdown.Agent/PuraMarkdown.Agent.csproj --diagnostics RS0016
   ```
 - 发布 1.0 时把 `Unshipped` 条目移入 `Shipped`，并保持 `#nullable enable`。
 
@@ -63,7 +63,7 @@ dotnet publish samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj \
 | Native AOT 可执行文件 | 21.3 MB | ✅ |
 
 - Trim 发布出现 `IL2104: Avalonia.DesignerSupport produced trim warnings`，来自 Avalonia 包自身，不是 PuraMarkdown；应用运行正常。
-- AOT 发布无 PuraMarkdown 相关错误；`PuraMarkdown.Syntax` + ArcSample 的 trimmed publish 也独立验证通过。
+- AOT 发布无 PuraMarkdown 相关错误；`PuraMarkdown.Core` + ArcSample 的 trimmed publish 也独立验证通过。
 
 ### 2.3 结论
 

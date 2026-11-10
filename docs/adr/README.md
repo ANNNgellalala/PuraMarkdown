@@ -2,6 +2,8 @@
 
 记录已做出的、影响面大的架构决策。格式：背景 → 决策 → 理由 → 后果 → 备选。状态取值：提议 / 已接受 / 已废弃 / 被取代。
 
+> 2026-11-10 包身份改名（[ADR-0028](0028-package-identity-rename.md)）：`PuraMarkdown.Syntax`/`PuraMarkdown`/`PuraMarkdown.Plugins` → `PuraMarkdown.Core`/`PuraMarkdown.Agent`/`PuraMarkdown.Extension`，命名空间随包同步变更。ADR-0027 及更早 ADR 正文中的旧包名/旧命名空间为当时口径，以 ADR-0028 为准。
+
 ## 当前有效
 
 | 编号 | 标题 | 状态 |
@@ -22,7 +24,8 @@
 | [ADR-0024](0024-agent-as-plugin.md) | Agent 剥离为独立语法插件，核心只做 Markdown | 已接受（2026-11-07） |
 | [ADR-0025](0025-syntax-renderer-separation.md) | B 阶段语法/渲染分离：Markdig AST 作为语法契约 | 已接受（2026-11-08） |
 | [ADR-0026](0026-math-renderer-contract.md) | 数学公式：核心语法/TeX 回退 + 渲染器契约，CSharpMath 仅示例插件 | 已接受（2026-11-09） |
-| [ADR-0027](0027-package-consolidation.md) | 包整合：7 个 NuGet 包收敛为 3 个（核心内置 Agent/Chat/Testing，新增 `PuraMarkdown.Plugins`） | 已接受（2026-11-10） |
+| [ADR-0027](0027-package-consolidation.md) | 包整合：7 个 NuGet 包收敛为 3 个（两个官方包现名 `PuraMarkdown.Agent` 与 `PuraMarkdown.Extension`） | 已接受（2026-11-10；包 id 与命名空间命名由 ADR-0028 更新） |
+| [ADR-0028](0028-package-identity-rename.md) | 包身份重命名：`PuraMarkdown.Syntax`/`PuraMarkdown`/`PuraMarkdown.Plugins` → `PuraMarkdown.Core`/`PuraMarkdown.Agent`/`PuraMarkdown.Extension`，命名空间随包改名 | 已接受（2026-11-10） |
 | [ADR-0017](0017-block-virtualization.md) | 块级虚拟化采用可选 ItemsRepeater 模式 | 已接受（2026-11-07） |
 
 ## 已取代（保留原文，便于追溯）

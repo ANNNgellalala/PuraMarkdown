@@ -5,6 +5,8 @@
 >
 > **实施状态（2026-11-09）**：Emoji 已落地（核心语法开关 + 行内渲染）；数学采用“核心语法 + TeX 文本回退 + 渲染器契约”，CSharpMath 只作为示例插件（`samples/PuraMarkdown.Plugins.Samples`，核心包不依赖），见 ADR-0026；自定义容器按决策暂不做。本文保留为评估记录，具体实现以 `docs/35/36` 与代码为准。
 
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`（本文的 `PuraMarkdown.Syntax` 现名 `PuraMarkdown.Core`，`src/PuraMarkdown.Syntax` 现为 `src/PuraMarkdown.Core`），命名空间随包同步变更；本文为评估记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
+
 ---
 
 ## 0. 结论摘要
@@ -23,7 +25,7 @@
 
 ### 1.1 语法层：三项都有现成 Markdig 扩展
 
-`PuraSyntaxBuilder` 目前是“按需启用一个 Markdig 扩展 + 一个 builder 方法”的模式（[PuraSyntax.cs](../src/PuraMarkdown.Syntax/PuraSyntax.cs)）。三项能力的语法侧都不需要自研解析器：
+`PuraSyntaxBuilder` 目前是“按需启用一个 Markdig 扩展 + 一个 builder 方法”的模式（[PuraSyntax.cs](../src/PuraMarkdown.Core/PuraSyntax.cs)）。三项能力的语法侧都不需要自研解析器：
 
 | 能力 | Markdig 1.5.1 API | 产出的 AST | 事实 |
 | --- | --- | --- | --- |
@@ -35,7 +37,7 @@
 
 ### 1.2 渲染层：默认渲染器是“节点类型 switch + 兜底”
 
-默认行内渲染在 [DefaultInlineRenderer.cs](../src/PuraMarkdown/Rendering/DefaultInlineRenderer.cs)，块级在 [DefaultBlockRenderers.cs](../src/PuraMarkdown/Rendering/DefaultBlockRenderers.cs)、[CodeTableDiagramRenderers.cs](../src/PuraMarkdown/Rendering/CodeTableDiagramRenderers.cs)。与本评估相关的三个事实：
+默认行内渲染在 [DefaultInlineRenderer.cs](../src/PuraMarkdown.Agent/Rendering/DefaultInlineRenderer.cs)，块级在 [DefaultBlockRenderers.cs](../src/PuraMarkdown.Agent/Rendering/DefaultBlockRenderers.cs)、[CodeTableDiagramRenderers.cs](../src/PuraMarkdown.Agent/Rendering/CodeTableDiagramRenderers.cs)。与本评估相关的三个事实：
 
 1. **未知行内节点的兜底是输出类型名**：`default` 分支执行 `inline.ToString()`，而 Markdig 的 `Inline`/`MarkdownObject` 没有重写 `ToString()`。因此只启用 `UseMathematics()` 而不处理 `MathInline`，页面会出现 `Markdig.Extensions.Mathematics.MathInline`。
 2. **`MathBlock` 会被代码块渲染器接住**：它继承 `FencedCodeBlock` → `CodeBlock`，`CodeBlockRenderer.CanRender` 直接命中，于是显示为等宽 TeX 代码块（可读、可复制，但标题/样式不是数学样式）。
@@ -44,7 +46,7 @@
 
 ### 1.3 流式层：扫描器只认识代码围栏
 
-[StreamingBlockScanner.cs](../src/PuraMarkdown.Syntax/StreamingBlockScanner.cs) 目前只跟踪反引号围栏与波浪号围栏，稳定边界=顶层空行且不在围栏内。新增两类“可跨空行的结构”会直接影响流式正确性：
+[StreamingBlockScanner.cs](../src/PuraMarkdown.Core/StreamingBlockScanner.cs) 目前只跟踪反引号围栏与波浪号围栏，稳定边界=顶层空行且不在围栏内。新增两类“可跨空行的结构”会直接影响流式正确性：
 
 - **未闭合的 `:::` 容器**：Markdig 会把后文全部吞进容器；若扫描器把容器内部空行当稳定边界提交，已提交前缀会被解析成普通文本，后续无法自愈（`Complete` 全量校正才能修正），流式期间会闪错。
 - **`$$` 数学块**：块内常有空行（`\begin{aligned}` 等）；同样不能被提前提交，否则尾部窗口从数学块中间开始解析。
@@ -54,7 +56,7 @@
 
 ### 1.4 契约与流程成本（三项都要付）
 
-- [MarkdigCompatibility.cs](../src/PuraMarkdown.Syntax/MarkdigCompatibility.cs) 的节点矩阵与“综合样例只含契约节点”测试；
+- [MarkdigCompatibility.cs](../src/PuraMarkdown.Core/MarkdigCompatibility.cs) 的节点矩阵与“综合样例只含契约节点”测试；
 - 两个 builder 的公开方法要写入 `PublicAPI.Unshipped.txt`（`RS0016/RS0017` 是 error）；
 - 本地化（容器标签可复用 Alert 的 `PuraStringKeys`）与主题 token（复用现有 `Accent/Danger/CodeBackground` 即可，无需新颜色）；
 - 测试：语法、渲染、流式等价、golden、AOT/裁剪基线（若引入新依赖）；
@@ -242,11 +244,11 @@ $$
 
 ## 6. 实施时需同步的契约/文档清单
 
-- `src/PuraMarkdown.Syntax/PuraSyntax.cs`、`src/PuraMarkdown/Pipeline.cs`：新增 `UseEmoji` / `UseCustomContainers` / `UseMathematics`；
-- `src/PuraMarkdown.Syntax/MarkdigCompatibility.cs` + `docs/35`：EmojiInline、CustomContainer、MathInline、MathBlock（注意放在父类型之前）；
-- `src/PuraMarkdown.Syntax/StreamingBlockScanner.cs`：`:::`/`$$` 围栏与特性开关（保持旧调用行为）；
-- `src/PuraMarkdown/Rendering/*`：Emoji 行内处理、容器渲染器、数学行内/块级回退；若补 inline 分发，一并修复 docs/24 的遗留项；
-- `src/PuraMarkdown/Localization/PuraLocalization.cs`：容器标签复用 Alert；数学可加“复制公式/TeX 源码”键；
+- `src/PuraMarkdown.Core/PuraSyntax.cs`、`src/PuraMarkdown.Agent/Pipeline.cs`：新增 `UseEmoji` / `UseCustomContainers` / `UseMathematics`；
+- `src/PuraMarkdown.Core/MarkdigCompatibility.cs` + `docs/35`：EmojiInline、CustomContainer、MathInline、MathBlock（注意放在父类型之前）；
+- `src/PuraMarkdown.Core/StreamingBlockScanner.cs`：`:::`/`$$` 围栏与特性开关（保持旧调用行为）；
+- `src/PuraMarkdown.Agent/Rendering/*`：Emoji 行内处理、容器渲染器、数学行内/块级回退；若补 inline 分发，一并修复 docs/24 的遗留项；
+- `src/PuraMarkdown.Agent/Localization/PuraLocalization.cs`：容器标签复用 Alert；数学可加“复制公式/TeX 源码”键；
 - `PublicAPI.Unshipped.txt`（两个包）；`tests/PuraMarkdown.Tests` 的语法/渲染/流式/golden；`docs/36`、`docs/28`、README、CHANGELOG；引入插件时更新 `docs/29` 包矩阵与 `Directory.Packages.props`；
 - 若引入 CSharpMath/fork：重跑 `docs/34` 的 Trim/AOT 基线与性能基线。
 
@@ -254,7 +256,7 @@ $$
 
 ## 7. 事实来源
 
-- 仓库代码：[PuraSyntax.cs](../src/PuraMarkdown.Syntax/PuraSyntax.cs)、[StreamingBlockScanner.cs](../src/PuraMarkdown.Syntax/StreamingBlockScanner.cs)、[DefaultInlineRenderer.cs](../src/PuraMarkdown/Rendering/DefaultInlineRenderer.cs)、[CodeTableDiagramRenderers.cs](../src/PuraMarkdown/Rendering/CodeTableDiagramRenderers.cs)、[MarkdigCompatibility.cs](../src/PuraMarkdown.Syntax/MarkdigCompatibility.cs)。
+- 仓库代码：[PuraSyntax.cs](../src/PuraMarkdown.Core/PuraSyntax.cs)、[StreamingBlockScanner.cs](../src/PuraMarkdown.Core/StreamingBlockScanner.cs)、[DefaultInlineRenderer.cs](../src/PuraMarkdown.Agent/Rendering/DefaultInlineRenderer.cs)、[CodeTableDiagramRenderers.cs](../src/PuraMarkdown.Agent/Rendering/CodeTableDiagramRenderers.cs)、[MarkdigCompatibility.cs](../src/PuraMarkdown.Core/MarkdigCompatibility.cs)。
 - Markdig 1.5.1：本地 NuGet 缓存中的 `Markdig.xml`（`UseEmojiAndSmiley`/`UseCustomContainers`/`UseMathematics`、`EmojiInline`、`CustomContainer`、`MathInline/MathBlock`），以及 [Markdig 源码](https://github.com/xoofx/markdig) 的 `MathInlineParser.cs`、`MathBlockParser.cs`、`EmojiInline.cs`、`EmojiMapping.cs`。
 - Avalonia 彩色 emoji/字重问题：Avalonia issues #21124、#16839、#22059（12.1.2 backport）、#21813、#22508（macOS 字体内存）、#18927（macOS 宽度）；12.1.5 release notes 无 emoji 专项修复。
 - CSharpMath：NuGet `CSharpMath.Avalonia` 1.0.0-pre.2（MIT，net10.0，Avalonia ≥ 12.0.4，[CSharpMath 仓库](https://github.com/verybadcat/CSharpMath)）；第三方 fork `Sylinko.CSharpMath.Avalonia` 12.0.0（MIT，net8.0/net10.0，Avalonia ≥ 12.0.0，[Sylinko/CSharpMath.Avalonia](https://github.com/Sylinko/CSharpMath.Avalonia)）；AOT/trimming 与 TeX 覆盖率仍需实测。

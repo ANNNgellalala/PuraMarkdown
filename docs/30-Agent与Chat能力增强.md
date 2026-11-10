@@ -99,7 +99,7 @@ var states = PuraInteractionStates.Deserialize(json);
 
 ```csharp
 var plugin = new AgentPlugin();
-plugin.ComponentTypes; // ["choice", "confirm", ...]
+plugin.ComponentTypes; // ["choice", "confirm", "tool-call", ...]
 ```
 
 宿主/工具可据此向 Agent 提示可用组件，而不需要硬编码。
@@ -116,11 +116,29 @@ builder
 - 重复组件类型在构建期 fail-fast（`PuraConfigurationException`）；
 - 不会再出现"插件重复注册 pura.agent"。
 
-### 2.4 渲染/校验仍由 Agent 包负责
+### 2.4 渲染/校验由 `PuraMarkdown.Agent` 包负责
 
 - JSON → Schema → 组件模型 → 控件；
 - 错误路径显示为错误卡（现有 UI，不新增组件类型）；
-- 未安装 Agent 包时 `pura-agent` 回退普通代码块。
+- 未启用 Agent 组件（未调用 `UseAgentComponents()`）时 `pura-agent` 回退普通代码块。
+
+### 2.5 工具调用（tool call）
+
+`UseAgentComponents()` 一次启用即可获得工具调用能力，无需再注册第二个插件：
+
+````markdown
+```pura-tool
+{ "id": "call_1", "name": "web_search", "status": "success",
+  "arguments": { "q": "avalonia markdown" },
+  "result": { "hits": 12 }, "durationMs": 1200 }
+```
+````
+
+- 围栏语言 `pura-tool`（别名 `pura-tool-call`，大小写不敏感）；也可在 `pura-agent` 里用 `"type":"tool-call"` 组件；
+- 载荷字段：`id`、`name`（必填）、`status`（`running`/`success`/`error`/`cancelled`，缺省 `running`）、`arguments`、`result`、`error`、`durationMs`；
+- 参数/结果：字符串原样显示，对象/数组等取原始 JSON 文本；卡片为限高可折叠区域并带复制按钮；
+- 非法载荷 → 回退代码块 + `PURA-DATA-002` 告警，不抛异常；流式未闭合围栏显示"运行中"卡片；
+- Chat 侧：`PuraChatRole.Tool` 与 `PuraChatMessage.ToolCalls`/`ToolCallId`，消息级工具调用按卡片渲染。
 
 ---
 
@@ -128,12 +146,12 @@ builder
 
 以下交由 Arc.Avalonia / 宿主：
 
-- 消息气泡、头像、时间线、输入框、工具调用卡片等 Agent UI 组件；
+- 消息气泡、头像、时间线、输入框等 Agent UI 组件（工具调用卡片已由 `PuraMarkdown.Agent` 内置提供，见第 2 节）；
 - 会话管理 UI、设置页、侧边栏；
 - 具体 Agent 协议（OpenAI/Anthropic/自研）适配；
 - 持久化存储实现（本库只提供快照 DTO/JSON）。
 
-PuraMarkdown 只保证：Markdown 渲染、Agent 围栏协议、交互状态、会话数据模型、虚拟化容器。
+PuraMarkdown 只保证：Markdown 渲染、Agent/工具调用围栏协议、交互状态、会话数据模型、虚拟化容器。
 
 ---
 

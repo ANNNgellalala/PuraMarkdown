@@ -139,6 +139,8 @@ Agent ──► Core
 Mermaid/ColorCode ──► Core
 ```
 
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`，命名空间随包同步变更；本节为当时的设计记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md)。
+
 ### 3.3 哪些从核心移出
 
 | 移出到 `PuraMarkdown.Agent` | 说明 |

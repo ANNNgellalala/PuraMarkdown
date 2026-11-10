@@ -659,6 +659,8 @@ UI 线程:
 | `samples/spike` | M0 技术验证 | — |
 
 > 核心包只依赖 Avalonia + Markdig + BCL/微软扩展；图表、高亮、公式引擎都在可选包，不进核心。
+>
+> 包改名脚注：2026-11-10 起包身份已改名为 `PuraMarkdown.Core` / `PuraMarkdown.Agent` / `PuraMarkdown.Extension`，命名空间随包同步变更；本表为当时设计记录，当前包清单见 [ADR-0028](adr/0028-package-identity-rename.md) 与 [应用集成指南](26-应用集成指南.md)。
 
 ## 16. 版本基线
 

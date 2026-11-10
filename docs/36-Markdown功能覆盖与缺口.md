@@ -1,6 +1,6 @@
 # Markdown 功能覆盖与缺口（当前实现）
 
-> 日期：2026-11-08。以当前 `PuraMarkdown.Syntax` + 默认渲染器为准；历史检查见 [20-Markdown完整性检查](20-Markdown完整性检查.md)。
+> 日期：2026-11-08（2026-11-10 包名同步：`PuraMarkdown.Syntax` → `PuraMarkdown.Core`，见 [ADR-0028](adr/0028-package-identity-rename.md)）。以当前 `PuraMarkdown.Core` + 默认渲染器为准；历史检查见 [20-Markdown完整性检查](20-Markdown完整性检查.md)。
 > 节点契约见 [Markdig 支持节点子集与兼容矩阵](35-Markdig支持节点子集与兼容矩阵.md)。
 
 ---
@@ -36,7 +36,7 @@
 
 | 能力 | 状态 |
 | --- | --- |
-| `pura-agent` 围栏 + choice/confirm | ✅（Agent 包） |
+| `pura-agent` 围栏 + choice/confirm | ✅（`PuraMarkdown.Agent` 包） |
 | Mermaid | ✅（Mermaid ASCII 插件） |
 | ColorCode 语法高亮 | ✅（插件） |
 | 自定义围栏/行内/块渲染 | ✅（`IFenceRenderer`/`IPuraInlineRenderer`/`IPuraNodeRenderer`） |
@@ -56,7 +56,7 @@
 | Emoji/Smiley `:smile:` | ✅ 已支持 | `UseEmoji()`（默认短代码，smiley 需显式开启）；`EmojiInline` 渲染为 Unicode |
 | 自定义容器 `::: note` | ❌ 未启用 | `UseCustomContainers` 未加入；当前 Agent 只支持围栏 |
 | YAML front matter | ❌ 按需求不支持 | 不添加识别机制；YAML 请放在代码块中 |
-| 数学公式 `$...$`/`$$...$$` | ✅ 语法 + 回退 | `UseMathematics()`；核心默认显示 TeX 源码，真正排版由插件接管（示例：`samples/PuraMarkdown.Plugins.Samples` 的 `CSharpMathMathPlugin`）；只支持 `$` 分隔符 |
+| 数学公式 `$...$`/`$$...$$` | ✅ 语法 + 回退 | `UseMathematics()`；`PuraMarkdown.Agent` 默认显示 TeX 源码，真正排版由插件接管（示例：`samples/PuraMarkdown.Plugins.Samples` 的 `CSharpMathMathPlugin`）；只支持 `$` 分隔符 |
 | 引用/文献 `[@key]` | ❌ 未启用 | `UseCitations` 未加入 |
 | 自动标题 ID | ❌ 未启用 | 有 `PuraOutline` 锚点，但控件没有 HTML id/permalink |
 | 通用属性 `{#id .class}` | ❌ 未启用 | `UseGenericAttributes` 未加入 |
@@ -171,7 +171,7 @@ var pipeline = new PuraPipelineBuilder()
 
 ```
 dotnet build PuraMarkdown.slnx        → 0 警告 / 0 错误
-dotnet test tests/PuraMarkdown.Tests  → 129 通过 / 0 失败
+dotnet test tests/PuraMarkdown.Tests  → 158 通过 / 0 失败
 ```
 
 
