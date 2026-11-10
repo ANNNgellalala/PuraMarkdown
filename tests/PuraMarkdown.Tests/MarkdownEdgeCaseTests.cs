@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Headless.XUnit;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Core</RootNamespace>
+    <AssemblyName>PuraMarkdown.Core</AssemblyName>
+    <PackageId>PuraMarkdown.Core</PackageId>
+    <Authors>PuraMarkdown contributors</Authors>
+    <Description>PuraMarkdown 基础语法层：Markdig 解析、PuraDocument、大纲、诊断与流式扫描；不依赖 Avalonia，可用于无头/服务端解析。</Description>
+    <PackageTags>markdown;markdig;syntax;parser;streaming</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="Markdig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+</Project>

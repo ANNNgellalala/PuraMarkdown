@@ -3,8 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using PuraMarkdown.Chat;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Chat;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

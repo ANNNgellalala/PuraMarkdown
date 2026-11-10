@@ -10,8 +10,9 @@ using CSharpMath.Avalonia;
 using CSharpMath.Rendering.FrontEnd;
 using Markdig.Extensions.Mathematics;
 using Markdig.Syntax;
-using PuraMarkdown.Localization;
-using PuraMarkdown.Rendering;
+using PuraMarkdown.Agent.Localization;
+using PuraMarkdown.Agent.Rendering;
+using PuraMarkdown.Agent;
 
 namespace PuraMarkdown.Plugins.Samples;
 
@@ -192,3 +193,4 @@ public sealed class CSharpMathMathBlockRenderer : IPuraRenderer
         return builder.ToString().TrimEnd('\n').Trim();
     }
 }
+

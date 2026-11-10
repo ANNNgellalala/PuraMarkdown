@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Json.Schema;
 using Markdig.Syntax;
 using PuraMarkdown.Agent;
-using PuraMarkdown.Rendering;
+using PuraMarkdown.Agent.Rendering;
 
 namespace PuraMarkdown.Plugins.Samples;
 

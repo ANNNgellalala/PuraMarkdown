@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Agent</RootNamespace>
+    <AssemblyName>PuraMarkdown.Agent</AssemblyName>
+    <PackageId>PuraMarkdown.Agent</PackageId>
+    <Authors>PuraMarkdown contributors</Authors>
+    <Description>Avalonia Agent 渲染控件：Markdown 渲染、增量流式与虚拟化，并提供 Agent 交互、Chat 消息与工具调用（tool call）语法支持。</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>avalonia;markdown;agent;llm;chat;tool-call;streaming</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+    <PackageReference Include="JsonSchema.Net" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown.Core\PuraMarkdown.Core.csproj" />
+  </ItemGroup>
+</Project>

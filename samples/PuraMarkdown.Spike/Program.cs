@@ -129,9 +129,9 @@ public static class Program
             .UseGfm()
             .UseEmoji()
             .UseMathematics()
-            .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
-            .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 
@@ -172,9 +172,9 @@ public static class Program
             .UseGfm()
             .UseEmoji()
             .UseMathematics()
-            .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
-            .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 
@@ -221,7 +221,7 @@ public static class Program
                 .UseCommonMark()
                 .UseGfm()
                 .UseAgentComponents()
-                .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
+                .UsePlugin(new PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin())
                 .Build(),
         };
 
@@ -470,7 +470,7 @@ public static class Program
             .UseAgentComponents();
         if (!noHighlight)
         {
-            builder.UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin());
+            builder.UsePlugin(new PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin());
         }
 
         var pipeline = builder.Build();
@@ -506,9 +506,9 @@ public static class Program
             .UseGfm()
             .UseEmoji()
             .UseMathematics()
-            .UsePlugin(new PuraMarkdown.Highlighting.ColorCode.ColorCodePlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.RatingPlugin())
-            .UsePlugin(new PuraMarkdown.Diagrams.Mermaid.MermaidPlugin())
+            .UsePlugin(new PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin())
             .UsePlugin(new PuraMarkdown.Plugins.Samples.CSharpMathMathPlugin())
             .Build();
 

@@ -1,0 +1,5 @@
+#nullable enable
+PuraMarkdown.Core.PuraSyntaxBuilder.UseEmoji(bool enableSmileys = false) -> PuraMarkdown.Core.PuraSyntaxBuilder!
+PuraMarkdown.Core.PuraSyntaxBuilder.UseMathematics() -> PuraMarkdown.Core.PuraSyntaxBuilder!
+PuraMarkdown.Core.PuraSyntaxPipeline.MathEnabled.get -> bool
+static PuraMarkdown.Core.StreamingBlockScanner.FindStableBoundary(string! text, int from, bool trackMathBlocks) -> int

@@ -6,10 +6,10 @@ using Avalonia.Media;
 using Avalonia.Themes.Fluent;
 using Avalonia.Threading;
 using PuraMarkdown.Agent;
-using PuraMarkdown.Diagrams.Mermaid;
-using PuraMarkdown.Highlighting.ColorCode;
+using PuraMarkdown.Extension.Diagrams.Mermaid;
+using PuraMarkdown.Extension.Highlighting.ColorCode;
 using PuraMarkdown.Plugins.Samples;
-using PuraMarkdown.Rendering;
+using PuraMarkdown.Agent.Rendering;
 
 namespace PuraMarkdown.Demo;
 

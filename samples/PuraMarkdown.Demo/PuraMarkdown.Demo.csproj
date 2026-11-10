@@ -12,8 +12,8 @@
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PuraMarkdown\PuraMarkdown.csproj" />
-    <ProjectReference Include="..\..\src\PuraMarkdown.Plugins\PuraMarkdown.Plugins.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Agent\PuraMarkdown.Agent.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Extension\PuraMarkdown.Extension.csproj" />
     <ProjectReference Include="..\..\samples\PuraMarkdown.Plugins.Samples\PuraMarkdown.Plugins.Samples.csproj" />
   </ItemGroup>
   <ItemGroup>

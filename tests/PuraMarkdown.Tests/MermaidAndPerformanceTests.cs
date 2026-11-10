@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text;
 using Avalonia.Headless.XUnit;
-using PuraMarkdown.Diagrams.Mermaid;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Extension.Diagrams.Mermaid;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

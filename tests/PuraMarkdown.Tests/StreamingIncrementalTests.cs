@@ -2,14 +2,15 @@ using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
-using PuraMarkdown.Highlighting.ColorCode;
+using PuraMarkdown.Extension.Highlighting.ColorCode;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using PuraMarkdown.Agent;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
+using PuraMarkdown.Core;
 
 namespace PuraMarkdown.Tests;
 
@@ -370,6 +371,7 @@ public sealed class StreamingIncrementalTests
         return count;
     }
 }
+
 
 
 

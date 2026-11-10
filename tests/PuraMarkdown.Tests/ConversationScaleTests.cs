@@ -5,7 +5,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

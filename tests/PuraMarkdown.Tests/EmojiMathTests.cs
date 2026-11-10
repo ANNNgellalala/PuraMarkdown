@@ -5,8 +5,8 @@ using Markdig.Extensions.Emoji;
 using Markdig.Extensions.Mathematics;
 using Markdig.Syntax;
 using PuraMarkdown.Plugins.Samples;
-using PuraMarkdown.Syntax;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Core;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

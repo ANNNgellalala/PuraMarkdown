@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PuraMarkdown.Extension</RootNamespace>
+    <AssemblyName>PuraMarkdown.Extension</AssemblyName>
+    <PackageId>PuraMarkdown.Extension</PackageId>
+    <Authors>PuraMarkdown contributors</Authors>
+    <Description>PuraMarkdown 官方扩展包：ColorCode 代码高亮与 Mermaid 图表；渲染引擎依赖集中在此包，Core 与 Agent 保持零引擎依赖。</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>avalonia;markdown;extension;highlighting;colorcode;mermaid;diagram</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="ColorCode.Core" />
+    <PackageReference Include="Mermaider" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PuraMarkdown.Agent\PuraMarkdown.Agent.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+</Project>

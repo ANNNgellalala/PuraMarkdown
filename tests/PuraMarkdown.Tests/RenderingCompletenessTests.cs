@@ -5,8 +5,8 @@ using Avalonia.Threading;
 using Avalonia.Media;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
-using PuraMarkdown.Security;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Core.Security;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

@@ -4,10 +4,10 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Markdig.Syntax;
 using PuraMarkdown.Agent;
-using PuraMarkdown.Highlighting.ColorCode;
+using PuraMarkdown.Extension.Highlighting.ColorCode;
 using PluginSamples = PuraMarkdown.Plugins.Samples;
-using PuraMarkdown.Rendering;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Rendering;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

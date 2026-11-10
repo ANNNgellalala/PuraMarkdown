@@ -7,6 +7,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PuraMarkdown.Syntax\PuraMarkdown.Syntax.csproj" />
+    <ProjectReference Include="..\..\src\PuraMarkdown.Core\PuraMarkdown.Core.csproj" />
   </ItemGroup>
 </Project>

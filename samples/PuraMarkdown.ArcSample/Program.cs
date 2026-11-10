@@ -1,4 +1,4 @@
-using PuraMarkdown.Syntax;
+using PuraMarkdown.Core;
 
 var markdown = """
 # 账单概览

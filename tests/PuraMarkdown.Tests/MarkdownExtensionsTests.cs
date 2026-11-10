@@ -3,9 +3,9 @@ using Avalonia.Controls.Documents;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Markdig.Syntax;
-using PuraMarkdown.Rendering;
-using PuraMarkdown.Syntax;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Rendering;
+using PuraMarkdown.Core;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

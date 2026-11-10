@@ -3,10 +3,10 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
-using PuraMarkdown.Platform;
-using PuraMarkdown.Rendering;
-using PuraMarkdown.Security;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Platform;
+using PuraMarkdown.Agent.Rendering;
+using PuraMarkdown.Core.Security;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

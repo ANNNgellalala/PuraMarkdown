@@ -3,12 +3,12 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Markdig.Syntax;
-using PuraMarkdown.Localization;
-using PuraMarkdown.Security;
-using PuraMarkdown.Syntax;
-using PuraMarkdown.Platform;
-using PuraMarkdown.Rendering;
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Localization;
+using PuraMarkdown.Core.Security;
+using PuraMarkdown.Core;
+using PuraMarkdown.Agent.Platform;
+using PuraMarkdown.Agent.Rendering;
+using PuraMarkdown.Agent.Testing;
 using Xunit;
 
 namespace PuraMarkdown.Tests;

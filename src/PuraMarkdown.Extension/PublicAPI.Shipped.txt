@@ -1,0 +1,22 @@
+#nullable enable
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidDiagramRenderer
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidDiagramRenderer.CanRender(string! language, string! source, bool isClosed, PuraMarkdown.Agent.Rendering.RenderContext! context) -> bool
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidDiagramRenderer.MermaidDiagramRenderer() -> void
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidDiagramRenderer.Name.get -> string!
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidDiagramRenderer.Render(string! language, string! source, bool isClosed, PuraMarkdown.Agent.Rendering.RenderContext! context) -> Avalonia.Controls.Control!
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin.Configure(PuraMarkdown.Agent.PuraPipelineBuilder! builder) -> void
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin.Description.get -> string?
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin.MermaidPlugin() -> void
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin.Name.get -> string!
+PuraMarkdown.Extension.Diagrams.Mermaid.MermaidPlugin.Version.get -> string!
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodeHighlighter
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodeHighlighter.CanHighlight(string? language) -> bool
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodeHighlighter.ColorCodeHighlighter() -> void
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodeHighlighter.Highlight(string! code, string? language) -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Agent.Rendering.HighlightSpan>!
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin.ColorCodePlugin() -> void
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin.Configure(PuraMarkdown.Agent.PuraPipelineBuilder! builder) -> void
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin.Description.get -> string?
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin.Name.get -> string!
+PuraMarkdown.Extension.Highlighting.ColorCode.ColorCodePlugin.Version.get -> string!

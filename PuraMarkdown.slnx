@@ -9,9 +9,9 @@
     <Project Path="samples/PuraMarkdown.Spike/PuraMarkdown.Spike.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/PuraMarkdown.Syntax/PuraMarkdown.Syntax.csproj" />
-    <Project Path="src/PuraMarkdown/PuraMarkdown.csproj" />
-    <Project Path="src/PuraMarkdown.Plugins/PuraMarkdown.Plugins.csproj" />
+    <Project Path="src/PuraMarkdown.Core/PuraMarkdown.Core.csproj" />
+    <Project Path="src/PuraMarkdown.Agent/PuraMarkdown.Agent.csproj" />
+    <Project Path="src/PuraMarkdown.Extension/PuraMarkdown.Extension.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PuraMarkdown.Tests/PuraMarkdown.Tests.csproj" />

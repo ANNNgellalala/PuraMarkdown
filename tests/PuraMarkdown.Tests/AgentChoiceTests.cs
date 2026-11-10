@@ -1,4 +1,4 @@
-using PuraMarkdown.Testing;
+using PuraMarkdown.Agent.Testing;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using PuraMarkdown.Agent;
