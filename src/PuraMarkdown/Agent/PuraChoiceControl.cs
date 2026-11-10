@@ -26,7 +26,6 @@ internal sealed class PuraChoiceControl : Border, IPuraInteractionStateReceiver
 
     /// <summary>PuraChoiceControl。</summary>
     /// <param name="model">model 参数。</param>
-    /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
     public PuraChoiceControl(PuraChoiceComponent model, RenderContext context)
     {

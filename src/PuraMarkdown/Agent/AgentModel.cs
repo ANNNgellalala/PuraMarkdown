@@ -104,7 +104,6 @@ public interface IAgentComponentRenderer
 
     /// <summary>把组件模型渲染为 Avalonia 控件。</summary>
     /// <param name="component">解析后的组件模型。</param>
-    /// <param name="node">组件所在的 Markdig 节点。</param>
     /// <param name="context">渲染上下文。</param>
     /// <returns>组件控件。</returns>
     Control RenderComponent(PuraAgentComponent component, Rendering.RenderContext context);

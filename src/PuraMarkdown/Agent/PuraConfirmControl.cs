@@ -18,7 +18,6 @@ internal sealed class PuraConfirmControl : Border, IPuraInteractionStateReceiver
 
     /// <summary>PuraConfirmControl。</summary>
     /// <param name="model">model 参数。</param>
-    /// <param name="node">node 参数。</param>
     /// <param name="context">context 参数。</param>
     public PuraConfirmControl(PuraConfirmComponent model, RenderContext context)
     {

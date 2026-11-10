@@ -1,6 +1,7 @@
 #nullable enable
 ~override PuraMarkdown.Rendering.HighlightSpan.Equals(object obj) -> bool
 ~override PuraMarkdown.Rendering.HighlightSpan.ToString() -> string
+abstract PuraMarkdown.Agent.PuraAgentComponent.<Clone>$() -> PuraMarkdown.Agent.PuraAgentComponent!
 abstract PuraMarkdown.Platform.IImageResult.<Clone>$() -> PuraMarkdown.Platform.IImageResult!
 const PuraMarkdown.Localization.PuraStringKeys.AlertCaution = "alert-caution" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.AlertImportant = "alert-important" -> string!
@@ -37,9 +38,32 @@ const PuraMarkdown.Localization.PuraStringKeys.ImagePlaceholder = "image-placeho
 const PuraMarkdown.Localization.PuraStringKeys.StreamingAborted = "streaming-aborted" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.StreamingCompleted = "streaming-completed" -> string!
 const PuraMarkdown.Localization.PuraStringKeys.UnsupportedComponent = "unsupported-component" -> string!
+override PuraMarkdown.Agent.PuraAgentComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraAgentComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraAgentComponent.ToString() -> string!
+override PuraMarkdown.Agent.PuraChoiceComponent.<Clone>$() -> PuraMarkdown.Agent.PuraChoiceComponent!
+override PuraMarkdown.Agent.PuraChoiceComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraChoiceComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraChoiceComponent.ToString() -> string!
+override PuraMarkdown.Agent.PuraChoiceOption.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraChoiceOption.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraChoiceOption.ToString() -> string!
+override PuraMarkdown.Agent.PuraComponentError.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraComponentError.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraComponentError.ToString() -> string!
+override PuraMarkdown.Agent.PuraConfirmComponent.<Clone>$() -> PuraMarkdown.Agent.PuraConfirmComponent!
+override PuraMarkdown.Agent.PuraConfirmComponent.Equals(object? obj) -> bool
+override PuraMarkdown.Agent.PuraConfirmComponent.GetHashCode() -> int
+override PuraMarkdown.Agent.PuraConfirmComponent.ToString() -> string!
 override PuraMarkdown.BlockRecord.Equals(object? obj) -> bool
 override PuraMarkdown.BlockRecord.GetHashCode() -> int
 override PuraMarkdown.BlockRecord.ToString() -> string!
+override PuraMarkdown.Chat.PuraChatMessageSnapshot.Equals(object? obj) -> bool
+override PuraMarkdown.Chat.PuraChatMessageSnapshot.GetHashCode() -> int
+override PuraMarkdown.Chat.PuraChatMessageSnapshot.ToString() -> string!
+override PuraMarkdown.Chat.PuraChatSnapshot.Equals(object? obj) -> bool
+override PuraMarkdown.Chat.PuraChatSnapshot.GetHashCode() -> int
+override PuraMarkdown.Chat.PuraChatSnapshot.ToString() -> string!
 override PuraMarkdown.Platform.IImageResult.Equals(object? obj) -> bool
 override PuraMarkdown.Platform.IImageResult.Failed.<Clone>$() -> PuraMarkdown.Platform.IImageResult.Failed!
 override PuraMarkdown.Platform.IImageResult.Failed.Equals(object? obj) -> bool
@@ -80,9 +104,110 @@ override PuraMarkdown.Rendering.HighlightSpan.GetHashCode() -> int
 override PuraMarkdown.Rendering.PuraWarning.Equals(object? obj) -> bool
 override PuraMarkdown.Rendering.PuraWarning.GetHashCode() -> int
 override PuraMarkdown.Rendering.PuraWarning.ToString() -> string!
+override sealed PuraMarkdown.Agent.PuraChoiceComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
+override sealed PuraMarkdown.Agent.PuraConfirmComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
 override sealed PuraMarkdown.Platform.IImageResult.Failed.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
 override sealed PuraMarkdown.Platform.IImageResult.Refused.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
 override sealed PuraMarkdown.Platform.IImageResult.Success.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
+PuraMarkdown.Agent.AgentFenceRenderer
+PuraMarkdown.Agent.AgentFenceRenderer.CanRender(string! language, string! source, bool isClosed, PuraMarkdown.Rendering.RenderContext! context) -> bool
+PuraMarkdown.Agent.AgentFenceRenderer.Name.get -> string!
+PuraMarkdown.Agent.AgentFenceRenderer.Render(string! language, string! source, bool isClosed, PuraMarkdown.Rendering.RenderContext! context) -> Avalonia.Controls.Control!
+PuraMarkdown.Agent.AgentPipelineExtensions
+PuraMarkdown.Agent.AgentPlugin
+PuraMarkdown.Agent.AgentPlugin.AgentPlugin() -> void
+PuraMarkdown.Agent.AgentPlugin.AgentPlugin(System.Collections.Generic.IEnumerable<PuraMarkdown.Agent.IAgentComponentParser!>? parsers, System.Collections.Generic.IEnumerable<PuraMarkdown.Agent.IAgentComponentRenderer!>? renderers) -> void
+PuraMarkdown.Agent.AgentPlugin.ComponentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.AgentPlugin.Configure(PuraMarkdown.PuraPipelineBuilder! builder) -> void
+PuraMarkdown.Agent.AgentPlugin.Description.get -> string?
+PuraMarkdown.Agent.AgentPlugin.Name.get -> string!
+PuraMarkdown.Agent.AgentPlugin.Version.get -> string!
+PuraMarkdown.Agent.ChoiceParser
+PuraMarkdown.Agent.ChoiceParser.ChoiceParser() -> void
+PuraMarkdown.Agent.ChoiceParser.ComponentType.get -> string!
+PuraMarkdown.Agent.ChoiceParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.ChoiceParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.ConfirmParser
+PuraMarkdown.Agent.ConfirmParser.ComponentType.get -> string!
+PuraMarkdown.Agent.ConfirmParser.ConfirmParser() -> void
+PuraMarkdown.Agent.ConfirmParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.ConfirmParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.IAgentComponentParser
+PuraMarkdown.Agent.IAgentComponentParser.ComponentType.get -> string!
+PuraMarkdown.Agent.IAgentComponentParser.PayloadSchema.get -> Json.Schema.JsonSchema!
+PuraMarkdown.Agent.IAgentComponentParser.TryParse(string! json, out PuraMarkdown.Agent.PuraAgentComponent? component, out PuraMarkdown.Agent.PuraComponentError? error) -> bool
+PuraMarkdown.Agent.IAgentComponentRenderer
+PuraMarkdown.Agent.IAgentComponentRenderer.ComponentType.get -> string!
+PuraMarkdown.Agent.IAgentComponentRenderer.RenderComponent(PuraMarkdown.Agent.PuraAgentComponent! component, PuraMarkdown.Rendering.RenderContext! context) -> Avalonia.Controls.Control!
+PuraMarkdown.Agent.PuraAgentComponent
+PuraMarkdown.Agent.PuraAgentComponent.Id.get -> string?
+PuraMarkdown.Agent.PuraAgentComponent.Id.init -> void
+PuraMarkdown.Agent.PuraAgentComponent.PuraAgentComponent() -> void
+PuraMarkdown.Agent.PuraAgentComponent.PuraAgentComponent(PuraMarkdown.Agent.PuraAgentComponent! original) -> void
+PuraMarkdown.Agent.PuraAgentComponent.Type.get -> string!
+PuraMarkdown.Agent.PuraAgentComponent.Type.init -> void
+PuraMarkdown.Agent.PuraAgentComponent.Version.get -> string!
+PuraMarkdown.Agent.PuraAgentComponent.Version.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent
+PuraMarkdown.Agent.PuraChoiceComponent.DefaultSelected.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.PuraChoiceComponent.DefaultSelected.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Description.get -> string?
+PuraMarkdown.Agent.PuraChoiceComponent.Description.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Disabled.get -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Disabled.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Equals(PuraMarkdown.Agent.PuraChoiceComponent? other) -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Max.get -> int?
+PuraMarkdown.Agent.PuraChoiceComponent.Max.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Min.get -> int
+PuraMarkdown.Agent.PuraChoiceComponent.Min.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Multi.get -> bool
+PuraMarkdown.Agent.PuraChoiceComponent.Multi.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Options.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Agent.PuraChoiceOption!>!
+PuraMarkdown.Agent.PuraChoiceComponent.Options.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.PuraChoiceComponent() -> void
+PuraMarkdown.Agent.PuraChoiceComponent.Question.get -> string!
+PuraMarkdown.Agent.PuraChoiceComponent.Question.init -> void
+PuraMarkdown.Agent.PuraChoiceComponent.SubmitLabel.get -> string!
+PuraMarkdown.Agent.PuraChoiceComponent.SubmitLabel.init -> void
+PuraMarkdown.Agent.PuraChoiceOption
+PuraMarkdown.Agent.PuraChoiceOption.<Clone>$() -> PuraMarkdown.Agent.PuraChoiceOption!
+PuraMarkdown.Agent.PuraChoiceOption.Deconstruct(out string! Id, out string! Label, out string? Description, out bool Disabled) -> void
+PuraMarkdown.Agent.PuraChoiceOption.Description.get -> string?
+PuraMarkdown.Agent.PuraChoiceOption.Description.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Disabled.get -> bool
+PuraMarkdown.Agent.PuraChoiceOption.Disabled.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Equals(PuraMarkdown.Agent.PuraChoiceOption? other) -> bool
+PuraMarkdown.Agent.PuraChoiceOption.Id.get -> string!
+PuraMarkdown.Agent.PuraChoiceOption.Id.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.Label.get -> string!
+PuraMarkdown.Agent.PuraChoiceOption.Label.init -> void
+PuraMarkdown.Agent.PuraChoiceOption.PuraChoiceOption(string! Id, string! Label, string? Description = null, bool Disabled = false) -> void
+PuraMarkdown.Agent.PuraComponentError
+PuraMarkdown.Agent.PuraComponentError.<Clone>$() -> PuraMarkdown.Agent.PuraComponentError!
+PuraMarkdown.Agent.PuraComponentError.Deconstruct(out string! Message, out string? Path) -> void
+PuraMarkdown.Agent.PuraComponentError.Equals(PuraMarkdown.Agent.PuraComponentError? other) -> bool
+PuraMarkdown.Agent.PuraComponentError.Message.get -> string!
+PuraMarkdown.Agent.PuraComponentError.Message.init -> void
+PuraMarkdown.Agent.PuraComponentError.Path.get -> string?
+PuraMarkdown.Agent.PuraComponentError.Path.init -> void
+PuraMarkdown.Agent.PuraComponentError.PuraComponentError(string! Message, string? Path = null) -> void
+PuraMarkdown.Agent.PuraComponentRegistry
+PuraMarkdown.Agent.PuraComponentRegistry.ComponentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+PuraMarkdown.Agent.PuraComponentRegistry.ResolveParser(string! componentType) -> PuraMarkdown.Agent.IAgentComponentParser?
+PuraMarkdown.Agent.PuraComponentRegistry.ResolveRenderer(string! componentType) -> PuraMarkdown.Agent.IAgentComponentRenderer?
+PuraMarkdown.Agent.PuraConfirmComponent
+PuraMarkdown.Agent.PuraConfirmComponent.CancelLabel.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.CancelLabel.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.ConfirmLabel.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.ConfirmLabel.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Danger.get -> bool
+PuraMarkdown.Agent.PuraConfirmComponent.Danger.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Description.get -> string?
+PuraMarkdown.Agent.PuraConfirmComponent.Description.init -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Equals(PuraMarkdown.Agent.PuraConfirmComponent? other) -> bool
+PuraMarkdown.Agent.PuraConfirmComponent.PuraConfirmComponent() -> void
+PuraMarkdown.Agent.PuraConfirmComponent.Question.get -> string!
+PuraMarkdown.Agent.PuraConfirmComponent.Question.init -> void
 PuraMarkdown.BlockRecord
 PuraMarkdown.BlockRecord.<Clone>$() -> PuraMarkdown.BlockRecord!
 PuraMarkdown.BlockRecord.BlockRecord(int Index, int Start, int End, ulong Hash, Markdig.Syntax.MarkdownObject! Node, Avalonia.Controls.Control? View) -> void
@@ -100,6 +225,96 @@ PuraMarkdown.BlockRecord.Start.get -> int
 PuraMarkdown.BlockRecord.Start.init -> void
 PuraMarkdown.BlockRecord.View.get -> Avalonia.Controls.Control?
 PuraMarkdown.BlockRecord.View.init -> void
+PuraMarkdown.Chat.PuraChatAutoScrollMode
+PuraMarkdown.Chat.PuraChatAutoScrollMode.Always = 2 -> PuraMarkdown.Chat.PuraChatAutoScrollMode
+PuraMarkdown.Chat.PuraChatAutoScrollMode.NearBottom = 1 -> PuraMarkdown.Chat.PuraChatAutoScrollMode
+PuraMarkdown.Chat.PuraChatAutoScrollMode.Never = 0 -> PuraMarkdown.Chat.PuraChatAutoScrollMode
+PuraMarkdown.Chat.PuraChatMessage
+PuraMarkdown.Chat.PuraChatMessage.ContentVersion.get -> int
+PuraMarkdown.Chat.PuraChatMessage.CreatedAt.get -> System.DateTimeOffset
+PuraMarkdown.Chat.PuraChatMessage.CreatedAt.init -> void
+PuraMarkdown.Chat.PuraChatMessage.Error.get -> string?
+PuraMarkdown.Chat.PuraChatMessage.Error.set -> void
+PuraMarkdown.Chat.PuraChatMessage.Id.get -> string!
+PuraMarkdown.Chat.PuraChatMessage.Id.init -> void
+PuraMarkdown.Chat.PuraChatMessage.Markdown.get -> string!
+PuraMarkdown.Chat.PuraChatMessage.Markdown.set -> void
+PuraMarkdown.Chat.PuraChatMessage.Metadata.get -> System.Collections.Generic.IDictionary<string!, string!>!
+PuraMarkdown.Chat.PuraChatMessage.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler?
+PuraMarkdown.Chat.PuraChatMessage.PuraChatMessage() -> void
+PuraMarkdown.Chat.PuraChatMessage.Role.get -> PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatMessage.Role.init -> void
+PuraMarkdown.Chat.PuraChatMessage.Status.get -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessage.Status.set -> void
+PuraMarkdown.Chat.PuraChatMessage.UpdatedAt.get -> System.DateTimeOffset
+PuraMarkdown.Chat.PuraChatMessageSnapshot
+PuraMarkdown.Chat.PuraChatMessageSnapshot.<Clone>$() -> PuraMarkdown.Chat.PuraChatMessageSnapshot!
+PuraMarkdown.Chat.PuraChatMessageSnapshot.CreatedAt.get -> System.DateTimeOffset
+PuraMarkdown.Chat.PuraChatMessageSnapshot.CreatedAt.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Deconstruct(out string! Id, out PuraMarkdown.Chat.PuraChatRole Role, out string! Markdown, out PuraMarkdown.Chat.PuraChatMessageStatus Status, out System.DateTimeOffset CreatedAt, out System.DateTimeOffset UpdatedAt, out string? Error, out System.Collections.Generic.Dictionary<string!, string!>? Metadata) -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Equals(PuraMarkdown.Chat.PuraChatMessageSnapshot? other) -> bool
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Error.get -> string?
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Error.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Id.get -> string!
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Id.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Markdown.get -> string!
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Markdown.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Metadata.get -> System.Collections.Generic.Dictionary<string!, string!>?
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Metadata.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.PuraChatMessageSnapshot(string! Id, PuraMarkdown.Chat.PuraChatRole Role, string! Markdown, PuraMarkdown.Chat.PuraChatMessageStatus Status, System.DateTimeOffset CreatedAt, System.DateTimeOffset UpdatedAt, string? Error, System.Collections.Generic.Dictionary<string!, string!>? Metadata) -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Role.get -> PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Role.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Status.get -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessageSnapshot.Status.init -> void
+PuraMarkdown.Chat.PuraChatMessageSnapshot.UpdatedAt.get -> System.DateTimeOffset
+PuraMarkdown.Chat.PuraChatMessageSnapshot.UpdatedAt.init -> void
+PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessageStatus.Aborted = 3 -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessageStatus.Complete = 0 -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessageStatus.Failed = 2 -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatMessageStatus.Streaming = 1 -> PuraMarkdown.Chat.PuraChatMessageStatus
+PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatRole.Assistant = 1 -> PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatRole.System = 2 -> PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatRole.User = 0 -> PuraMarkdown.Chat.PuraChatRole
+PuraMarkdown.Chat.PuraChatSnapshot
+PuraMarkdown.Chat.PuraChatSnapshot.<Clone>$() -> PuraMarkdown.Chat.PuraChatSnapshot!
+PuraMarkdown.Chat.PuraChatSnapshot.Deconstruct(out int Version, out System.Collections.Generic.IReadOnlyList<PuraMarkdown.Chat.PuraChatMessageSnapshot!>! Messages) -> void
+PuraMarkdown.Chat.PuraChatSnapshot.Equals(PuraMarkdown.Chat.PuraChatSnapshot? other) -> bool
+PuraMarkdown.Chat.PuraChatSnapshot.Messages.get -> System.Collections.Generic.IReadOnlyList<PuraMarkdown.Chat.PuraChatMessageSnapshot!>!
+PuraMarkdown.Chat.PuraChatSnapshot.Messages.init -> void
+PuraMarkdown.Chat.PuraChatSnapshot.PuraChatSnapshot(int Version, System.Collections.Generic.IReadOnlyList<PuraMarkdown.Chat.PuraChatMessageSnapshot!>! Messages) -> void
+PuraMarkdown.Chat.PuraChatSnapshot.Version.get -> int
+PuraMarkdown.Chat.PuraChatSnapshot.Version.init -> void
+PuraMarkdown.Chat.PuraChatSnapshotSerializer
+PuraMarkdown.Chat.PuraChatView
+PuraMarkdown.Chat.PuraChatView.AbortStreaming() -> void
+PuraMarkdown.Chat.PuraChatView.ActiveSession.get -> PuraMarkdown.PuraStreamingSession?
+PuraMarkdown.Chat.PuraChatView.AddMessage(PuraMarkdown.Chat.PuraChatMessage! message) -> void
+PuraMarkdown.Chat.PuraChatView.AutoScrollMode.get -> PuraMarkdown.Chat.PuraChatAutoScrollMode
+PuraMarkdown.Chat.PuraChatView.AutoScrollMode.set -> void
+PuraMarkdown.Chat.PuraChatView.BeginStreamingMessage(PuraMarkdown.Chat.PuraChatMessage? message = null) -> PuraMarkdown.PuraStreamingSession!
+PuraMarkdown.Chat.PuraChatView.ClearMessages() -> void
+PuraMarkdown.Chat.PuraChatView.CreateSnapshot() -> PuraMarkdown.Chat.PuraChatSnapshot!
+PuraMarkdown.Chat.PuraChatView.FindMessage(string! messageId) -> PuraMarkdown.Chat.PuraChatMessage?
+PuraMarkdown.Chat.PuraChatView.InsertMessage(int index, PuraMarkdown.Chat.PuraChatMessage! message) -> void
+PuraMarkdown.Chat.PuraChatView.InteractionOccurred -> System.EventHandler<PuraMarkdown.PuraInteractionEventArgs!>?
+PuraMarkdown.Chat.PuraChatView.IsNearBottom.get -> bool
+PuraMarkdown.Chat.PuraChatView.IsStreaming.get -> bool
+PuraMarkdown.Chat.PuraChatView.MessageAdded -> System.EventHandler<PuraMarkdown.Chat.PuraChatMessage!>?
+PuraMarkdown.Chat.PuraChatView.MessageRemoved -> System.EventHandler<PuraMarkdown.Chat.PuraChatMessage!>?
+PuraMarkdown.Chat.PuraChatView.Messages.get -> System.Collections.ObjectModel.ObservableCollection<PuraMarkdown.Chat.PuraChatMessage!>!
+PuraMarkdown.Chat.PuraChatView.MessageUpdated -> System.EventHandler<PuraMarkdown.Chat.PuraChatMessage!>?
+PuraMarkdown.Chat.PuraChatView.Options.get -> PuraMarkdown.PuraMarkdownOptions?
+PuraMarkdown.Chat.PuraChatView.Options.set -> void
+PuraMarkdown.Chat.PuraChatView.PuraChatView() -> void
+PuraMarkdown.Chat.PuraChatView.RemoveMessage(string! messageId) -> bool
+PuraMarkdown.Chat.PuraChatView.ReplaceMessages(System.Collections.Generic.IEnumerable<PuraMarkdown.Chat.PuraChatMessage!>! messages) -> void
+PuraMarkdown.Chat.PuraChatView.RestoreSnapshot(PuraMarkdown.Chat.PuraChatSnapshot! snapshot) -> void
+PuraMarkdown.Chat.PuraChatView.ScrollToEnd() -> void
+PuraMarkdown.Chat.PuraChatView.ScrollToMessage(string! messageId) -> void
+PuraMarkdown.Chat.PuraChatView.UpdateMessage(PuraMarkdown.Chat.PuraChatMessage! message) -> void
+PuraMarkdown.Chat.PuraChatView.Warning -> System.EventHandler<PuraMarkdown.Rendering.PuraWarningEventArgs!>?
 PuraMarkdown.IPuraInteractionStateReceiver
 PuraMarkdown.IPuraInteractionStateReceiver.ApplyInteractionState(PuraMarkdown.PuraInteractionEventArgs! state) -> void
 PuraMarkdown.IPuraPlugin
@@ -542,8 +757,36 @@ PuraMarkdown.Rendering.RenderContext.Theme.init -> void
 PuraMarkdown.Rendering.RenderContext.Warn(string! code, string! message, string? nodeType = null, string? renderer = null) -> void
 PuraMarkdown.Rendering.RenderContext.WarningSink.get -> System.Action<PuraMarkdown.Rendering.PuraWarningEventArgs!>?
 PuraMarkdown.Rendering.RenderContext.WarningSink.init -> void
+PuraMarkdown.Testing.ControlTreeDumper
+PuraMarkdown.Testing.GoldenFile
+PuraMarkdown.Testing.GoldenMismatchException
+PuraMarkdown.Testing.GoldenMismatchException.Actual.get -> string!
+PuraMarkdown.Testing.GoldenMismatchException.Expected.get -> string!
+PuraMarkdown.Testing.GoldenMismatchException.GoldenMismatchException(string! path, string! expected, string! actual) -> void
+PuraMarkdown.Testing.GoldenMismatchException.Path.get -> string!
+PuraMarkdown.Testing.InteractionProbe
+PuraMarkdown.Testing.PluginConformance
+PuraMarkdown.Testing.StreamingDriver
+static PuraMarkdown.Agent.AgentPipelineExtensions.UseAgentComponent(this PuraMarkdown.PuraPipelineBuilder! builder, PuraMarkdown.Agent.IAgentComponentParser! parser, PuraMarkdown.Agent.IAgentComponentRenderer! renderer) -> PuraMarkdown.PuraPipelineBuilder!
+static PuraMarkdown.Agent.AgentPipelineExtensions.UseAgentComponents(this PuraMarkdown.PuraPipelineBuilder! builder) -> PuraMarkdown.PuraPipelineBuilder!
+static PuraMarkdown.Agent.PuraAgentComponent.operator !=(PuraMarkdown.Agent.PuraAgentComponent? left, PuraMarkdown.Agent.PuraAgentComponent? right) -> bool
+static PuraMarkdown.Agent.PuraAgentComponent.operator ==(PuraMarkdown.Agent.PuraAgentComponent? left, PuraMarkdown.Agent.PuraAgentComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceComponent.operator !=(PuraMarkdown.Agent.PuraChoiceComponent? left, PuraMarkdown.Agent.PuraChoiceComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceComponent.operator ==(PuraMarkdown.Agent.PuraChoiceComponent? left, PuraMarkdown.Agent.PuraChoiceComponent? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceOption.operator !=(PuraMarkdown.Agent.PuraChoiceOption? left, PuraMarkdown.Agent.PuraChoiceOption? right) -> bool
+static PuraMarkdown.Agent.PuraChoiceOption.operator ==(PuraMarkdown.Agent.PuraChoiceOption? left, PuraMarkdown.Agent.PuraChoiceOption? right) -> bool
+static PuraMarkdown.Agent.PuraComponentError.operator !=(PuraMarkdown.Agent.PuraComponentError? left, PuraMarkdown.Agent.PuraComponentError? right) -> bool
+static PuraMarkdown.Agent.PuraComponentError.operator ==(PuraMarkdown.Agent.PuraComponentError? left, PuraMarkdown.Agent.PuraComponentError? right) -> bool
+static PuraMarkdown.Agent.PuraConfirmComponent.operator !=(PuraMarkdown.Agent.PuraConfirmComponent? left, PuraMarkdown.Agent.PuraConfirmComponent? right) -> bool
+static PuraMarkdown.Agent.PuraConfirmComponent.operator ==(PuraMarkdown.Agent.PuraConfirmComponent? left, PuraMarkdown.Agent.PuraConfirmComponent? right) -> bool
 static PuraMarkdown.BlockRecord.operator !=(PuraMarkdown.BlockRecord? left, PuraMarkdown.BlockRecord? right) -> bool
 static PuraMarkdown.BlockRecord.operator ==(PuraMarkdown.BlockRecord? left, PuraMarkdown.BlockRecord? right) -> bool
+static PuraMarkdown.Chat.PuraChatMessageSnapshot.operator !=(PuraMarkdown.Chat.PuraChatMessageSnapshot? left, PuraMarkdown.Chat.PuraChatMessageSnapshot? right) -> bool
+static PuraMarkdown.Chat.PuraChatMessageSnapshot.operator ==(PuraMarkdown.Chat.PuraChatMessageSnapshot? left, PuraMarkdown.Chat.PuraChatMessageSnapshot? right) -> bool
+static PuraMarkdown.Chat.PuraChatSnapshot.operator !=(PuraMarkdown.Chat.PuraChatSnapshot? left, PuraMarkdown.Chat.PuraChatSnapshot? right) -> bool
+static PuraMarkdown.Chat.PuraChatSnapshot.operator ==(PuraMarkdown.Chat.PuraChatSnapshot? left, PuraMarkdown.Chat.PuraChatSnapshot? right) -> bool
+static PuraMarkdown.Chat.PuraChatSnapshotSerializer.Deserialize(string! json) -> PuraMarkdown.Chat.PuraChatSnapshot!
+static PuraMarkdown.Chat.PuraChatSnapshotSerializer.Serialize(PuraMarkdown.Chat.PuraChatSnapshot! snapshot) -> string!
 static PuraMarkdown.Localization.ChinesePuraLocalizer.Instance.get -> PuraMarkdown.Localization.ChinesePuraLocalizer!
 static PuraMarkdown.Platform.IImageResult.Failed.operator !=(PuraMarkdown.Platform.IImageResult.Failed? left, PuraMarkdown.Platform.IImageResult.Failed? right) -> bool
 static PuraMarkdown.Platform.IImageResult.Failed.operator ==(PuraMarkdown.Platform.IImageResult.Failed? left, PuraMarkdown.Platform.IImageResult.Failed? right) -> bool
@@ -582,8 +825,21 @@ static PuraMarkdown.Rendering.HighlightSpan.operator ==(PuraMarkdown.Rendering.H
 static PuraMarkdown.Rendering.NullCodeHighlighter.Instance.get -> PuraMarkdown.Rendering.NullCodeHighlighter!
 static PuraMarkdown.Rendering.PuraWarning.operator !=(PuraMarkdown.Rendering.PuraWarning? left, PuraMarkdown.Rendering.PuraWarning? right) -> bool
 static PuraMarkdown.Rendering.PuraWarning.operator ==(PuraMarkdown.Rendering.PuraWarning? left, PuraMarkdown.Rendering.PuraWarning? right) -> bool
+static PuraMarkdown.Testing.ControlTreeDumper.Dump(Avalonia.Controls.Control! root) -> string!
+static PuraMarkdown.Testing.ControlTreeDumper.Find<T>(Avalonia.Controls.Control! root) -> System.Collections.Generic.IEnumerable<T!>!
+static PuraMarkdown.Testing.GoldenFile.AssertMatches(string! name, string! actual, string! callerFile = "") -> void
+static PuraMarkdown.Testing.InteractionProbe.All<T>(Avalonia.Controls.Control! root) -> System.Collections.Generic.IEnumerable<T!>!
+static PuraMarkdown.Testing.InteractionProbe.Click(Avalonia.Controls.Button! button) -> void
+static PuraMarkdown.Testing.InteractionProbe.Select(Avalonia.Controls.Primitives.ToggleButton! toggle) -> void
+static PuraMarkdown.Testing.InteractionProbe.Single<T>(Avalonia.Controls.Control! root, System.Func<T!, bool>? predicate = null) -> T!
+static PuraMarkdown.Testing.PluginConformance.RenderSample(string! markdown, PuraMarkdown.PuraPipeline! pipeline) -> string!
+static PuraMarkdown.Testing.PluginConformance.VerifyRegistration(PuraMarkdown.IPuraPlugin! plugin) -> PuraMarkdown.PuraPipeline!
+static PuraMarkdown.Testing.StreamingDriver.AppendInChunksAsync(PuraMarkdown.PuraMarkdownView! view, string! text, int chunkSize = 7) -> System.Threading.Tasks.Task!
 static readonly PuraMarkdown.PuraMarkdownView.MarkdownProperty -> Avalonia.StyledProperty<string?>!
 static readonly PuraMarkdown.PuraMarkdownView.OptionsProperty -> Avalonia.StyledProperty<PuraMarkdown.PuraMarkdownOptions?>!
+virtual PuraMarkdown.Agent.PuraAgentComponent.EqualityContract.get -> System.Type!
+virtual PuraMarkdown.Agent.PuraAgentComponent.Equals(PuraMarkdown.Agent.PuraAgentComponent? other) -> bool
+virtual PuraMarkdown.Agent.PuraAgentComponent.PrintMembers(System.Text.StringBuilder! builder) -> bool
 virtual PuraMarkdown.Platform.IImageResult.EqualityContract.get -> System.Type!
 virtual PuraMarkdown.Platform.IImageResult.Equals(PuraMarkdown.Platform.IImageResult? other) -> bool
 virtual PuraMarkdown.Platform.IImageResult.PrintMembers(System.Text.StringBuilder! builder) -> bool

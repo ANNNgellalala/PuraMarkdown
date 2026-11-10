@@ -1,17 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>PuraMarkdown.Highlighting.ColorCode</RootNamespace>
-    <Description>PuraMarkdown 官方可选插件：ColorCode 语法高亮。</Description>
-    <PackageId>PuraMarkdown.Highlighting.ColorCode</PackageId>
+    <RootNamespace>PuraMarkdown.Plugins</RootNamespace>
+    <AssemblyName>PuraMarkdown.Plugins</AssemblyName>
+    <PackageId>PuraMarkdown.Plugins</PackageId>
     <Authors>PuraMarkdown contributors</Authors>
+    <Description>PuraMarkdown 官方可选插件合集：ColorCode 代码高亮与 Mermaid 图表（引擎依赖集中在此包，核心保持零引擎依赖）。</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>avalonia;markdown;highlighting;colorcode</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>avalonia;markdown;plugin;highlighting;colorcode;mermaid;diagram</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
     <PackageReference Include="ColorCode.Core" />
+    <PackageReference Include="Mermaider" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PuraMarkdown\PuraMarkdown.csproj" />
@@ -20,7 +22,3 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
   </ItemGroup>
 </Project>
-
-
-
-
